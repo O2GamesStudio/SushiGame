@@ -1,14 +1,17 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 [RequireComponent(typeof(BoxCollider2D))]
 public class Plate : MonoBehaviour
 {
-    private Stack<Sushi> activeStack = new Stack<Sushi>();
+    [SerializeField] private Transform[] sushiSlots = new Transform[3];
+
+    private List<Sushi> activeSushis = new List<Sushi>(3) { null, null, null };
     private Queue<Layer> layerQueue = new Queue<Layer>();
     private PlateUI plateUI;
 
-    public int ActiveCount => activeStack.Count;
+    public int ActiveCount => activeSushis.Count(s => s != null);
     public int LayerCount => layerQueue.Count;
     public bool IsFull => ActiveCount >= 3;
     public bool IsEmpty => ActiveCount == 0 && LayerCount == 0;
@@ -21,7 +24,7 @@ public class Plate : MonoBehaviour
 
     public void Initialize(List<int> activeTypes, List<Layer> layers)
     {
-        activeStack.Clear();
+        activeSushis = new List<Sushi>(3) { null, null, null };
         layerQueue.Clear();
 
         foreach (var layer in layers)
@@ -29,10 +32,11 @@ public class Plate : MonoBehaviour
             layerQueue.Enqueue(layer);
         }
 
+        int index = 0;
         foreach (var typeId in activeTypes)
         {
             var sushi = SushiPool.Instance.Get(typeId);
-            activeStack.Push(sushi);
+            activeSushis[index++] = sushi;
         }
 
         UpdateVisuals();
@@ -42,31 +46,48 @@ public class Plate : MonoBehaviour
     {
         if (IsFull) return;
 
-        activeStack.Push(sushi);
+        for (int i = 0; i < 3; i++)
+        {
+            if (activeSushis[i] == null)
+            {
+                activeSushis[i] = sushi;
+                break;
+            }
+        }
+
         UpdateVisuals();
         CheckMerge();
     }
 
-    public Sushi RemoveTop()
+    public bool RemoveSpecificSushi(Sushi sushi)
     {
-        if (ActiveCount == 0) return null;
-
-        var sushi = activeStack.Pop();
-        UpdateVisuals();
-        return sushi;
+        for (int i = 0; i < 3; i++)
+        {
+            if (activeSushis[i] == sushi)
+            {
+                activeSushis[i] = null;
+                UpdateVisuals();
+                CheckNextLayerRefill();
+                return true;
+            }
+        }
+        return false;
     }
 
-    public Sushi PeekTop()
+    public bool ContainsSushi(Sushi sushi)
     {
-        return ActiveCount > 0 ? activeStack.Peek() : null;
+        return activeSushis.Contains(sushi);
     }
 
     private void CheckMerge()
     {
         if (ActiveCount != 3) return;
 
-        var sushis = new List<Sushi>(activeStack);
-        if (sushis[0].TypeId == sushis[1].TypeId && sushis[1].TypeId == sushis[2].TypeId)
+        var nonNullSushis = activeSushis.Where(s => s != null).ToList();
+
+        if (nonNullSushis.Count == 3 &&
+            nonNullSushis[0].TypeId == nonNullSushis[1].TypeId &&
+            nonNullSushis[1].TypeId == nonNullSushis[2].TypeId)
         {
             ExecuteMerge();
         }
@@ -74,41 +95,62 @@ public class Plate : MonoBehaviour
 
     private void ExecuteMerge()
     {
-        while (activeStack.Count > 0)
+        foreach (var sushi in activeSushis)
         {
-            var sushi = activeStack.Pop();
-            SushiPool.Instance.Return(sushi);
-        }
-
-        if (layerQueue.Count > 0)
-        {
-            var nextLayer = layerQueue.Dequeue();
-            var types = nextLayer.GetAllTypes();
-
-            foreach (var typeId in types)
+            if (sushi != null)
             {
-                var sushi = SushiPool.Instance.Get(typeId);
-                activeStack.Push(sushi);
+                SushiPool.Instance.Return(sushi);
             }
         }
 
+        activeSushis = new List<Sushi>(3) { null, null, null };
+
+        RefillFromNextLayer();
+
         UpdateVisuals();
-        
+
         if (IsEmpty)
         {
             GameStateChecker.Instance.CheckWinCondition();
         }
     }
 
+    private void CheckNextLayerRefill()
+    {
+        if (ActiveCount == 0 && LayerCount > 0)
+        {
+            RefillFromNextLayer();
+            UpdateVisuals();
+        }
+    }
+
+    private void RefillFromNextLayer()
+    {
+        if (layerQueue.Count > 0)
+        {
+            var nextLayer = layerQueue.Dequeue();
+            var types = nextLayer.GetAllTypes();
+
+            for (int i = 0; i < types.Count; i++)
+            {
+                var sushi = SushiPool.Instance.Get(types[i]);
+                activeSushis[i] = sushi;
+            }
+        }
+    }
+
     private void UpdateVisuals()
     {
-        var sushis = new List<Sushi>(activeStack);
-        
-        for (int i = 0; i < sushis.Count; i++)
+        for (int i = 0; i < 3; i++)
         {
-            var sushi = sushis[sushis.Count - 1 - i];
-            sushi.transform.position = transform.position + Vector3.up * i * 0.3f;
-            sushi.transform.localScale = i == 0 ? Vector3.one : Vector3.one * 0.5f;
+            if (activeSushis[i] != null)
+            {
+                var sushi = activeSushis[i];
+                sushi.transform.SetParent(sushiSlots[i]);
+                sushi.transform.position = sushiSlots[i].position;
+                sushi.transform.localPosition = new Vector3(0, 0, -1);
+                sushi.transform.localScale = Vector3.one;
+            }
         }
 
         plateUI?.UpdateNextLayerDisplay(CurrentNextLayer);

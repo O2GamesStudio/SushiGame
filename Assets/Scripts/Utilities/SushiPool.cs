@@ -19,13 +19,23 @@ public class SushiPool : MonoBehaviour
         dataDict = new Dictionary<int, SushiData>();
         foreach (var data in sushiDataList)
         {
-            dataDict[data.id] = data;
+            if (data != null)
+            {
+                dataDict[data.id] = data;
+            }
         }
 
         pool = new ObjectPool<Sushi>(
             createFunc: () => Instantiate(sushiPrefab, transform),
-            actionOnGet: sushi => sushi.gameObject.SetActive(true),
-            actionOnRelease: sushi => sushi.gameObject.SetActive(false),
+            actionOnGet: sushi =>
+            {
+                sushi.gameObject.SetActive(true);
+            },
+            actionOnRelease: sushi =>
+            {
+                sushi.Reset();
+                sushi.gameObject.SetActive(false);
+            },
             actionOnDestroy: sushi => Destroy(sushi.gameObject),
             defaultCapacity: 60,
             maxSize: 100
@@ -44,7 +54,7 @@ public class SushiPool : MonoBehaviour
 
     public void Return(Sushi sushi)
     {
-        sushi.Reset();
+        sushi.transform.SetParent(transform);
         pool.Release(sushi);
     }
 

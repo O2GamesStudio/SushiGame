@@ -9,9 +9,9 @@ public class PlateUI : MonoBehaviour
 
     private readonly Vector3[] slotPositions = new Vector3[]
     {
-        new Vector3(-0.6f, -1f, 0),
-        new Vector3(0f, -1f, 0),
-        new Vector3(0.6f, -1f, 0)
+        new Vector3(-0.6f, -1.5f, 0),
+        new Vector3(0f, -1.5f, 0),
+        new Vector3(0.6f, -1.5f, 0)
     };
 
     private List<GameObject> nextLayerIcons = new List<GameObject>();

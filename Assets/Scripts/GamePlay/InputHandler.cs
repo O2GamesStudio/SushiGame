@@ -5,6 +5,8 @@ public class InputHandler : MonoBehaviour
 {
     [SerializeField] private Camera mainCamera;
     [SerializeField] private PlateManager plateManager;
+    [SerializeField] private LayerMask sushiLayer;
+    [SerializeField] private LayerMask plateLayer;
 
     private Plate selectedPlate;
     private Sushi draggedSushi;
@@ -28,12 +30,15 @@ public class InputHandler : MonoBehaviour
 
     private void OnMouseDown()
     {
-        var hit = GetPlateAtMousePosition();
-        if (hit != null && hit.ActiveCount > 0)
+        var sushi = GetSushiAtMousePosition();
+        if (sushi != null)
         {
-            selectedPlate = hit;
-            draggedSushi = selectedPlate.PeekTop();
-            originalPosition = draggedSushi.transform.position;
+            selectedPlate = GetPlateContainingSushi(sushi);
+            if (selectedPlate != null)
+            {
+                draggedSushi = sushi;
+                originalPosition = draggedSushi.transform.position;
+            }
         }
     }
 
@@ -52,7 +57,7 @@ public class InputHandler : MonoBehaviour
         {
             if (plateManager.CanMoveSushi(selectedPlate, targetPlate))
             {
-                plateManager.MoveSushi(selectedPlate, targetPlate);
+                plateManager.MoveSushi(selectedPlate, targetPlate, draggedSushi);
             }
             else
             {
@@ -73,16 +78,42 @@ public class InputHandler : MonoBehaviour
         draggedSushi.transform.DOMove(originalPosition, 0.2f).SetEase(Ease.OutQuad);
     }
 
+    private Sushi GetSushiAtMousePosition()
+    {
+        var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        var hit = Physics2D.Raycast(ray.origin, ray.direction, Mathf.Infinity, sushiLayer);
+
+        if (hit.collider != null)
+        {
+            return hit.collider.GetComponent<Sushi>();
+        }
+
+        return null;
+    }
+
     private Plate GetPlateAtMousePosition()
     {
         var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-        var hit = Physics2D.Raycast(ray.origin, ray.direction);
+        var hit = Physics2D.Raycast(ray.origin, ray.direction, Mathf.Infinity, plateLayer);
 
         if (hit.collider != null)
         {
             return hit.collider.GetComponent<Plate>();
         }
 
+        return null;
+    }
+
+    private Plate GetPlateContainingSushi(Sushi sushi)
+    {
+        var plates = plateManager.GetAllPlates();
+        foreach (var plate in plates)
+        {
+            if (plate.gameObject.activeSelf && plate.ContainsSushi(sushi))
+            {
+                return plate;
+            }
+        }
         return null;
     }
 }

@@ -16,10 +16,10 @@ public class LevelGenerator
     private void GenerateSushiPool()
     {
         allSushiTypes = new List<int>();
-        
+
         int sushiPerType = Mathf.CeilToInt((float)levelData.totalSushiCount / levelData.sushiTypeCount / 3) * 3;
-        
-        for (int typeId = 0; typeId < levelData.sushiTypeCount; typeId++)
+
+        for (int typeId = 1; typeId <= levelData.sushiTypeCount; typeId++)
         {
             for (int i = 0; i < sushiPerType; i++)
             {
@@ -29,7 +29,14 @@ public class LevelGenerator
 
         while (allSushiTypes.Count > levelData.totalSushiCount)
         {
-            allSushiTypes.RemoveAt(allSushiTypes.Count - 1);
+            for (int typeId = levelData.sushiTypeCount; typeId >= 1 && allSushiTypes.Count > levelData.totalSushiCount; typeId--)
+            {
+                int lastIndex = allSushiTypes.LastIndexOf(typeId);
+                if (lastIndex >= 0)
+                {
+                    allSushiTypes.RemoveAt(lastIndex);
+                }
+            }
         }
 
         Shuffle(allSushiTypes);
@@ -45,7 +52,7 @@ public class LevelGenerator
         for (int i = 0; i < levelData.plateCount; i++)
         {
             var plateData = new PlateData();
-            
+
             int activeCount = Random.Range(1, 4);
             plateData.ActiveTypes = new List<int>();
             for (int j = 0; j < activeCount && index < allSushiTypes.Count; j++)
