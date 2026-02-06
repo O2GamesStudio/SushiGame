@@ -27,16 +27,12 @@ public class PlateUI : MonoBehaviour
         if (nextLayer == null) return;
 
         var types = nextLayer.GetAllTypes();
-        var availableSlots = Enumerable.Range(0, 3).ToList();
+        var slotIndices = nextLayer.SlotIndices;
 
         for (int i = 0; i < types.Count; i++)
         {
-            int randomIndex = Random.Range(0, availableSlots.Count);
-            int slotIndex = availableSlots[randomIndex];
-            availableSlots.RemoveAt(randomIndex);
-
             var icon = Instantiate(nextLayerIconPrefab, nextLayerContainer);
-            icon.transform.localPosition = slotPositions[slotIndex];
+            icon.transform.localPosition = slotPositions[slotIndices[i]];
             icon.transform.localScale = Vector3.one * 0.5f;
 
             var spriteRenderer = icon.GetComponent<SpriteRenderer>();

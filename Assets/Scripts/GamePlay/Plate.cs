@@ -131,10 +131,15 @@ public class Plate : MonoBehaviour
             var nextLayer = layerQueue.Dequeue();
             var types = nextLayer.GetAllTypes();
 
-            for (int i = 0; i < types.Count; i++)
+            int typeIndex = 0;
+            for (int i = 0; i < 3 && typeIndex < types.Count; i++)
             {
-                var sushi = SushiPool.Instance.Get(types[i]);
-                activeSushis[i] = sushi;
+                if (activeSushis[i] == null)
+                {
+                    var sushi = SushiPool.Instance.Get(types[typeIndex]);
+                    activeSushis[i] = sushi;
+                    typeIndex++;
+                }
             }
         }
     }
