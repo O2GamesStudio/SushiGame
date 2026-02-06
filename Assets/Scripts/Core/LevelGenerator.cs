@@ -17,25 +17,22 @@ public class LevelGenerator
     {
         allSushiTypes = new List<int>();
 
-        int sushiPerType = Mathf.CeilToInt((float)levelData.totalSushiCount / levelData.sushiTypeCount / 3) * 3;
+        int sushisPerType = (levelData.totalSushiCount / levelData.sushiTypeCount / 3) * 3;
+        int remainingSushis = levelData.totalSushiCount - (sushisPerType * levelData.sushiTypeCount);
+        remainingSushis = (remainingSushis / 3) * 3;
 
         for (int typeId = 1; typeId <= levelData.sushiTypeCount; typeId++)
         {
-            for (int i = 0; i < sushiPerType; i++)
+            int count = sushisPerType;
+
+            if (typeId == 1 && remainingSushis > 0)
+            {
+                count += remainingSushis;
+            }
+
+            for (int i = 0; i < count; i++)
             {
                 allSushiTypes.Add(typeId);
-            }
-        }
-
-        while (allSushiTypes.Count > levelData.totalSushiCount)
-        {
-            for (int typeId = levelData.sushiTypeCount; typeId >= 1 && allSushiTypes.Count > levelData.totalSushiCount; typeId--)
-            {
-                int lastIndex = allSushiTypes.LastIndexOf(typeId);
-                if (lastIndex >= 0)
-                {
-                    allSushiTypes.RemoveAt(lastIndex);
-                }
             }
         }
 
