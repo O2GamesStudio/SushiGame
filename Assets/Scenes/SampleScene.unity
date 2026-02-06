@@ -956,7 +956,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2467345096723124866, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_Name
-      value: PlatePrefab08
+      value: PlatePrefab10
       objectReference: {fileID: 0}
     - target: {fileID: 4966632700461557156, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2056,7 +2056,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2467345096723124866, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_Name
-      value: PlatePrefab07
+      value: PlatePrefab09
       objectReference: {fileID: 0}
     - target: {fileID: 4966632700461557156, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_LocalPosition.x
@@ -2540,7 +2540,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2467345096723124866, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_Name
-      value: PlatePrefab09
+      value: PlatePrefab11
       objectReference: {fileID: 0}
     - target: {fileID: 4966632700461557156, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_LocalPosition.x

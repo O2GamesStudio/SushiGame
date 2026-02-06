@@ -7,17 +7,28 @@ public class PlateManager : MonoBehaviour
 
     public void Initialize(List<PlateData> plateDataList)
     {
+        var plateIndices = new List<int>();
         for (int i = 0; i < plates.Count; i++)
         {
-            if (i < plateDataList.Count)
-            {
-                plates[i].gameObject.SetActive(true);
-                plates[i].Initialize(plateDataList[i].ActiveTypes, plateDataList[i].Layers);
-            }
-            else
-            {
-                plates[i].gameObject.SetActive(false);
-            }
+            plateIndices.Add(i);
+        }
+
+        for (int i = plateIndices.Count - 1; i > 0; i--)
+        {
+            int j = Random.Range(0, i + 1);
+            (plateIndices[i], plateIndices[j]) = (plateIndices[j], plateIndices[i]);
+        }
+
+        for (int i = 0; i < plates.Count; i++)
+        {
+            plates[i].gameObject.SetActive(false);
+        }
+
+        for (int i = 0; i < plateDataList.Count; i++)
+        {
+            int plateIndex = plateIndices[i];
+            plates[plateIndex].gameObject.SetActive(true);
+            plates[plateIndex].Initialize(plateDataList[i].ActiveTypes, plateDataList[i].Layers);
         }
     }
 
@@ -26,13 +37,14 @@ public class PlateManager : MonoBehaviour
         return from.ActiveCount > 0 && !to.IsFull;
     }
 
-    public void MoveSushi(Plate from, Plate to, Sushi sushi)
+    public void MoveSushi(Plate from, Plate to, Sushi sushi, Vector3 dropPosition)
     {
         if (!CanMoveSushi(from, to)) return;
 
         if (from.RemoveSpecificSushi(sushi))
         {
-            to.AddSushi(sushi);
+            int preferredSlot = to.GetClosestEmptySlot(dropPosition);
+            to.AddSushi(sushi, preferredSlot);
         }
     }
 

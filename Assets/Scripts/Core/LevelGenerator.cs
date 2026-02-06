@@ -56,6 +56,12 @@ public class LevelGenerator
             {
                 plateData.ActiveTypes.Add(allSushiTypes[index++]);
             }
+
+            if (HasSameThree(plateData.ActiveTypes))
+            {
+                FixSameThree(plateData.ActiveTypes, ref index);
+            }
+
             usedSlots += activeCount;
 
             int layerCount = Random.Range(levelData.minLayersPerPlate, levelData.maxLayersPerPlate + 1);
@@ -71,13 +77,9 @@ public class LevelGenerator
                     layerTypes.Add(allSushiTypes[index++]);
                 }
 
-                if (layerTypes.Count == 3 && layerTypes[0] == layerTypes[1] && layerTypes[1] == layerTypes[2])
+                if (HasSameThree(layerTypes))
                 {
-                    int swapIdx = Random.Range(0, allSushiTypes.Count - index);
-                    if (swapIdx + index < allSushiTypes.Count)
-                    {
-                        (layerTypes[2], allSushiTypes[index + swapIdx]) = (allSushiTypes[index + swapIdx], layerTypes[2]);
-                    }
+                    FixSameThree(layerTypes, ref index);
                 }
 
                 usedSlots += layerTypes.Count;
@@ -90,6 +92,39 @@ public class LevelGenerator
         int freeSpace = totalCapacity - usedSlots;
 
         return plates;
+    }
+
+    private bool HasSameThree(List<int> types)
+    {
+        if (types.Count != 3) return false;
+        return types[0] == types[1] && types[1] == types[2];
+    }
+
+    private void FixSameThree(List<int> types, ref int currentIndex)
+    {
+        if (currentIndex >= allSushiTypes.Count) return;
+
+        int swapTarget = types[2];
+
+        for (int i = currentIndex; i < allSushiTypes.Count; i++)
+        {
+            if (allSushiTypes[i] != types[0])
+            {
+                types[2] = allSushiTypes[i];
+                allSushiTypes[i] = swapTarget;
+                return;
+            }
+        }
+
+        for (int i = 0; i < currentIndex; i++)
+        {
+            if (allSushiTypes[i] != types[0])
+            {
+                types[2] = allSushiTypes[i];
+                allSushiTypes[i] = swapTarget;
+                return;
+            }
+        }
     }
 
     private void Shuffle<T>(List<T> list)

@@ -42,16 +42,23 @@ public class Plate : MonoBehaviour
         UpdateVisuals();
     }
 
-    public void AddSushi(Sushi sushi)
+    public void AddSushi(Sushi sushi, int preferredSlot = -1)
     {
         if (IsFull) return;
 
-        for (int i = 0; i < 3; i++)
+        if (preferredSlot >= 0 && preferredSlot < 3 && activeSushis[preferredSlot] == null)
         {
-            if (activeSushis[i] == null)
+            activeSushis[preferredSlot] = sushi;
+        }
+        else
+        {
+            for (int i = 0; i < 3; i++)
             {
-                activeSushis[i] = sushi;
-                break;
+                if (activeSushis[i] == null)
+                {
+                    activeSushis[i] = sushi;
+                    break;
+                }
             }
         }
 
@@ -77,6 +84,27 @@ public class Plate : MonoBehaviour
     public bool ContainsSushi(Sushi sushi)
     {
         return activeSushis.Contains(sushi);
+    }
+
+    public int GetClosestEmptySlot(Vector3 worldPosition)
+    {
+        int closestSlot = -1;
+        float minDistance = float.MaxValue;
+
+        for (int i = 0; i < 3; i++)
+        {
+            if (activeSushis[i] == null)
+            {
+                float distance = Vector3.Distance(sushiSlots[i].position, worldPosition);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    closestSlot = i;
+                }
+            }
+        }
+
+        return closestSlot;
     }
 
     private void CheckMerge()

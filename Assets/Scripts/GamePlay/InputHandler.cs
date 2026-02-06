@@ -52,12 +52,13 @@ public class InputHandler : MonoBehaviour
     private void OnMouseUp()
     {
         var targetPlate = GetPlateAtMousePosition();
+        var dropPosition = draggedSushi.transform.position;
 
         if (targetPlate != null && targetPlate != selectedPlate)
         {
             if (plateManager.CanMoveSushi(selectedPlate, targetPlate))
             {
-                plateManager.MoveSushi(selectedPlate, targetPlate, draggedSushi);
+                plateManager.MoveSushi(selectedPlate, targetPlate, draggedSushi, dropPosition);
             }
             else
             {
