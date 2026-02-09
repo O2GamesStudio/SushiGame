@@ -42,27 +42,37 @@ public class LevelGenerator
     public List<PlateData> GeneratePlates()
     {
         var plates = new List<PlateData>();
-        int totalCapacity = levelData.plateCount * 3;
-        int usedSlots = 0;
+
+        var guaranteedSushis = GenerateGuaranteedSushis();
+
         int index = 0;
+        for (int i = 0; i < guaranteedSushis.Count; i++)
+        {
+            index += guaranteedSushis[i].Count;
+        }
 
         for (int i = 0; i < levelData.plateCount; i++)
         {
             var plateData = new PlateData();
 
-            int activeCount = Random.Range(1, 4);
-            plateData.ActiveTypes = new List<int>();
-            for (int j = 0; j < activeCount && index < allSushiTypes.Count; j++)
+            if (i < guaranteedSushis.Count)
             {
-                plateData.ActiveTypes.Add(allSushiTypes[index++]);
+                plateData.ActiveTypes = guaranteedSushis[i];
             }
-
-            if (HasSameThree(plateData.ActiveTypes))
+            else
             {
-                FixSameThree(plateData.ActiveTypes, ref index);
-            }
+                int activeCount = Random.Range(1, 4);
+                plateData.ActiveTypes = new List<int>();
+                for (int j = 0; j < activeCount && index < allSushiTypes.Count; j++)
+                {
+                    plateData.ActiveTypes.Add(allSushiTypes[index++]);
+                }
 
-            usedSlots += activeCount;
+                if (HasSameThree(plateData.ActiveTypes))
+                {
+                    FixSameThree(plateData.ActiveTypes, ref index);
+                }
+            }
 
             int layerCount = Random.Range(levelData.minLayersPerPlate, levelData.maxLayersPerPlate + 1);
             plateData.Layers = new List<Layer>();
@@ -82,16 +92,63 @@ public class LevelGenerator
                     FixSameThree(layerTypes, ref index);
                 }
 
-                usedSlots += layerTypes.Count;
                 plateData.Layers.Add(new Layer(layerTypes));
             }
 
             plates.Add(plateData);
         }
 
-        int freeSpace = totalCapacity - usedSlots;
-
         return plates;
+    }
+
+    private List<List<int>> GenerateGuaranteedSushis()
+    {
+        var result = new List<List<int>>();
+        var usedTypes = new HashSet<int>();
+
+        for (int set = 0; set < levelData.guaranteedMergeSets; set++)
+        {
+            int typeId = -1;
+            for (int i = 1; i <= levelData.sushiTypeCount; i++)
+            {
+                if (!usedTypes.Contains(i))
+                {
+                    typeId = i;
+                    usedTypes.Add(i);
+                    break;
+                }
+            }
+
+            if (typeId == -1) break;
+
+            var distribution = new List<int>();
+            int remaining = 3;
+
+            while (remaining > 0)
+            {
+                int count = Random.Range(1, Mathf.Min(3, remaining + 1));
+                distribution.Add(count);
+                remaining -= count;
+            }
+
+            foreach (var count in distribution)
+            {
+                var plateTypes = new List<int>();
+                for (int i = 0; i < count; i++)
+                {
+                    plateTypes.Add(typeId);
+                }
+                result.Add(plateTypes);
+            }
+        }
+
+        for (int i = result.Count - 1; i > 0; i--)
+        {
+            int j = Random.Range(0, i + 1);
+            (result[i], result[j]) = (result[j], result[i]);
+        }
+
+        return result;
     }
 
     private bool HasSameThree(List<int> types)
