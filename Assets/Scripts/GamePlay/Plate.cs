@@ -69,6 +69,28 @@ public class Plate : MonoBehaviour
         }
         UpdateVisuals();
     }
+    public int GetClosestSlotIncludingCurrent(Vector3 worldPosition, Sushi currentSushi)
+    {
+        if (IsLocked) return -1;
+
+        int closestSlot = -1;
+        float minDistance = float.MaxValue;
+
+        for (int i = 0; i < 3; i++)
+        {
+            if (activeSushis[i] == null || activeSushis[i] == currentSushi)
+            {
+                float distance = Vector3.Distance(sushiSlots[i].position, worldPosition);
+                if (distance < minDistance)
+                {
+                    minDistance = distance;
+                    closestSlot = i;
+                }
+            }
+        }
+
+        return closestSlot;
+    }
 
 
     public void SetState(PlateState newState, int sushiTypeId = -1)

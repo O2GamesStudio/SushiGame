@@ -82,7 +82,7 @@ public class InputHandler : MonoBehaviour
         {
             if (targetPlate == selectedPlate)
             {
-                int closestSlot = targetPlate.GetClosestEmptySlot(dropPosition);
+                int closestSlot = targetPlate.GetClosestSlotIncludingCurrent(dropPosition, draggedSushi);
                 if (closestSlot >= 0)
                 {
                     if (selectedPlate.MoveSushiWithinPlate(draggedSushi, closestSlot))
