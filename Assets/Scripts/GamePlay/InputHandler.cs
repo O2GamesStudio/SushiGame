@@ -11,6 +11,8 @@ public class InputHandler : MonoBehaviour
     private Plate selectedPlate;
     private Sushi draggedSushi;
     private Vector3 originalPosition;
+    private SpriteRenderer draggedSushiRenderer;
+    private int originalSortingOrder;
 
     private void Update()
     {
@@ -38,6 +40,15 @@ public class InputHandler : MonoBehaviour
             {
                 draggedSushi = sushi;
                 originalPosition = draggedSushi.transform.position;
+
+                draggedSushiRenderer = draggedSushi.GetComponent<SpriteRenderer>();
+                if (draggedSushiRenderer != null)
+                {
+                    originalSortingOrder = draggedSushiRenderer.sortingOrder;
+                    draggedSushiRenderer.sortingOrder = 100;
+                }
+
+                draggedSushi.SetDragState(true);
             }
         }
     }
@@ -48,7 +59,6 @@ public class InputHandler : MonoBehaviour
         worldPos.z = -1;
         draggedSushi.transform.position = worldPos;
     }
-
     private void OnMouseUp()
     {
         var targetPlate = GetPlateAtMousePosition();
@@ -59,6 +69,8 @@ public class InputHandler : MonoBehaviour
             if (plateManager.CanMoveSushi(selectedPlate, targetPlate))
             {
                 plateManager.MoveSushi(selectedPlate, targetPlate, draggedSushi, dropPosition);
+                RestoreSortingOrder();
+                draggedSushi.SetDragState(false);
             }
             else
             {
@@ -72,11 +84,22 @@ public class InputHandler : MonoBehaviour
 
         draggedSushi = null;
         selectedPlate = null;
+        draggedSushiRenderer = null;
     }
 
     private void ReturnToOriginalPosition()
     {
         draggedSushi.transform.DOMove(originalPosition, 0.2f).SetEase(Ease.OutQuad);
+        draggedSushi.SetDragState(false);
+        RestoreSortingOrder();
+    }
+
+    private void RestoreSortingOrder()
+    {
+        if (draggedSushiRenderer != null)
+        {
+            draggedSushiRenderer.sortingOrder = originalSortingOrder;
+        }
     }
 
     private Sushi GetSushiAtMousePosition()

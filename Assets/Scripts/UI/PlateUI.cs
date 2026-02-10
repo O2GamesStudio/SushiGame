@@ -18,19 +18,6 @@ public class PlateUI : MonoBehaviour
 
     private List<GameObject> nextLayerIcons = new List<GameObject>();
     private List<SpriteRenderer> reservePlateRenderers = new List<SpriteRenderer>();
-    private Layer cachedNextLayer;
-    private int cachedLayerCount;
-
-#if UNITY_EDITOR
-    private void Update()
-    {
-        if (!Application.isPlaying)
-        {
-            UpdateNextLayerDisplay(cachedNextLayer);
-            UpdateReservePlates(cachedLayerCount);
-        }
-    }
-#endif
 
     private void OnDestroy()
     {
@@ -39,8 +26,6 @@ public class PlateUI : MonoBehaviour
 
     public void UpdateNextLayerDisplay(Layer nextLayer)
     {
-        cachedNextLayer = nextLayer;
-
         foreach (var icon in nextLayerIcons)
         {
             if (icon != null)
@@ -76,8 +61,6 @@ public class PlateUI : MonoBehaviour
 
     public void UpdateReservePlates(int layerCount)
     {
-        cachedLayerCount = layerCount;
-
         if (reservePlateSprite == null) return;
 
         while (reservePlateRenderers.Count < layerCount)
