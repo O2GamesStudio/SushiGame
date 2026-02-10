@@ -18,3 +18,4 @@ MonoBehaviour:
   minLayersPerPlate: 1
   maxLayersPerPlate: 5
   timeLimitSeconds: 300
+  guaranteedMergeSets: 2

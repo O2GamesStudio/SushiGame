@@ -1,15 +1,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using DG.Tweening;
 
 [RequireComponent(typeof(BoxCollider2D))]
 public class Plate : MonoBehaviour
 {
     [SerializeField] private Transform[] sushiSlots = new Transform[3];
+    [Header("Refill Animation")]
+    [SerializeField] private float refillDuration = 0.5f;
+    [SerializeField] private float refillStartOffsetY = 2f;
 
     private List<Sushi> activeSushis = new List<Sushi>(3) { null, null, null };
     private Queue<Layer> layerQueue = new Queue<Layer>();
     private PlateUI plateUI;
+    private HashSet<Sushi> animatingSushis = new HashSet<Sushi>();
 
     public int ActiveCount => activeSushis.Count(s => s != null);
     public int LayerCount => layerQueue.Count;
@@ -135,7 +140,8 @@ public class Plate : MonoBehaviour
 
         RefillFromNextLayer();
 
-        UpdateVisuals();
+        plateUI?.UpdateNextLayerDisplay(CurrentNextLayer);
+        plateUI?.UpdateReservePlates(LayerCount);
 
         if (IsEmpty)
         {
@@ -148,7 +154,8 @@ public class Plate : MonoBehaviour
         if (ActiveCount == 0 && LayerCount > 0)
         {
             RefillFromNextLayer();
-            UpdateVisuals();
+            plateUI?.UpdateNextLayerDisplay(CurrentNextLayer);
+            plateUI?.UpdateReservePlates(LayerCount);
         }
     }
 
@@ -164,6 +171,22 @@ public class Plate : MonoBehaviour
             {
                 var sushi = SushiPool.Instance.Get(types[i]);
                 activeSushis[slotIndices[i]] = sushi;
+
+                sushi.transform.SetParent(sushiSlots[slotIndices[i]]);
+
+                Vector3 targetPos = sushiSlots[slotIndices[i]].position;
+                Vector3 startPos = targetPos + Vector3.down * refillStartOffsetY;
+                sushi.transform.position = startPos;
+                sushi.transform.localScale = Vector3.one * 0.5f;
+
+                animatingSushis.Add(sushi);
+
+                sushi.transform.DOMove(targetPos, refillDuration)
+                    .SetEase(Ease.OutBack)
+                    .OnComplete(() => animatingSushis.Remove(sushi));
+
+                sushi.transform.DOScale(Vector3.one, refillDuration)
+                    .SetEase(Ease.OutBack);
             }
         }
     }
@@ -172,7 +195,7 @@ public class Plate : MonoBehaviour
     {
         for (int i = 0; i < 3; i++)
         {
-            if (activeSushis[i] != null)
+            if (activeSushis[i] != null && !animatingSushis.Contains(activeSushis[i]))
             {
                 var sushi = activeSushis[i];
                 sushi.transform.SetParent(sushiSlots[i]);
@@ -183,5 +206,6 @@ public class Plate : MonoBehaviour
         }
 
         plateUI?.UpdateNextLayerDisplay(CurrentNextLayer);
+        plateUI?.UpdateReservePlates(LayerCount);
     }
 }

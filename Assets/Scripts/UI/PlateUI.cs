@@ -1,26 +1,52 @@
 using UnityEngine;
 using System.Collections.Generic;
-using System.Linq;
 
 public class PlateUI : MonoBehaviour
 {
     [SerializeField] private Transform nextLayerContainer;
     [SerializeField] private GameObject nextLayerIconPrefab;
 
-    private readonly Vector3[] slotPositions = new Vector3[]
-    {
-        new Vector3(-0.6f, -1.5f, 0),
-        new Vector3(0f, -1.5f, 0),
-        new Vector3(0.6f, -1.5f, 0)
-    };
+    [Header("Next Layer Icons")]
+    [SerializeField] private float nextLayerIconYOffset = -1.2f;
+    [SerializeField] private float nextLayerIconSpacing = 0.6f;
+    [SerializeField] private float nextLayerIconScale = 0.5f;
+
+    [Header("Reserve Plate Visuals")]
+    [SerializeField] private Sprite reservePlateSprite;
+    [SerializeField] private float reservePlateSpacing = 0.05f;
+    [SerializeField] private Vector3 reservePlateStartOffset = new Vector3(0, -1.3f, 0);
 
     private List<GameObject> nextLayerIcons = new List<GameObject>();
+    private List<SpriteRenderer> reservePlateRenderers = new List<SpriteRenderer>();
+    private Layer cachedNextLayer;
+    private int cachedLayerCount;
+
+#if UNITY_EDITOR
+    private void Update()
+    {
+        if (!Application.isPlaying)
+        {
+            UpdateNextLayerDisplay(cachedNextLayer);
+            UpdateReservePlates(cachedLayerCount);
+        }
+    }
+#endif
+
+    private void OnDestroy()
+    {
+        ClearReservePlates();
+    }
 
     public void UpdateNextLayerDisplay(Layer nextLayer)
     {
+        cachedNextLayer = nextLayer;
+
         foreach (var icon in nextLayerIcons)
         {
-            Destroy(icon);
+            if (icon != null)
+            {
+                Destroy(icon);
+            }
         }
         nextLayerIcons.Clear();
 
@@ -32,8 +58,10 @@ public class PlateUI : MonoBehaviour
         for (int i = 0; i < types.Count; i++)
         {
             var icon = Instantiate(nextLayerIconPrefab, nextLayerContainer);
-            icon.transform.localPosition = slotPositions[slotIndices[i]];
-            icon.transform.localScale = Vector3.one * 0.5f;
+
+            float xPos = (slotIndices[i] - 1) * nextLayerIconSpacing;
+            icon.transform.localPosition = new Vector3(xPos, nextLayerIconYOffset, 0);
+            icon.transform.localScale = Vector3.one * nextLayerIconScale;
 
             var spriteRenderer = icon.GetComponent<SpriteRenderer>();
             var data = SushiPool.Instance.GetData(types[i]);
@@ -44,5 +72,56 @@ public class PlateUI : MonoBehaviour
 
             nextLayerIcons.Add(icon);
         }
+    }
+
+    public void UpdateReservePlates(int layerCount)
+    {
+        cachedLayerCount = layerCount;
+
+        if (reservePlateSprite == null) return;
+
+        while (reservePlateRenderers.Count < layerCount)
+        {
+            var plateObj = new GameObject($"ReservePlate_{reservePlateRenderers.Count}");
+            plateObj.transform.SetParent(transform);
+
+            var renderer = plateObj.AddComponent<SpriteRenderer>();
+            renderer.sprite = reservePlateSprite;
+            renderer.sortingLayerName = "Plate";
+            renderer.sortingOrder = -1 - reservePlateRenderers.Count;
+
+            reservePlateRenderers.Add(renderer);
+        }
+
+        while (reservePlateRenderers.Count > layerCount)
+        {
+            int lastIndex = reservePlateRenderers.Count - 1;
+            if (reservePlateRenderers[lastIndex] != null)
+            {
+                Destroy(reservePlateRenderers[lastIndex].gameObject);
+            }
+            reservePlateRenderers.RemoveAt(lastIndex);
+        }
+
+        for (int i = 0; i < reservePlateRenderers.Count; i++)
+        {
+            if (reservePlateRenderers[i] != null)
+            {
+                Vector3 position = transform.position + reservePlateStartOffset + Vector3.down * (i * reservePlateSpacing);
+                reservePlateRenderers[i].transform.position = position;
+            }
+        }
+    }
+
+    private void ClearReservePlates()
+    {
+        foreach (var renderer in reservePlateRenderers)
+        {
+            if (renderer != null && renderer.gameObject != null)
+            {
+                Destroy(renderer.gameObject);
+            }
+        }
+        reservePlateRenderers.Clear();
     }
 }

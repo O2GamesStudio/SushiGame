@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: Sushi07
   m_EditorClassIdentifier: Assembly-CSharp::SushiData
   id: 7
-  sprite: {fileID: 21300000, guid: d1f04310c9289ac4aa319955211075ae, type: 3}
+  sprite: {fileID: 21300000, guid: 07dc5a1b0f4a87f4ab38bd6ac022df71, type: 3}
