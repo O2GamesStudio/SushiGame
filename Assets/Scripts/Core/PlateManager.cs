@@ -29,12 +29,21 @@ public class PlateManager : MonoBehaviour
             int plateIndex = plateIndices[i];
             plates[plateIndex].gameObject.SetActive(true);
             plates[plateIndex].Initialize(plateDataList[i].ActiveTypes, plateDataList[i].Layers);
+
+            if (plateDataList[i].State != PlateState.Normal)
+            {
+                PlateUnlockSystem.Instance?.RegisterLockedPlate(
+                    plates[plateIndex],
+                    plateDataList[i].State,
+                    plateDataList[i].RequiredSushiTypeId
+                );
+            }
         }
     }
 
     public bool CanMoveSushi(Plate from, Plate to)
     {
-        return from.ActiveCount > 0 && !to.IsFull;
+        return from.ActiveCount > 0 && !to.IsFull && !from.IsLocked && !to.IsLocked;
     }
 
     public void MoveSushi(Plate from, Plate to, Sushi sushi, Vector3 dropPosition)

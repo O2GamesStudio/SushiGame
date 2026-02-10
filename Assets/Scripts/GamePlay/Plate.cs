@@ -3,10 +3,22 @@ using System.Linq;
 using UnityEngine;
 using DG.Tweening;
 
+public enum PlateState
+{
+    Normal,
+    LockedAd,
+    LockedSushi
+}
+
 [RequireComponent(typeof(BoxCollider2D))]
 public class Plate : MonoBehaviour
 {
     [SerializeField] private Transform[] sushiSlots = new Transform[3];
+
+    [Header("Plate State")]
+    [SerializeField] private PlateState plateState = PlateState.Normal;
+    [SerializeField] private int requiredSushiTypeId = -1;
+
     [Header("Refill Animation")]
     [SerializeField] private float refillDuration = 0.5f;
     [SerializeField] private float refillStartOffsetY = 2f;
@@ -21,6 +33,9 @@ public class Plate : MonoBehaviour
     public bool IsFull => ActiveCount >= 3;
     public bool IsEmpty => ActiveCount == 0 && LayerCount == 0;
     public Layer CurrentNextLayer => layerQueue.Count > 0 ? layerQueue.Peek() : null;
+    public PlateState State => plateState;
+    public bool IsLocked => plateState != PlateState.Normal;
+    public int RequiredSushiTypeId => requiredSushiTypeId;
 
     private void Awake()
     {
@@ -47,9 +62,53 @@ public class Plate : MonoBehaviour
         UpdateVisuals();
     }
 
+    public void SetState(PlateState newState, int sushiTypeId = -1)
+    {
+        plateState = newState;
+        requiredSushiTypeId = sushiTypeId;
+        plateUI?.UpdateLockState(plateState, sushiTypeId);
+        UpdateSushiVisibility();
+    }
+    public void Unlock()
+    {
+        plateState = PlateState.Normal;
+        plateUI?.UpdateLockState(plateState, -1);
+        UpdateSushiVisibility();
+    }
+
+    private void UpdateSushiVisibility()
+    {
+        bool shouldHide = IsLocked;
+
+        for (int i = 0; i < 3; i++)
+        {
+            if (activeSushis[i] != null)
+            {
+                activeSushis[i].gameObject.SetActive(!shouldHide);
+            }
+        }
+    }
+    public bool MoveSushiWithinPlate(Sushi sushi, int targetSlot)
+    {
+        if (IsLocked || targetSlot < 0 || targetSlot >= 3) return false;
+        if (activeSushis[targetSlot] != null) return false;
+
+        for (int i = 0; i < 3; i++)
+        {
+            if (activeSushis[i] == sushi)
+            {
+                activeSushis[i] = null;
+                activeSushis[targetSlot] = sushi;
+                UpdateVisuals();
+                return true;
+            }
+        }
+
+        return false;
+    }
     public void AddSushi(Sushi sushi, int preferredSlot = -1)
     {
-        if (IsFull) return;
+        if (IsFull || IsLocked) return;
 
         if (preferredSlot >= 0 && preferredSlot < 3 && activeSushis[preferredSlot] == null)
         {
@@ -73,6 +132,8 @@ public class Plate : MonoBehaviour
 
     public bool RemoveSpecificSushi(Sushi sushi)
     {
+        if (IsLocked) return false;
+
         for (int i = 0; i < 3; i++)
         {
             if (activeSushis[i] == sushi)
@@ -93,6 +154,8 @@ public class Plate : MonoBehaviour
 
     public int GetClosestEmptySlot(Vector3 worldPosition)
     {
+        if (IsLocked) return -1;
+
         int closestSlot = -1;
         float minDistance = float.MaxValue;
 
@@ -112,6 +175,11 @@ public class Plate : MonoBehaviour
         return closestSlot;
     }
 
+    public List<Sushi> GetActiveSushis()
+    {
+        return activeSushis.Where(s => s != null).ToList();
+    }
+
     private void CheckMerge()
     {
         if (ActiveCount != 3) return;
@@ -122,11 +190,11 @@ public class Plate : MonoBehaviour
             nonNullSushis[0].TypeId == nonNullSushis[1].TypeId &&
             nonNullSushis[1].TypeId == nonNullSushis[2].TypeId)
         {
-            ExecuteMerge();
+            ExecuteMerge(nonNullSushis[0].TypeId);
         }
     }
 
-    private void ExecuteMerge()
+    private void ExecuteMerge(int mergedTypeId)
     {
         foreach (var sushi in activeSushis)
         {
@@ -137,6 +205,8 @@ public class Plate : MonoBehaviour
         }
 
         activeSushis = new List<Sushi>(3) { null, null, null };
+
+        PlateUnlockSystem.Instance?.OnSushiMerged(mergedTypeId);
 
         RefillFromNextLayer();
 
@@ -190,10 +260,6 @@ public class Plate : MonoBehaviour
             }
         }
     }
-    public List<Sushi> GetActiveSushis()
-    {
-        return activeSushis.Where(s => s != null).ToList();
-    }
 
     private void UpdateVisuals()
     {
@@ -206,6 +272,7 @@ public class Plate : MonoBehaviour
                 sushi.transform.position = sushiSlots[i].position;
                 sushi.transform.localPosition = new Vector3(0, 0, -1);
                 sushi.transform.localScale = Vector3.one;
+                sushi.gameObject.SetActive(!IsLocked);
             }
         }
 

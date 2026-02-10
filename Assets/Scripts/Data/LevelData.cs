@@ -10,4 +10,8 @@ public class LevelData : ScriptableObject
     public int maxLayersPerPlate = 3;
     public float timeLimitSeconds = 300f;
     public int guaranteedMergeSets = 2;
+
+    [Header("Locked Plates")]
+    public int lockedPlateCount = 0;
+    public int mergeUnlockCount = 0;
 }

@@ -16,6 +16,13 @@ public class PlateUI : MonoBehaviour
     [SerializeField] private float reservePlateSpacing = 0.05f;
     [SerializeField] private Vector3 reservePlateStartOffset = new Vector3(0, -1.3f, 0);
 
+    [Header("Lock Visuals")]
+    [SerializeField] private SpriteRenderer plateSpriteRenderer;
+    [SerializeField] private Sprite normalPlateSprite;
+    [SerializeField] private Sprite lockedPlateSprite;
+    [SerializeField] private GameObject requiredSushiIcon;
+    [SerializeField] private GameObject adIcon;
+
     private List<GameObject> nextLayerIcons = new List<GameObject>();
     private List<SpriteRenderer> reservePlateRenderers = new List<SpriteRenderer>();
 
@@ -24,16 +31,70 @@ public class PlateUI : MonoBehaviour
         ClearReservePlates();
     }
 
-    public void UpdateNextLayerDisplay(Layer nextLayer)
+    public void UpdateLockState(PlateState state, int requiredSushiTypeId)
     {
-        foreach (var icon in nextLayerIcons)
+        bool isLocked = state != PlateState.Normal;
+
+        if (plateSpriteRenderer != null)
         {
-            if (icon != null)
+            plateSpriteRenderer.sprite = isLocked ? lockedPlateSprite : normalPlateSprite;
+        }
+
+        if (state == PlateState.LockedSushi && requiredSushiTypeId >= 0)
+        {
+            if (requiredSushiIcon != null)
             {
-                Destroy(icon);
+                requiredSushiIcon.SetActive(true);
+                var renderer = requiredSushiIcon.GetComponent<SpriteRenderer>();
+                if (renderer != null)
+                {
+                    var data = SushiPool.Instance.GetData(requiredSushiTypeId);
+                    if (data != null)
+                    {
+                        renderer.sprite = data.sprite;
+                    }
+                }
+            }
+
+            if (adIcon != null)
+            {
+                adIcon.SetActive(false);
             }
         }
-        nextLayerIcons.Clear();
+        else if (state == PlateState.LockedAd)
+        {
+            if (adIcon != null)
+            {
+                adIcon.SetActive(true);
+            }
+
+            if (requiredSushiIcon != null)
+            {
+                requiredSushiIcon.SetActive(false);
+            }
+        }
+        else
+        {
+            if (requiredSushiIcon != null)
+            {
+                requiredSushiIcon.SetActive(false);
+            }
+
+            if (adIcon != null)
+            {
+                adIcon.SetActive(false);
+            }
+        }
+
+        if (!isLocked)
+        {
+            ClearNextLayerDisplay();
+        }
+    }
+
+    public void UpdateNextLayerDisplay(Layer nextLayer)
+    {
+        ClearNextLayerDisplay();
 
         if (nextLayer == null) return;
 
@@ -57,6 +118,18 @@ public class PlateUI : MonoBehaviour
 
             nextLayerIcons.Add(icon);
         }
+    }
+
+    private void ClearNextLayerDisplay()
+    {
+        foreach (var icon in nextLayerIcons)
+        {
+            if (icon != null)
+            {
+                Destroy(icon);
+            }
+        }
+        nextLayerIcons.Clear();
     }
 
     public void UpdateReservePlates(int layerCount)

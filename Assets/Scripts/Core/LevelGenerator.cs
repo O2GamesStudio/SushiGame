@@ -98,7 +98,67 @@ public class LevelGenerator
             plates.Add(plateData);
         }
 
+        AssignLockedPlates(plates);
+
         return plates;
+    }
+
+    private void AssignLockedPlates(List<PlateData> plates)
+    {
+        if (levelData.lockedPlateCount <= 0) return;
+
+        var availableSushiTypes = GetAvailableSushiTypes(plates);
+
+        if (availableSushiTypes.Count == 0) return;
+
+        var platesToLock = new List<int>();
+        for (int i = 0; i < plates.Count; i++)
+        {
+            platesToLock.Add(i);
+        }
+        Shuffle(platesToLock);
+
+        int lockedCount = Mathf.Min(levelData.lockedPlateCount, platesToLock.Count);
+        int mergeUnlockCount = Mathf.Min(levelData.mergeUnlockCount, lockedCount);
+        int adUnlockCount = lockedCount - mergeUnlockCount;
+
+        for (int i = 0; i < mergeUnlockCount; i++)
+        {
+            int plateIndex = platesToLock[i];
+            int sushiType = availableSushiTypes[Random.Range(0, availableSushiTypes.Count)];
+
+            plates[plateIndex].State = PlateState.LockedSushi;
+            plates[plateIndex].RequiredSushiTypeId = sushiType;
+        }
+
+        for (int i = mergeUnlockCount; i < lockedCount; i++)
+        {
+            int plateIndex = platesToLock[i];
+            plates[plateIndex].State = PlateState.LockedAd;
+        }
+    }
+
+    private List<int> GetAvailableSushiTypes(List<PlateData> plates)
+    {
+        var sushiTypes = new HashSet<int>();
+
+        foreach (var plate in plates)
+        {
+            foreach (var typeId in plate.ActiveTypes)
+            {
+                sushiTypes.Add(typeId);
+            }
+
+            foreach (var layer in plate.Layers)
+            {
+                foreach (var typeId in layer.GetAllTypes())
+                {
+                    sushiTypes.Add(typeId);
+                }
+            }
+        }
+
+        return sushiTypes.ToList();
     }
 
     private List<List<int>> GenerateGuaranteedSushis()
@@ -198,4 +258,6 @@ public class PlateData
 {
     public List<int> ActiveTypes;
     public List<Layer> Layers;
+    public PlateState State = PlateState.Normal;
+    public int RequiredSushiTypeId = -1;
 }
