@@ -57,6 +57,7 @@ public class Plate : MonoBehaviour
         {
             var sushi = SushiPool.Instance.Get(typeId);
             activeSushis[index] = sushi;
+            sushi.SetCurrentPlate(this);
 
             if (activeLockStages != null && index < activeLockStages.Count && activeLockStages[index] > 0)
             {
@@ -66,7 +67,6 @@ public class Plate : MonoBehaviour
 
             index++;
         }
-
         UpdateVisuals();
     }
 
@@ -83,8 +83,8 @@ public class Plate : MonoBehaviour
         plateState = PlateState.Normal;
         plateUI?.UpdateLockState(plateState, -1);
         UpdateSushiVisibility();
+        UpdateVisuals();
     }
-
     private void UpdateSushiVisibility()
     {
         bool shouldHide = IsLocked;

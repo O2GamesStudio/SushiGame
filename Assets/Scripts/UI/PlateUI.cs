@@ -73,6 +73,8 @@ public class PlateUI : MonoBehaviour
             {
                 requiredSushiIcon.SetActive(false);
             }
+
+            ClearNextLayerDisplay();
         }
         else
         {
@@ -85,11 +87,6 @@ public class PlateUI : MonoBehaviour
             {
                 adIcon.SetActive(false);
             }
-        }
-
-        if (!isLocked)
-        {
-            ClearNextLayerDisplay();
         }
     }
 
