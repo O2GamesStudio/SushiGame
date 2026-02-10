@@ -1,7 +1,7 @@
 using UnityEngine;
 using DG.Tweening;
 
-[RequireComponent(typeof(SpriteRenderer), typeof(BoxCollider2D))]
+[RequireComponent(typeof(SpriteRenderer), typeof(PolygonCollider2D))]
 public class Sushi : MonoBehaviour
 {
     [SerializeField] private int typeId = -1;

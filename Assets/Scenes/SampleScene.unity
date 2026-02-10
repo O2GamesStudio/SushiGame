@@ -194,7 +194,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cbaad8846aca90645b02ff79f54c499f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HintSystem
-  plateManager: {fileID: 0}
+  plateManager: {fileID: 1624048182}
   hintDelay: 5
   shakeDuration: 0.5
   shakeStrength: 0.07
