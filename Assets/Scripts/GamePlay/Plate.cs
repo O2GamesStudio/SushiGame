@@ -190,6 +190,10 @@ public class Plate : MonoBehaviour
             }
         }
     }
+    public List<Sushi> GetActiveSushis()
+    {
+        return activeSushis.Where(s => s != null).ToList();
+    }
 
     private void UpdateVisuals()
     {

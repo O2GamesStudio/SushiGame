@@ -132,6 +132,7 @@ GameObject:
   - component: {fileID: 11404573}
   - component: {fileID: 11404572}
   - component: {fileID: 11404571}
+  - component: {fileID: 11404576}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -159,6 +160,7 @@ MonoBehaviour:
   plateLayer:
     serializedVersion: 2
     m_Bits: 64
+  hintSystem: {fileID: 11404576}
 --- !u!114 &11404572
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -226,6 +228,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &11404576
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 11404570}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cbaad8846aca90645b02ff79f54c499f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HintSystem
+  plateManager: {fileID: 11404572}
+  hintDelay: 5
+  shakeDuration: 0.5
+  shakeStrength: 0.07
+  shakeVibrato: 10
 --- !u!1 &39197459
 GameObject:
   m_ObjectHideFlags: 0

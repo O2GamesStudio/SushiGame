@@ -10,8 +10,8 @@ GameObject:
   m_Component:
   - component: {fileID: 4676256504289472530}
   - component: {fileID: 469188827989515974}
-  - component: {fileID: 4314214417603118190}
   - component: {fileID: 2823495874691246852}
+  - component: {fileID: 2827719654476203618}
   m_Layer: 7
   m_Name: SushiPrefab
   m_TagString: Untagged
@@ -93,8 +93,23 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!61 &4314214417603118190
-BoxCollider2D:
+--- !u!114 &2823495874691246852
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 921084539746202509}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 237dfb7ec4e7e8c4fb7f87915974f4b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Sushi
+  typeId: -1
+  dragScale: 1.2
+  outlineThickness: 0.05
+--- !u!60 &2827719654476203618
+PolygonCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -137,20 +152,26 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.6, y: 1.5}
-  m_EdgeRadius: 0
---- !u!114 &2823495874691246852
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 921084539746202509}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 237dfb7ec4e7e8c4fb7f87915974f4b3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Sushi
-  typeId: -1
-  dragScale: 1.2
-  outlineThickness: 0.05
+  m_Points:
+    m_Paths:
+    - - {x: 0.555, y: 0.11}
+      - {x: 0.49499997, y: 0.19}
+      - {x: 0.33499998, y: 0.32}
+      - {x: 0.255, y: 0.39}
+      - {x: 0.074999996, y: 0.47}
+      - {x: -0.125, y: 0.52}
+      - {x: -0.345, y: 0.52}
+      - {x: -0.515, y: 0.45}
+      - {x: -0.565, y: 0.39}
+      - {x: -0.575, y: 0.34}
+      - {x: -0.575, y: 0.08}
+      - {x: -0.565, y: -0.03}
+      - {x: -0.525, y: -0.12}
+      - {x: -0.33499998, y: -0.32}
+      - {x: -0.074999996, y: -0.45999998}
+      - {x: 0.074999996, y: -0.52}
+      - {x: 0.235, y: -0.52}
+      - {x: 0.545, y: -0.37}
+      - {x: 0.575, y: -0.32999998}
+      - {x: 0.575, y: -0.13}
+  m_UseDelaunayMesh: 1

@@ -7,6 +7,7 @@ public class InputHandler : MonoBehaviour
     [SerializeField] private PlateManager plateManager;
     [SerializeField] private LayerMask sushiLayer;
     [SerializeField] private LayerMask plateLayer;
+    [SerializeField] private HintSystem hintSystem;
 
     private Plate selectedPlate;
     private Sushi draggedSushi;
@@ -29,9 +30,10 @@ public class InputHandler : MonoBehaviour
             OnMouseUp();
         }
     }
-
     private void OnMouseDown()
     {
+        hintSystem?.ResetTimer();
+
         var sushi = GetSushiAtMousePosition();
         if (sushi != null)
         {
@@ -64,17 +66,35 @@ public class InputHandler : MonoBehaviour
         var targetPlate = GetPlateAtMousePosition();
         var dropPosition = draggedSushi.transform.position;
 
-        if (targetPlate != null && targetPlate != selectedPlate)
+        if (targetPlate != null)
         {
-            if (plateManager.CanMoveSushi(selectedPlate, targetPlate))
+            if (targetPlate == selectedPlate)
             {
-                plateManager.MoveSushi(selectedPlate, targetPlate, draggedSushi, dropPosition);
-                RestoreSortingOrder();
-                draggedSushi.SetDragState(false);
+                int closestSlot = targetPlate.GetClosestEmptySlot(dropPosition);
+                if (closestSlot >= 0)
+                {
+                    selectedPlate.RemoveSpecificSushi(draggedSushi);
+                    targetPlate.AddSushi(draggedSushi, closestSlot);
+                    RestoreSortingOrder();
+                    draggedSushi.SetDragState(false);
+                }
+                else
+                {
+                    ReturnToOriginalPosition();
+                }
             }
             else
             {
-                ReturnToOriginalPosition();
+                if (plateManager.CanMoveSushi(selectedPlate, targetPlate))
+                {
+                    plateManager.MoveSushi(selectedPlate, targetPlate, draggedSushi, dropPosition);
+                    RestoreSortingOrder();
+                    draggedSushi.SetDragState(false);
+                }
+                else
+                {
+                    ReturnToOriginalPosition();
+                }
             }
         }
         else
