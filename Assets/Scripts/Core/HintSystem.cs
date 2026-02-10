@@ -45,8 +45,11 @@ public class HintSystem : MonoBehaviour
 
             foreach (var sushi in currentHintSushis)
             {
-                sushi.transform.DOShakePosition(shakeDuration, shakeStrength, shakeVibrato)
-                    .SetLoops(-1, LoopType.Restart);
+                if (sushi != null && sushi.gameObject.activeSelf)
+                {
+                    sushi.transform.DOShakePosition(shakeDuration, shakeStrength, shakeVibrato)
+                        .SetLoops(-1, LoopType.Restart);
+                }
             }
         }
         else
@@ -73,17 +76,24 @@ public class HintSystem : MonoBehaviour
 
     private List<Sushi> FindMergeableSet()
     {
+        if (plateManager == null) return null;
+
         var plates = plateManager.GetAllPlates();
+        if (plates == null) return null;
+
         var sushisByType = new Dictionary<int, List<Sushi>>();
 
         foreach (var plate in plates)
         {
-            if (!plate.gameObject.activeSelf) continue;
+            if (plate == null || !plate.gameObject.activeSelf || plate.IsLocked) continue;
 
             var activeSushis = plate.GetActiveSushis();
+            if (activeSushis == null) continue;
 
             foreach (var sushi in activeSushis)
             {
+                if (sushi == null || !sushi.gameObject.activeSelf || sushi.IsLocked) continue;
+
                 if (!sushisByType.ContainsKey(sushi.TypeId))
                 {
                     sushisByType[sushi.TypeId] = new List<Sushi>();
