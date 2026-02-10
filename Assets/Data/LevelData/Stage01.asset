@@ -21,3 +21,4 @@ MonoBehaviour:
   guaranteedMergeSets: 2
   lockedPlateCount: 3
   mergeUnlockCount: 2
+  lockedSushiCount: 4

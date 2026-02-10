@@ -6,11 +6,13 @@ public class Layer
 {
     public List<int> SushiTypes { get; private set; }
     public List<int> SlotIndices { get; private set; }
+    public List<int> LockStages { get; private set; }
     public int Count => SushiTypes.Count;
 
     public Layer(List<int> sushiTypes)
     {
         SushiTypes = sushiTypes;
+        LockStages = new List<int>();
 
         if (Count == 3 && sushiTypes[0] == sushiTypes[1] && sushiTypes[1] == sushiTypes[2])
         {
@@ -18,6 +20,7 @@ public class Layer
         }
 
         GenerateSlotIndices();
+        InitializeLockStages();
     }
 
     private void GenerateSlotIndices()
@@ -34,8 +37,38 @@ public class Layer
         }
     }
 
+    private void InitializeLockStages()
+    {
+        for (int i = 0; i < Count; i++)
+        {
+            LockStages.Add(0);
+        }
+    }
+
     public List<int> GetAllTypes()
     {
         return new List<int>(SushiTypes);
+    }
+
+    public void SetLockStage(int index, int stage)
+    {
+        if (index >= 0 && index < LockStages.Count)
+        {
+            LockStages[index] = stage;
+        }
+    }
+
+    public int GetLockStage(int index)
+    {
+        if (index >= 0 && index < LockStages.Count)
+        {
+            return LockStages[index];
+        }
+        return 0;
+    }
+
+    public List<int> GetLockStages()
+    {
+        return new List<int>(LockStages);
     }
 }

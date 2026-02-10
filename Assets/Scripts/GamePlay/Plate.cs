@@ -42,7 +42,7 @@ public class Plate : MonoBehaviour
         plateUI = GetComponent<PlateUI>();
     }
 
-    public void Initialize(List<int> activeTypes, List<Layer> layers)
+    public void Initialize(List<int> activeTypes, List<Layer> layers, List<int> activeLockStages = null)
     {
         activeSushis = new List<Sushi>(3) { null, null, null };
         layerQueue.Clear();
@@ -56,11 +56,20 @@ public class Plate : MonoBehaviour
         foreach (var typeId in activeTypes)
         {
             var sushi = SushiPool.Instance.Get(typeId);
-            activeSushis[index++] = sushi;
+            activeSushis[index] = sushi;
+
+            if (activeLockStages != null && index < activeLockStages.Count && activeLockStages[index] > 0)
+            {
+                sushi.SetLockStage(activeLockStages[index]);
+                SushiLockSystem.Instance?.RegisterLockedSushi(sushi);
+            }
+
+            index++;
         }
 
         UpdateVisuals();
     }
+
 
     public void SetState(PlateState newState, int sushiTypeId = -1)
     {
@@ -90,7 +99,7 @@ public class Plate : MonoBehaviour
     }
     public bool MoveSushiWithinPlate(Sushi sushi, int targetSlot)
     {
-        if (IsLocked || targetSlot < 0 || targetSlot >= 3) return false;
+        if (IsLocked || sushi.IsLocked || targetSlot < 0 || targetSlot >= 3) return false;
         if (activeSushis[targetSlot] != null) return false;
 
         for (int i = 0; i < 3; i++)
@@ -132,7 +141,7 @@ public class Plate : MonoBehaviour
 
     public bool RemoveSpecificSushi(Sushi sushi)
     {
-        if (IsLocked) return false;
+        if (IsLocked || sushi.IsLocked) return false;
 
         for (int i = 0; i < 3; i++)
         {
@@ -146,6 +155,7 @@ public class Plate : MonoBehaviour
         }
         return false;
     }
+
 
     public bool ContainsSushi(Sushi sushi)
     {
@@ -186,6 +196,8 @@ public class Plate : MonoBehaviour
 
         var nonNullSushis = activeSushis.Where(s => s != null).ToList();
 
+        if (nonNullSushis.Any(s => s.IsLocked)) return;
+
         if (nonNullSushis.Count == 3 &&
             nonNullSushis[0].TypeId == nonNullSushis[1].TypeId &&
             nonNullSushis[1].TypeId == nonNullSushis[2].TypeId)
@@ -200,12 +212,14 @@ public class Plate : MonoBehaviour
         {
             if (sushi != null)
             {
+                SushiLockSystem.Instance?.ClearLockedSushi(sushi);
                 SushiPool.Instance.Return(sushi);
             }
         }
 
         activeSushis = new List<Sushi>(3) { null, null, null };
 
+        SushiLockSystem.Instance?.OnMergeCompleted();
         PlateUnlockSystem.Instance?.OnSushiMerged(mergedTypeId);
 
         RefillFromNextLayer();
@@ -236,11 +250,18 @@ public class Plate : MonoBehaviour
             var nextLayer = layerQueue.Dequeue();
             var types = nextLayer.GetAllTypes();
             var slotIndices = nextLayer.SlotIndices;
+            var lockStages = nextLayer.GetLockStages();
 
             for (int i = 0; i < types.Count; i++)
             {
                 var sushi = SushiPool.Instance.Get(types[i]);
                 activeSushis[slotIndices[i]] = sushi;
+
+                if (lockStages[i] > 0)
+                {
+                    sushi.SetLockStage(lockStages[i]);
+                    SushiLockSystem.Instance?.RegisterLockedSushi(sushi);
+                }
 
                 sushi.transform.SetParent(sushiSlots[slotIndices[i]]);
 
@@ -260,7 +281,6 @@ public class Plate : MonoBehaviour
             }
         }
     }
-
     private void UpdateVisuals()
     {
         for (int i = 0; i < 3; i++)

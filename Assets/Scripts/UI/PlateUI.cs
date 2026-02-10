@@ -10,6 +10,7 @@ public class PlateUI : MonoBehaviour
     [SerializeField] private float nextLayerIconYOffset = -1.2f;
     [SerializeField] private float nextLayerIconSpacing = 0.6f;
     [SerializeField] private float nextLayerIconScale = 0.5f;
+    [SerializeField] private Sprite[] lockIconSprites = new Sprite[3];
 
     [Header("Reserve Plate Visuals")]
     [SerializeField] private Sprite reservePlateSprite;
@@ -100,6 +101,7 @@ public class PlateUI : MonoBehaviour
 
         var types = nextLayer.GetAllTypes();
         var slotIndices = nextLayer.SlotIndices;
+        var lockStages = nextLayer.GetLockStages();
 
         for (int i = 0; i < types.Count; i++)
         {
@@ -114,6 +116,23 @@ public class PlateUI : MonoBehaviour
             if (data != null && spriteRenderer != null)
             {
                 spriteRenderer.sprite = data.sprite;
+            }
+
+            if (lockStages[i] > 0)
+            {
+                var lockIconObj = new GameObject("LockIcon");
+                lockIconObj.transform.SetParent(icon.transform);
+                lockIconObj.transform.localPosition = Vector3.zero;
+                lockIconObj.transform.localScale = Vector3.one;
+
+                var lockRenderer = lockIconObj.AddComponent<SpriteRenderer>();
+                int spriteIndex = lockStages[i] - 1;
+                if (spriteIndex >= 0 && spriteIndex < lockIconSprites.Length && lockIconSprites[spriteIndex] != null)
+                {
+                    lockRenderer.sprite = lockIconSprites[spriteIndex];
+                    lockRenderer.sortingLayerName = spriteRenderer.sortingLayerName;
+                    lockRenderer.sortingOrder = spriteRenderer.sortingOrder + 1;
+                }
             }
 
             nextLayerIcons.Add(icon);

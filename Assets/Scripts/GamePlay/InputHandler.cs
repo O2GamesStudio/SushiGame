@@ -34,11 +34,23 @@ public class InputHandler : MonoBehaviour
     {
         hintSystem?.ResetTimer();
 
+        var clickedPlate = GetPlateAtMousePosition();
+        if (clickedPlate != null && clickedPlate.IsLocked)
+        {
+            if (clickedPlate.State == PlateState.LockedAd)
+            {
+                PlateUnlockSystem.Instance?.TryUnlockAdPlate(clickedPlate);
+            }
+            return;
+        }
+
         var sushi = GetSushiAtMousePosition();
         if (sushi != null)
         {
+            if (sushi.IsLocked) return;
+
             selectedPlate = GetPlateContainingSushi(sushi);
-            if (selectedPlate != null)
+            if (selectedPlate != null && !selectedPlate.IsLocked)
             {
                 draggedSushi = sushi;
                 originalPosition = draggedSushi.transform.position;

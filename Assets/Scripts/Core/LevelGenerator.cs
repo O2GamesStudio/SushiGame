@@ -105,7 +105,7 @@ public class LevelGenerator
 
     private void AssignLockedPlates(List<PlateData> plates)
     {
-        if (levelData.lockedPlateCount <= 0) return;
+        if (levelData.lockedPlateCount <= 0 && levelData.lockedSushiCount <= 0) return;
 
         var availableSushiTypes = GetAvailableSushiTypes(plates);
 
@@ -118,9 +118,9 @@ public class LevelGenerator
         }
         Shuffle(platesToLock);
 
-        int lockedCount = Mathf.Min(levelData.lockedPlateCount, platesToLock.Count);
-        int mergeUnlockCount = Mathf.Min(levelData.mergeUnlockCount, lockedCount);
-        int adUnlockCount = lockedCount - mergeUnlockCount;
+        int lockedPlateCount = Mathf.Min(levelData.lockedPlateCount, platesToLock.Count);
+        int mergeUnlockCount = Mathf.Min(levelData.mergeUnlockCount, lockedPlateCount);
+        int adUnlockCount = lockedPlateCount - mergeUnlockCount;
 
         for (int i = 0; i < mergeUnlockCount; i++)
         {
@@ -131,11 +131,13 @@ public class LevelGenerator
             plates[plateIndex].RequiredSushiTypeId = sushiType;
         }
 
-        for (int i = mergeUnlockCount; i < lockedCount; i++)
+        for (int i = mergeUnlockCount; i < lockedPlateCount; i++)
         {
             int plateIndex = platesToLock[i];
             plates[plateIndex].State = PlateState.LockedAd;
         }
+
+        AssignLockedSushis(plates);
     }
 
     private List<int> GetAvailableSushiTypes(List<PlateData> plates)
@@ -151,7 +153,7 @@ public class LevelGenerator
 
             foreach (var layer in plate.Layers)
             {
-                foreach (var typeId in layer.GetAllTypes())
+                foreach (var typeId in layer.SushiTypes)
                 {
                     sushiTypes.Add(typeId);
                 }
@@ -159,6 +161,59 @@ public class LevelGenerator
         }
 
         return sushiTypes.ToList();
+    }
+    private void AssignLockedSushis(List<PlateData> plates)
+    {
+        if (levelData.lockedSushiCount <= 0) return;
+
+        var availableSlots = new List<(int plateIndex, int slotIndex, bool isActive)>();
+
+        for (int i = 0; i < plates.Count; i++)
+        {
+            if (plates[i].State != PlateState.Normal) continue;
+
+            for (int j = 0; j < plates[i].ActiveTypes.Count; j++)
+            {
+                availableSlots.Add((i, j, true));
+            }
+
+            for (int layerIdx = 0; layerIdx < plates[i].Layers.Count; layerIdx++)
+            {
+                var layer = plates[i].Layers[layerIdx];
+                var types = layer.GetAllTypes();
+                for (int j = 0; j < types.Count; j++)
+                {
+                    availableSlots.Add((i, j, false));
+                }
+            }
+        }
+
+        Shuffle(availableSlots);
+
+        int lockedCount = Mathf.Min(levelData.lockedSushiCount, availableSlots.Count);
+
+        for (int i = 0; i < lockedCount; i++)
+        {
+            var slot = availableSlots[i];
+
+            if (slot.isActive)
+            {
+                plates[slot.plateIndex].ActiveLockStages[slot.slotIndex] = 3;
+            }
+            else
+            {
+                int currentLayerIndex = 0;
+                foreach (var layer in plates[slot.plateIndex].Layers)
+                {
+                    if (slot.slotIndex < layer.GetAllTypes().Count)
+                    {
+                        layer.SetLockStage(slot.slotIndex, 3);
+                        break;
+                    }
+                    currentLayerIndex++;
+                }
+            }
+        }
     }
 
     private List<List<int>> GenerateGuaranteedSushis()
@@ -260,4 +315,5 @@ public class PlateData
     public List<Layer> Layers;
     public PlateState State = PlateState.Normal;
     public int RequiredSushiTypeId = -1;
+    public List<int> ActiveLockStages = new List<int> { 0, 0, 0 };
 }

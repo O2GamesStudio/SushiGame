@@ -14,4 +14,7 @@ public class LevelData : ScriptableObject
     [Header("Locked Plates")]
     public int lockedPlateCount = 0;
     public int mergeUnlockCount = 0;
+
+    [Header("Locked Sushis")]
+    public int lockedSushiCount = 0;
 }

@@ -28,7 +28,11 @@ public class PlateManager : MonoBehaviour
         {
             int plateIndex = plateIndices[i];
             plates[plateIndex].gameObject.SetActive(true);
-            plates[plateIndex].Initialize(plateDataList[i].ActiveTypes, plateDataList[i].Layers);
+            plates[plateIndex].Initialize(
+                plateDataList[i].ActiveTypes,
+                plateDataList[i].Layers,
+                plateDataList[i].ActiveLockStages
+            );
 
             if (plateDataList[i].State != PlateState.Normal)
             {
