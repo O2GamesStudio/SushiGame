@@ -118,20 +118,24 @@ public class PlateUI : MonoBehaviour
                 spriteRenderer.sprite = data.sprite;
             }
 
-            if (lockStages[i] > 0)
+            var lockIconObj = icon.transform.Find("LockIcon");
+            if (lockIconObj != null)
             {
-                var lockIconObj = new GameObject("LockIcon");
-                lockIconObj.transform.SetParent(icon.transform);
-                lockIconObj.transform.localPosition = Vector3.zero;
-                lockIconObj.transform.localScale = Vector3.one;
+                var lockRenderer = lockIconObj.GetComponent<SpriteRenderer>();
 
-                var lockRenderer = lockIconObj.AddComponent<SpriteRenderer>();
-                int spriteIndex = lockStages[i] - 1;
-                if (spriteIndex >= 0 && spriteIndex < lockIconSprites.Length && lockIconSprites[spriteIndex] != null)
+                if (lockStages[i] > 0 && lockRenderer != null)
                 {
-                    lockRenderer.sprite = lockIconSprites[spriteIndex];
-                    lockRenderer.sortingLayerName = spriteRenderer.sortingLayerName;
-                    lockRenderer.sortingOrder = spriteRenderer.sortingOrder + 1;
+                    lockIconObj.gameObject.SetActive(true);
+
+                    int spriteIndex = lockStages[i] - 1;
+                    if (spriteIndex >= 0 && spriteIndex < lockIconSprites.Length && lockIconSprites[spriteIndex] != null)
+                    {
+                        lockRenderer.sprite = lockIconSprites[spriteIndex];
+                    }
+                }
+                else
+                {
+                    lockIconObj.gameObject.SetActive(false);
                 }
             }
 
