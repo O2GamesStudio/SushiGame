@@ -31,6 +31,8 @@ public class SushiLockSystem : MonoBehaviour
         totalMergeCount++;
 
         var sushisToUpdate = new List<Sushi>(lockedSushis);
+        var platesToRecheck = new HashSet<Plate>();
+
         foreach (var sushi in sushisToUpdate)
         {
             if (sushi != null && sushi.IsLocked)
@@ -40,8 +42,18 @@ public class SushiLockSystem : MonoBehaviour
                 if (!sushi.IsLocked)
                 {
                     lockedSushis.Remove(sushi);
+
+                    if (sushi.CurrentPlate != null)
+                    {
+                        platesToRecheck.Add(sushi.CurrentPlate);
+                    }
                 }
             }
+        }
+
+        foreach (var plate in platesToRecheck)
+        {
+            plate.RecheckMerge();
         }
     }
 

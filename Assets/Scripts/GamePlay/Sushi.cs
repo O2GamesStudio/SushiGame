@@ -17,6 +17,7 @@ public class Sushi : MonoBehaviour
     public SpriteRenderer SpriteRenderer { get; private set; }
     public bool IsLocked => lockStage > 0;
     public int LockStage => lockStage;
+    public Plate CurrentPlate { get; private set; }
 
     private Vector3 originalScale;
     private Material materialInstance;
@@ -51,6 +52,11 @@ public class Sushi : MonoBehaviour
         {
             lockIcon.SetActive(false);
         }
+    }
+
+    public void SetCurrentPlate(Plate plate)
+    {
+        CurrentPlate = plate;
     }
 
     public void SetLockStage(int stage)
@@ -95,6 +101,7 @@ public class Sushi : MonoBehaviour
         originalScale = Vector3.one;
         gameObject.name = "Sushi_Reset";
 
+        CurrentPlate = null;
         lockStage = 0;
         if (lockIcon != null)
         {

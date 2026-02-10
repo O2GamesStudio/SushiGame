@@ -135,6 +135,7 @@ public class Plate : MonoBehaviour
             }
         }
 
+        sushi.SetCurrentPlate(this);
         UpdateVisuals();
         CheckMerge();
     }
@@ -242,7 +243,10 @@ public class Plate : MonoBehaviour
             plateUI?.UpdateReservePlates(LayerCount);
         }
     }
-
+    public void RecheckMerge()
+    {
+        CheckMerge();
+    }
     private void RefillFromNextLayer()
     {
         if (layerQueue.Count > 0)
@@ -256,6 +260,7 @@ public class Plate : MonoBehaviour
             {
                 var sushi = SushiPool.Instance.Get(types[i]);
                 activeSushis[slotIndices[i]] = sushi;
+                sushi.SetCurrentPlate(this);
 
                 if (lockStages[i] > 0)
                 {
