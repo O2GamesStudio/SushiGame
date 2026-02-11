@@ -69,14 +69,7 @@ public class Plate : MonoBehaviour
         }
         UpdateVisuals();
     }
-    public void UpdateReserveDisplay()
-    {
-        plateUI?.UpdateNextLayerDisplay(CurrentNextLayer);
-    }
-    public List<Layer> GetAllLayers()
-    {
-        return new List<Layer>(layerQueue);
-    }
+
     public int GetClosestSlotIncludingCurrent(Vector3 worldPosition, Sushi currentSushi)
     {
         if (IsLocked) return -1;
@@ -100,7 +93,6 @@ public class Plate : MonoBehaviour
         return closestSlot;
     }
 
-
     public void SetState(PlateState newState, int sushiTypeId = -1)
     {
         plateState = newState;
@@ -108,6 +100,7 @@ public class Plate : MonoBehaviour
         plateUI?.UpdateLockState(plateState, sushiTypeId);
         UpdateSushiVisibility();
     }
+
     public void Unlock()
     {
         plateState = PlateState.Normal;
@@ -115,6 +108,7 @@ public class Plate : MonoBehaviour
         UpdateSushiVisibility();
         UpdateVisuals();
     }
+
     private void UpdateSushiVisibility()
     {
         bool shouldHide = IsLocked;
@@ -127,6 +121,7 @@ public class Plate : MonoBehaviour
             }
         }
     }
+
     public bool MoveSushiWithinPlate(Sushi sushi, int targetSlot)
     {
         if (IsLocked || sushi.IsLocked || targetSlot < 0 || targetSlot >= 3) return false;
@@ -145,9 +140,16 @@ public class Plate : MonoBehaviour
 
         return false;
     }
+
     public void AddSushi(Sushi sushi, int preferredSlot = -1)
     {
         if (IsFull || IsLocked) return;
+
+        if (ContainsSushi(sushi))
+        {
+            Debug.LogWarning("[Plate] 이미 이 플레이트에 있는 초밥을 추가하려고 시도했습니다.");
+            return;
+        }
 
         if (preferredSlot >= 0 && preferredSlot < 3 && activeSushis[preferredSlot] == null)
         {
@@ -187,7 +189,6 @@ public class Plate : MonoBehaviour
         return false;
     }
 
-
     public bool ContainsSushi(Sushi sushi)
     {
         return activeSushis.Contains(sushi);
@@ -221,6 +222,16 @@ public class Plate : MonoBehaviour
         return activeSushis.Where(s => s != null).ToList();
     }
 
+    public List<Layer> GetAllLayers()
+    {
+        return new List<Layer>(layerQueue);
+    }
+
+    public void UpdateReserveDisplay()
+    {
+        plateUI?.UpdateNextLayerDisplay(CurrentNextLayer);
+    }
+
     private void CheckMerge()
     {
         if (ActiveCount != 3) return;
@@ -239,13 +250,20 @@ public class Plate : MonoBehaviour
 
     private void ExecuteMerge(int mergedTypeId)
     {
+        var sushisToReturn = new HashSet<Sushi>();
+
         foreach (var sushi in activeSushis)
         {
             if (sushi != null)
             {
-                SushiLockSystem.Instance?.ClearLockedSushi(sushi);
-                SushiPool.Instance.Return(sushi);
+                sushisToReturn.Add(sushi);
             }
+        }
+
+        foreach (var sushi in sushisToReturn)
+        {
+            SushiLockSystem.Instance?.ClearLockedSushi(sushi);
+            SushiPool.Instance.Return(sushi);
         }
 
         activeSushis = new List<Sushi>(3) { null, null, null };
@@ -273,10 +291,12 @@ public class Plate : MonoBehaviour
             plateUI?.UpdateReservePlates(LayerCount);
         }
     }
+
     public void RecheckMerge()
     {
         CheckMerge();
     }
+
     private void RefillFromNextLayer()
     {
         if (layerQueue.Count > 0)
@@ -316,6 +336,7 @@ public class Plate : MonoBehaviour
             }
         }
     }
+
     private void UpdateVisuals()
     {
         for (int i = 0; i < 3; i++)
