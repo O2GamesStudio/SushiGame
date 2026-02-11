@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using System.Collections;
 
 public class GameManager : MonoBehaviour
@@ -27,6 +29,11 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
+        if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
+        {
+            RestartGame();
+        }
+
         if (!isGameActive) return;
 
         if (!isTimerFrozen)
@@ -91,12 +98,6 @@ public class GameManager : MonoBehaviour
 
     public void RestartGame()
     {
-        if (freezeCoroutine != null)
-        {
-            StopCoroutine(freezeCoroutine);
-            freezeCoroutine = null;
-        }
-        isTimerFrozen = false;
-        StartGame();
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

@@ -176,19 +176,48 @@ public class Plate : MonoBehaviour
     {
         if (IsLocked || sushi.IsLocked) return false;
 
+        bool removed = false;
         for (int i = 0; i < 3; i++)
         {
             if (activeSushis[i] == sushi)
             {
                 activeSushis[i] = null;
-                UpdateVisuals();
-                CheckNextLayerRefill();
-                return true;
+                removed = true;
+                break;
             }
         }
-        return false;
-    }
 
+        if (removed)
+        {
+            UpdateVisuals();
+
+            if (ActiveCount == 0 && LayerCount > 0)
+            {
+                RefillFromNextLayer();
+                plateUI?.UpdateNextLayerDisplay(CurrentNextLayer);
+                plateUI?.UpdateReservePlates(LayerCount);
+            }
+        }
+
+        return removed;
+    }
+    public void RemoveLayer(int index)
+    {
+        if (index < 0 || index >= layerQueue.Count) return;
+
+        var layersList = new List<Layer>(layerQueue);
+
+        if (index < layersList.Count)
+        {
+            layersList.RemoveAt(index);
+        }
+
+        layerQueue.Clear();
+        foreach (var layer in layersList)
+        {
+            layerQueue.Enqueue(layer);
+        }
+    }
     public bool ContainsSushi(Sushi sushi)
     {
         return activeSushis.Contains(sushi);

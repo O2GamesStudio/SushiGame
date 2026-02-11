@@ -152,9 +152,19 @@ public class ItemManager : MonoBehaviour
 
     private void RemoveSushiSet(int targetType, Sushi guaranteedSushi)
     {
-        var sushisToRemove = new List<Sushi> { guaranteedSushi };
+        var sushisToRemove = new List<Sushi>();
+        var platesToCheck = new HashSet<Plate>();
+
+        if (guaranteedSushi != null && guaranteedSushi.CurrentPlate != null)
+        {
+            sushisToRemove.Add(guaranteedSushi);
+            platesToCheck.Add(guaranteedSushi.CurrentPlate);
+        }
+
         var allActiveSushis = GetAllActiveSushis();
-        var sameSushis = allActiveSushis.Where(s => s.TypeId == targetType && s != guaranteedSushi).ToList();
+        var sameSushis = allActiveSushis
+            .Where(s => s.TypeId == targetType && s != guaranteedSushi && s.CurrentPlate != null)
+            .ToList();
 
         Shuffle(sameSushis);
 
@@ -162,6 +172,7 @@ public class ItemManager : MonoBehaviour
         for (int i = 0; i < sameSushis.Count && needed > 0; i++)
         {
             sushisToRemove.Add(sameSushis[i]);
+            platesToCheck.Add(sameSushis[i].CurrentPlate);
             needed--;
         }
 
@@ -179,7 +190,26 @@ public class ItemManager : MonoBehaviour
             return;
         }
 
+        foreach (var sushi in sushisToRemove)
+        {
+            if (sushi.CurrentPlate != null)
+            {
+                sushi.CurrentPlate.RemoveSpecificSushi(sushi);
+            }
+        }
+
         AnimateAndRemoveSushis(sushisToRemove, reserveRemoved);
+
+        foreach (var plate in platesToCheck)
+        {
+            if (plate != null && plate.gameObject.activeSelf)
+            {
+                if (plate.ActiveCount == 0 && plate.LayerCount > 0)
+                {
+                    plate.RecheckMerge();
+                }
+            }
+        }
     }
 
     private List<(int typeId, Plate plate)> RemoveTypesFromReserve(int targetType, int count)
@@ -188,26 +218,51 @@ public class ItemManager : MonoBehaviour
 
         foreach (var plate in plateManager.GetAllPlates())
         {
-            if (!plate.gameObject.activeSelf || plate.IsLocked) continue;
+            if (!plate.gameObject.activeSelf || plate.State == PlateState.LockedAd) continue;
             if (removed.Count >= count) break;
 
             var layers = plate.GetAllLayers();
-            foreach (var layer in layers)
+            var layersToRemove = new List<int>();
+
+            for (int layerIdx = 0; layerIdx < layers.Count; layerIdx++)
             {
                 if (removed.Count >= count) break;
+
+                var layer = layers[layerIdx];
+                var indicesToRemove = new List<int>();
 
                 for (int i = layer.SushiTypes.Count - 1; i >= 0 && removed.Count < count; i--)
                 {
                     if (layer.SushiTypes[i] == targetType)
                     {
                         removed.Add((targetType, plate));
-                        layer.SushiTypes.RemoveAt(i);
-                        if (layer.SlotIndices.Count > i)
-                        {
-                            layer.SlotIndices.RemoveAt(i);
-                        }
+                        indicesToRemove.Add(i);
                     }
                 }
+
+                foreach (var idx in indicesToRemove.OrderByDescending(x => x))
+                {
+                    layer.SushiTypes.RemoveAt(idx);
+                    if (layer.SlotIndices.Count > idx)
+                    {
+                        layer.SlotIndices.RemoveAt(idx);
+                    }
+                }
+
+                if (layer.SushiTypes.Count == 0)
+                {
+                    layersToRemove.Add(layerIdx);
+                }
+            }
+
+            foreach (var layerIdx in layersToRemove.OrderByDescending(x => x))
+            {
+                plate.RemoveLayer(layerIdx);
+            }
+
+            if (layersToRemove.Count > 0)
+            {
+                plate.UpdateReserveDisplay();
             }
         }
 
