@@ -51,6 +51,10 @@ public class SushiPool : MonoBehaviour
         }
         return sushi;
     }
+    public List<int> GetAllAvailableTypeIds()
+    {
+        return new List<int>(dataDict.Keys);
+    }
 
     public void Return(Sushi sushi)
     {
