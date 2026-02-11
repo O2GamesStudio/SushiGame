@@ -69,6 +69,14 @@ public class Plate : MonoBehaviour
         }
         UpdateVisuals();
     }
+    public void UpdateReserveDisplay()
+    {
+        plateUI?.UpdateNextLayerDisplay(CurrentNextLayer);
+    }
+    public List<Layer> GetAllLayers()
+    {
+        return new List<Layer>(layerQueue);
+    }
     public int GetClosestSlotIncludingCurrent(Vector3 worldPosition, Sushi currentSushi)
     {
         if (IsLocked) return -1;

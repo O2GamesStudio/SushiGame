@@ -81,25 +81,37 @@ public class LevelGenerator
         {
             var plateData = new PlateData();
             bool isAdPlate = adPlateIndices.Contains(i);
+            bool isLockedSushiPlate = sushiMergePlateIndices.Contains(i);
 
             if (!isAdPlate)
             {
+                int targetCount = 3;
+
+                if (isLockedSushiPlate)
+                {
+                    targetCount = Random.Range(1, 4);
+                }
+
                 if (i < cachedGuaranteedSushis.Count)
                 {
                     plateData.ActiveTypes = cachedGuaranteedSushis[i];
-                }
-                else
-                {
-                    int activeCount = Random.Range(1, 4);
-                    for (int j = 0; j < activeCount && index < allSushiTypes.Count; j++)
+
+                    while (plateData.ActiveTypes.Count < targetCount && index < allSushiTypes.Count)
                     {
                         plateData.ActiveTypes.Add(allSushiTypes[index++]);
                     }
-
-                    if (HasSameThree(plateData.ActiveTypes))
+                }
+                else
+                {
+                    for (int j = 0; j < targetCount && index < allSushiTypes.Count; j++)
                     {
-                        FixSameThree(plateData.ActiveTypes, ref index);
+                        plateData.ActiveTypes.Add(allSushiTypes[index++]);
                     }
+                }
+
+                if (HasSameThree(plateData.ActiveTypes))
+                {
+                    FixSameThree(plateData.ActiveTypes, ref index);
                 }
             }
 
@@ -127,10 +139,124 @@ public class LevelGenerator
         }
 
         DistributeRemainingSushis(plates, ref index);
+        CreateInitialEmptySlots(plates);
         AssignLockedPlates(plates);
         ValidatePlates(plates);
 
         return plates;
+    }
+    private void CreateInitialEmptySlots(List<PlateData> plates)
+    {
+        if (levelData.sushiInitEraseCount <= 0) return;
+
+        var activeSlots = new List<(int plateIndex, int slotIndex)>();
+
+        for (int i = 0; i < plates.Count; i++)
+        {
+            if (adPlateIndices.Contains(i)) continue;
+            if (sushiMergePlateIndices.Contains(i)) continue;
+
+            for (int j = 0; j < plates[i].ActiveTypes.Count; j++)
+            {
+                activeSlots.Add((i, j));
+            }
+        }
+
+        if (activeSlots.Count == 0) return;
+
+        Shuffle(activeSlots);
+
+        int eraseCount = Mathf.Min(levelData.sushiInitEraseCount, activeSlots.Count);
+        var movedSushis = new List<int>();
+
+        for (int i = 0; i < eraseCount; i++)
+        {
+            var (plateIndex, slotIndex) = activeSlots[i];
+            int sushiType = plates[plateIndex].ActiveTypes[slotIndex];
+            movedSushis.Add(sushiType);
+            plates[plateIndex].ActiveTypes[slotIndex] = -1;
+        }
+
+        for (int i = 0; i < plates.Count; i++)
+        {
+            if (adPlateIndices.Contains(i)) continue;
+            if (sushiMergePlateIndices.Contains(i)) continue;
+
+            plates[i].ActiveTypes.RemoveAll(typeId => typeId == -1);
+        }
+
+        DistributeMovedSushisToReserve(plates, movedSushis);
+    }
+    private void DistributeMovedSushisToReserve(List<PlateData> plates, List<int> movedSushis)
+    {
+        if (movedSushis.Count == 0) return;
+
+        var availablePlates = new List<int>();
+        for (int i = 0; i < plates.Count; i++)
+        {
+            if (!adPlateIndices.Contains(i) && plates[i].Layers.Count < levelData.maxLayersPerPlate)
+            {
+                availablePlates.Add(i);
+            }
+        }
+
+        if (availablePlates.Count == 0)
+        {
+            var firstNonAdPlate = -1;
+            for (int i = 0; i < plates.Count; i++)
+            {
+                if (!adPlateIndices.Contains(i))
+                {
+                    firstNonAdPlate = i;
+                    break;
+                }
+            }
+
+            if (firstNonAdPlate >= 0)
+            {
+                plates[firstNonAdPlate].Layers.Add(new Layer(movedSushis));
+            }
+            return;
+        }
+
+        Shuffle(availablePlates);
+
+        int sushiIndex = 0;
+        int plateIndex = 0;
+
+        while (sushiIndex < movedSushis.Count)
+        {
+            int targetPlateIndex = availablePlates[plateIndex % availablePlates.Count];
+            var targetPlate = plates[targetPlateIndex];
+
+            if (targetPlate.Layers.Count >= levelData.maxLayersPerPlate)
+            {
+                availablePlates.RemoveAt(plateIndex % availablePlates.Count);
+                if (availablePlates.Count == 0) break;
+                continue;
+            }
+
+            var newLayer = new List<int>();
+            int layerSize = Mathf.Min(3, movedSushis.Count - sushiIndex);
+
+            for (int i = 0; i < layerSize; i++)
+            {
+                newLayer.Add(movedSushis[sushiIndex++]);
+            }
+
+            if (HasSameThree(newLayer))
+            {
+                if (sushiIndex < movedSushis.Count)
+                {
+                    int temp = newLayer[2];
+                    newLayer[2] = movedSushis[sushiIndex];
+                    movedSushis[sushiIndex] = temp;
+                }
+            }
+
+            targetPlate.Layers.Add(new Layer(newLayer));
+            plateIndex++;
+        }
     }
 
     private void DistributeRemainingSushis(List<PlateData> plates, ref int index)

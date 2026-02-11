@@ -30,23 +30,20 @@ public class InputHandler : MonoBehaviour
             OnMouseUp();
         }
     }
+
     private void OnMouseDown()
     {
         hintSystem?.ResetTimer();
 
-        var clickedPlate = GetPlateAtMousePosition();
-        if (clickedPlate != null && clickedPlate.IsLocked)
-        {
-            if (clickedPlate.State == PlateState.LockedAd)
-            {
-                PlateUnlockSystem.Instance?.TryUnlockAdPlate(clickedPlate);
-            }
-            return;
-        }
-
         var sushi = GetSushiAtMousePosition();
         if (sushi != null)
         {
+            if (ItemManager.Instance != null && ItemManager.Instance.IsWaitingForTarget)
+            {
+                ItemManager.Instance.OnSushiClicked(sushi);
+                return;
+            }
+
             if (sushi.IsLocked) return;
 
             selectedPlate = GetPlateContainingSushi(sushi);
@@ -64,6 +61,17 @@ public class InputHandler : MonoBehaviour
 
                 draggedSushi.SetDragState(true);
             }
+            return;
+        }
+
+        var clickedPlate = GetPlateAtMousePosition();
+        if (clickedPlate != null && clickedPlate.IsLocked)
+        {
+            if (clickedPlate.State == PlateState.LockedAd)
+            {
+                PlateUnlockSystem.Instance?.TryUnlockAdPlate(clickedPlate);
+            }
+            return;
         }
     }
 
@@ -73,6 +81,7 @@ public class InputHandler : MonoBehaviour
         worldPos.z = -1;
         draggedSushi.transform.position = worldPos;
     }
+
     private void OnMouseUp()
     {
         var targetPlate = GetPlateAtMousePosition();

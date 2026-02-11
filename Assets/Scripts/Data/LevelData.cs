@@ -17,4 +17,7 @@ public class LevelData : ScriptableObject
 
     [Header("Locked Sushis")]
     public int lockedSushiCount = 0;
+
+    [Header("Initial Empty Slots")]
+    public int sushiInitEraseCount = 0;
 }
