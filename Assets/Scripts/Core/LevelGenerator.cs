@@ -385,15 +385,13 @@ public class LevelGenerator
                 allSushiTypes.RemoveAt(idx);
             }
 
-            var distribution = new List<int>();
-            int remaining = 3;
-
-            while (remaining > 0)
-            {
-                int count = Random.Range(1, Mathf.Min(3, remaining + 1));
-                distribution.Add(count);
-                remaining -= count;
-            }
+            var possibleDistributions = new List<List<int>>
+        {
+            new List<int> { 1, 2 },
+            new List<int> { 2, 1 },
+            new List<int> { 1, 1, 1 }
+        };
+            var distribution = possibleDistributions[Random.Range(0, possibleDistributions.Count)];
 
             foreach (var count in distribution)
             {
@@ -405,7 +403,6 @@ public class LevelGenerator
                 result.Add(plateTypes);
             }
         }
-
         Shuffle(result);
 
         return result;
