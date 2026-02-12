@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using DG.Tweening;
+using Lean.Pool;
 
 public enum PlateState
 {
@@ -22,6 +23,9 @@ public class Plate : MonoBehaviour
     [Header("Refill Animation")]
     [SerializeField] private float refillDuration = 0.5f;
     [SerializeField] private float refillStartOffsetY = 2f;
+
+    [Header("VFX")]
+    [SerializeField] private GameObject mergeParticleVFXPrefab;
 
     private List<Sushi> activeSushis = new List<Sushi>(3) { null, null, null };
     private Queue<Layer> layerQueue = new Queue<Layer>();
@@ -201,15 +205,6 @@ public class Plate : MonoBehaviour
 
         return removed;
     }
-    public void CheckAndRefill()
-    {
-        if (ActiveCount == 0 && LayerCount > 0)
-        {
-            RefillFromNextLayer();
-            plateUI?.UpdateNextLayerDisplay(CurrentNextLayer);
-            plateUI?.UpdateReservePlates(LayerCount);
-        }
-    }
 
     public void RemoveLayer(int index)
     {
@@ -228,6 +223,7 @@ public class Plate : MonoBehaviour
             layerQueue.Enqueue(layer);
         }
     }
+
     public bool ContainsSushi(Sushi sushi)
     {
         return activeSushis.Contains(sushi);
@@ -271,6 +267,16 @@ public class Plate : MonoBehaviour
         plateUI?.UpdateNextLayerDisplay(CurrentNextLayer);
     }
 
+    public void CheckAndRefill()
+    {
+        if (ActiveCount == 0 && LayerCount > 0)
+        {
+            RefillFromNextLayer();
+            plateUI?.UpdateNextLayerDisplay(CurrentNextLayer);
+            plateUI?.UpdateReservePlates(LayerCount);
+        }
+    }
+
     private void CheckMerge()
     {
         if (ActiveCount != 3) return;
@@ -296,6 +302,22 @@ public class Plate : MonoBehaviour
             if (sushi != null)
             {
                 sushisToReturn.Add(sushi);
+            }
+        }
+
+        if (mergeParticleVFXPrefab != null)
+        {
+            var vfx = LeanPool.Spawn(mergeParticleVFXPrefab, transform.position, Quaternion.identity);
+
+            var particleSystem = vfx.GetComponent<ParticleSystem>();
+            if (particleSystem != null)
+            {
+                float duration = particleSystem.main.duration + particleSystem.main.startLifetime.constantMax;
+                LeanPool.Despawn(vfx, duration);
+            }
+            else
+            {
+                LeanPool.Despawn(vfx, 2f);
             }
         }
 
