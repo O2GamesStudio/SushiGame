@@ -272,6 +272,8 @@ public class ItemManager : MonoBehaviour
     private void AnimateAndRemoveSushis(List<Sushi> activeSushis, List<(int typeId, Plate plate)> reserveTypes)
     {
         Vector3 center = collectCenter != null ? collectCenter.position : Vector3.zero;
+        int totalCount = activeSushis.Count + reserveTypes.Count;
+        int completedCount = 0;
 
         foreach (var sushi in activeSushis)
         {
@@ -287,6 +289,12 @@ public class ItemManager : MonoBehaviour
                 {
                     SushiLockSystem.Instance?.ClearLockedSushi(sushi);
                     SushiPool.Instance.Return(sushi);
+
+                    completedCount++;
+                    if (completedCount >= totalCount)
+                    {
+                        GameStateChecker.Instance?.CheckWinCondition();
+                    }
                 });
         }
 
@@ -303,10 +311,15 @@ public class ItemManager : MonoBehaviour
                 .OnComplete(() =>
                 {
                     SushiPool.Instance.Return(tempSushi);
+
+                    completedCount++;
+                    if (completedCount >= totalCount)
+                    {
+                        GameStateChecker.Instance?.CheckWinCondition();
+                    }
                 });
         }
     }
-
     private List<Sushi> GetAllActiveSushis()
     {
         var result = new List<Sushi>();
