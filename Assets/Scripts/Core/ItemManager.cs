@@ -75,7 +75,26 @@ public class ItemManager : MonoBehaviour
         combinedTypes.AddRange(allActiveSushis.Select(s => s.TypeId));
         combinedTypes.AddRange(allReserveTypes);
 
-        Shuffle(combinedTypes);
+        bool isValid = false;
+        int attempts = 0;
+        int maxAttempts = 100;
+
+        while (!isValid && attempts < maxAttempts)
+        {
+            attempts++;
+            Shuffle(combinedTypes);
+
+            if (ValidateShuffleResult(allActiveSushis.Count, combinedTypes))
+            {
+                isValid = true;
+            }
+        }
+
+        if (!isValid)
+        {
+            Debug.LogWarning("[ItemManager] 셔플 검증 실패, 수동 조정 시작");
+            ForceFixSameThree(combinedTypes);
+        }
 
         int index = 0;
 
@@ -107,13 +126,250 @@ public class ItemManager : MonoBehaviour
             }
         }
 
-        PreventSameThreeInPlates(allActiveSushis, combinedTypes);
-
         foreach (var plate in plateManager.GetAllPlates())
         {
             if (!plate.gameObject.activeSelf) continue;
             plate.UpdateReserveDisplay();
             plate.RecheckMerge();
+        }
+    }
+    private bool ValidateShuffleResult(int activeSushiCount, List<int> combinedTypes)
+    {
+        int index = activeSushiCount;
+
+        var plates = plateManager.GetAllPlates();
+        foreach (var plate in plates)
+        {
+            if (!plate.gameObject.activeSelf) continue;
+            if (plate.State == PlateState.LockedAd) continue;
+
+            var layers = plate.GetAllLayers();
+            foreach (var layer in layers)
+            {
+                if (layer.SushiTypes.Count == 3)
+                {
+                    if (index + 2 >= combinedTypes.Count) return true;
+
+                    int type0 = combinedTypes[index];
+                    int type1 = combinedTypes[index + 1];
+                    int type2 = combinedTypes[index + 2];
+
+                    if (type0 == type1 && type1 == type2)
+                    {
+                        return false;
+                    }
+                }
+                index += layer.SushiTypes.Count;
+            }
+        }
+
+        var activeTypes = new List<int>();
+        for (int i = 0; i < activeSushiCount; i++)
+        {
+            if (i < combinedTypes.Count)
+                activeTypes.Add(combinedTypes[i]);
+        }
+
+        foreach (var plate in plates)
+        {
+            if (!plate.gameObject.activeSelf || plate.IsLocked) continue;
+
+            int plateStartIndex = 0;
+            for (int i = 0; i < activeSushiCount && i < activeTypes.Count; i++)
+            {
+                var sushi = GetAllActiveSushis()[i];
+                if (sushi.CurrentPlate == plate)
+                {
+                    if (plateStartIndex == 0) plateStartIndex = i;
+                }
+            }
+
+            var plateSushis = GetAllActiveSushis().Where(s => s.CurrentPlate == plate).ToList();
+            if (plateSushis.Count == 3)
+            {
+                int idx = 0;
+                foreach (var sushi in plateSushis)
+                {
+                    int globalIndex = GetAllActiveSushis().IndexOf(sushi);
+                    if (globalIndex >= 0 && globalIndex < activeTypes.Count)
+                    {
+                        activeTypes[globalIndex] = combinedTypes[globalIndex];
+                    }
+                }
+
+                if (activeTypes.Count >= 3)
+                {
+                    bool hasSame = false;
+                    for (int i = 0; i <= activeTypes.Count - 3; i++)
+                    {
+                        var checkList = GetAllActiveSushis().Skip(i).Take(3).ToList();
+                        if (checkList.Count == 3 &&
+                            checkList.All(s => s.CurrentPlate == plate))
+                        {
+                            if (combinedTypes[i] == combinedTypes[i + 1] &&
+                                combinedTypes[i + 1] == combinedTypes[i + 2])
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private void ForceFixSameThree(List<int> combinedTypes)
+    {
+        int activeSushiCount = GetAllActiveSushis().Count;
+        int index = activeSushiCount;
+
+        var plates = plateManager.GetAllPlates();
+        foreach (var plate in plates)
+        {
+            if (!plate.gameObject.activeSelf) continue;
+            if (plate.State == PlateState.LockedAd) continue;
+
+            var layers = plate.GetAllLayers();
+            foreach (var layer in layers)
+            {
+                if (layer.SushiTypes.Count == 3)
+                {
+                    if (index + 2 >= combinedTypes.Count)
+                    {
+                        index += layer.SushiTypes.Count;
+                        continue;
+                    }
+
+                    int type0 = combinedTypes[index];
+                    int type1 = combinedTypes[index + 1];
+                    int type2 = combinedTypes[index + 2];
+
+                    if (type0 == type1 && type1 == type2)
+                    {
+                        for (int swapIdx = 0; swapIdx < combinedTypes.Count; swapIdx++)
+                        {
+                            if (swapIdx == index + 2) continue;
+
+                            if (combinedTypes[swapIdx] != type0)
+                            {
+                                int temp = combinedTypes[index + 2];
+                                combinedTypes[index + 2] = combinedTypes[swapIdx];
+                                combinedTypes[swapIdx] = temp;
+                                break;
+                            }
+                        }
+                    }
+                }
+                index += layer.SushiTypes.Count;
+            }
+        }
+    }
+    private void PreventSameThreeInActivePlates(List<Sushi> allActiveSushis)
+    {
+        var plates = plateManager.GetAllPlates();
+
+        foreach (var plate in plates)
+        {
+            if (!plate.gameObject.activeSelf || plate.IsLocked) continue;
+
+            var plateSushis = plate.GetActiveSushis();
+            if (plateSushis.Count != 3) continue;
+
+            if (plateSushis[0].TypeId == plateSushis[1].TypeId &&
+                plateSushis[1].TypeId == plateSushis[2].TypeId)
+            {
+                int sameType = plateSushis[0].TypeId;
+
+                for (int i = 0; i < allActiveSushis.Count; i++)
+                {
+                    if (allActiveSushis[i].TypeId != sameType &&
+                        !BelongsToSamePlate(allActiveSushis[i], plate))
+                    {
+                        int targetType = allActiveSushis[i].TypeId;
+
+                        var data1 = SushiPool.Instance.GetData(targetType);
+                        var data2 = SushiPool.Instance.GetData(sameType);
+
+                        if (data1 != null && data2 != null)
+                        {
+                            plateSushis[2].Initialize(targetType, data1.sprite);
+                            allActiveSushis[i].Initialize(sameType, data2.sprite);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void PreventSameThreeInReserveLayers()
+    {
+        var plates = plateManager.GetAllPlates();
+
+        foreach (var plate in plates)
+        {
+            if (!plate.gameObject.activeSelf) continue;
+            if (plate.State == PlateState.LockedAd) continue;
+
+            var layers = plate.GetAllLayers();
+
+            foreach (var layer in layers)
+            {
+                if (layer.SushiTypes.Count != 3) continue;
+
+                if (layer.SushiTypes[0] == layer.SushiTypes[1] &&
+                    layer.SushiTypes[1] == layer.SushiTypes[2])
+                {
+                    int sameType = layer.SushiTypes[0];
+                    bool swapped = false;
+
+                    foreach (var otherPlate in plates)
+                    {
+                        if (swapped) break;
+                        if (!otherPlate.gameObject.activeSelf) continue;
+                        if (otherPlate.State == PlateState.LockedAd) continue;
+
+                        var otherLayers = otherPlate.GetAllLayers();
+                        foreach (var otherLayer in otherLayers)
+                        {
+                            if (swapped) break;
+
+                            for (int i = 0; i < otherLayer.SushiTypes.Count; i++)
+                            {
+                                if (otherLayer.SushiTypes[i] != sameType)
+                                {
+                                    int temp = layer.SushiTypes[2];
+                                    layer.SushiTypes[2] = otherLayer.SushiTypes[i];
+                                    otherLayer.SushiTypes[i] = temp;
+                                    swapped = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (!swapped)
+                    {
+                        var activeSushis = plate.GetActiveSushis();
+                        foreach (var sushi in activeSushis)
+                        {
+                            if (sushi.TypeId != sameType)
+                            {
+                                int temp = layer.SushiTypes[2];
+                                layer.SushiTypes[2] = sushi.TypeId;
+                                var data = SushiPool.Instance.GetData(temp);
+                                if (data != null)
+                                {
+                                    sushi.Initialize(temp, data.sprite);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
