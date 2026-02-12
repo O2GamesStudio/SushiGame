@@ -172,9 +172,9 @@ public class Plate : MonoBehaviour
         CheckMerge();
     }
 
-    public bool RemoveSpecificSushi(Sushi sushi)
+    public bool RemoveSpecificSushi(Sushi sushi, bool forceRemove = false, bool skipRefill = false)
     {
-        if (IsLocked || sushi.IsLocked) return false;
+        if (!forceRemove && (IsLocked || sushi.IsLocked)) return false;
 
         bool removed = false;
         for (int i = 0; i < 3; i++)
@@ -191,7 +191,7 @@ public class Plate : MonoBehaviour
         {
             UpdateVisuals();
 
-            if (ActiveCount == 0 && LayerCount > 0)
+            if (!skipRefill && ActiveCount == 0 && LayerCount > 0)
             {
                 RefillFromNextLayer();
                 plateUI?.UpdateNextLayerDisplay(CurrentNextLayer);
@@ -201,6 +201,16 @@ public class Plate : MonoBehaviour
 
         return removed;
     }
+    public void CheckAndRefill()
+    {
+        if (ActiveCount == 0 && LayerCount > 0)
+        {
+            RefillFromNextLayer();
+            plateUI?.UpdateNextLayerDisplay(CurrentNextLayer);
+            plateUI?.UpdateReservePlates(LayerCount);
+        }
+    }
+
     public void RemoveLayer(int index)
     {
         if (index < 0 || index >= layerQueue.Count) return;
