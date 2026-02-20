@@ -26,6 +26,7 @@ public class Plate : MonoBehaviour
 
     [Header("VFX")]
     [SerializeField] private GameObject mergeParticleVFXPrefab;
+    [SerializeField] private SushiPackagingEffect packagingEffect;
 
     [Header("Hidden Reveal Animation")]
     [SerializeField] private float hiddenRevealDelay = 0.3f;
@@ -296,10 +297,9 @@ public class Plate : MonoBehaviour
             ExecuteMerge(nonNullSushis[0].TypeId);
         }
     }
-
     private void ExecuteMerge(int mergedTypeId)
     {
-        var sushisToReturn = new HashSet<Sushi>();
+        var sushisToReturn = new List<Sushi>();
 
         foreach (var sushi in activeSushis)
         {
@@ -309,6 +309,23 @@ public class Plate : MonoBehaviour
             }
         }
 
+        activeSushis = new List<Sushi>(3) { null, null, null };
+
+        if (packagingEffect != null)
+        {
+            packagingEffect.PlayPackagingEffect(transform.position, sushisToReturn, () =>
+            {
+                OnPackagingComplete(sushisToReturn, mergedTypeId);
+            });
+        }
+        else
+        {
+            OnPackagingComplete(sushisToReturn, mergedTypeId);
+        }
+    }
+
+    private void OnPackagingComplete(List<Sushi> sushis, int mergedTypeId)
+    {
         if (mergeParticleVFXPrefab != null)
         {
             var vfx = LeanPool.Spawn(mergeParticleVFXPrefab, transform.position, Quaternion.identity);
@@ -325,13 +342,11 @@ public class Plate : MonoBehaviour
             }
         }
 
-        foreach (var sushi in sushisToReturn)
+        foreach (var sushi in sushis)
         {
             SushiLockSystem.Instance?.ClearLockedSushi(sushi);
             SushiPool.Instance.Return(sushi);
         }
-
-        activeSushis = new List<Sushi>(3) { null, null, null };
 
         GameManager.Instance?.OnSushiMerged();
         SushiLockSystem.Instance?.OnMergeCompleted();
@@ -347,6 +362,7 @@ public class Plate : MonoBehaviour
             GameStateChecker.Instance.CheckWinCondition();
         }
     }
+
     private void CheckNextLayerRefill()
     {
         if (ActiveCount == 0 && LayerCount > 0)

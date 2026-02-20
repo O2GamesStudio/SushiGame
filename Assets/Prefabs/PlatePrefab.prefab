@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 3656881526420188457}
   - component: {fileID: 2455267321332537711}
   - component: {fileID: 1726270559867563848}
+  - component: {fileID: -7329004432275051021}
   m_Layer: 6
   m_Name: PlatePrefab
   m_TagString: Untagged
@@ -164,8 +165,7 @@ MonoBehaviour:
   refillDuration: 0.5
   refillStartOffsetY: 2
   mergeParticleVFXPrefab: {fileID: 8161787575350642960, guid: 173b68f673c67024fbf1c11d0312e546, type: 3}
-  mergeParticleVFX: {fileID: 8161787575350642961, guid: 173b68f673c67024fbf1c11d0312e546, type: 3}
-  hiddenSushiSprite: {fileID: 21300000, guid: e4317dac23de5ca4bbbef7e93f0732cf, type: 3}
+  packagingEffect: {fileID: -7329004432275051021}
   hiddenRevealDelay: 0.3
   hiddenRevealDuration: 0.5
 --- !u!114 &1726270559867563848
@@ -198,6 +198,30 @@ MonoBehaviour:
   lockedPlateSprite: {fileID: 21300000, guid: 944b133f191df3d468c724caaded208f, type: 3}
   requiredSushiIcon: {fileID: 5267222043789972958}
   adIcon: {fileID: 4301052573761671227}
+--- !u!114 &-7329004432275051021
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2467345096723124866}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0050e0d1b3f8bcc48ae081db8da48951, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SushiPackagingEffect
+  containerSprite: {fileID: 21300000, guid: 9cd33348c9bee1047b27b4e1ab54a4e1, type: 3}
+  lidSprite: {fileID: 21300000, guid: 4b86180f8119abe4ab1b5e01e9d42f17, type: 3}
+  containerOffset: {x: 0, y: 1, z: 0}
+  sushiSpacing: 0.6
+  sushiMoveToContainerDuration: 0.3
+  lidDropDuration: 0.3
+  lidDropDistance: 1.5
+  packageDisappearDelay: 0.2
+  packageDisappearDuration: 0.3
+  containerSortingOrder: 49
+  lidSortingOrder: 51
+  sushiInContainerSortingOrder: 50
 --- !u!1 &3100125945319917475
 GameObject:
   m_ObjectHideFlags: 0
