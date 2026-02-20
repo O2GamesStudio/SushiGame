@@ -107,9 +107,52 @@ public class LevelGenerator
 
         CreateInitialEmptySlots(plates);
         AssignLockedPlates(plates);
+
+        if (levelData.hiddenReserveCount > 0)
+        {
+            ApplyHiddenReserves(plates);
+        }
+
         ValidatePlates(plates);
 
         return plates;
+    }
+
+    private void ApplyHiddenReserves(List<PlateData> plates)
+    {
+        var allReserveIndices = new List<(PlateData plate, int layerIndex, int sushiIndex)>();
+
+        foreach (var plate in plates)
+        {
+            if (plate.State == PlateState.LockedAd) continue;
+
+            for (int layerIdx = 0; layerIdx < plate.Layers.Count; layerIdx++)
+            {
+                var layer = plate.Layers[layerIdx];
+                for (int sushiIdx = 0; sushiIdx < layer.SushiTypes.Count; sushiIdx++)
+                {
+                    allReserveIndices.Add((plate, layerIdx, sushiIdx));
+                }
+            }
+        }
+
+        if (allReserveIndices.Count == 0)
+        {
+            Debug.LogWarning("[LevelGenerator] Reserve 초밥이 없어서 Hidden Reserve를 적용할 수 없습니다.");
+            return;
+        }
+
+        Shuffle(allReserveIndices);
+
+        int hiddenCount = Mathf.Min(levelData.hiddenReserveCount, allReserveIndices.Count);
+
+        for (int i = 0; i < hiddenCount; i++)
+        {
+            var (plate, layerIndex, sushiIndex) = allReserveIndices[i];
+            plate.Layers[layerIndex].SetHiddenState(sushiIndex, true);
+        }
+
+        Debug.Log($"[LevelGenerator] Hidden Reserve 적용: {hiddenCount}개");
     }
 
     private void GeneratePlatesWithConcentration(List<PlateData> plates)

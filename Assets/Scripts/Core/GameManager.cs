@@ -10,12 +10,16 @@ public class GameManager : MonoBehaviour
     [SerializeField] private LevelData currentLevel;
     [SerializeField] private PlateManager plateManager;
     [SerializeField] private GameUI gameUI;
+    [SerializeField] private DoorTransition doorTransition;
 
     private LevelGenerator levelGenerator;
     private float timeRemaining;
     private bool isGameActive;
     private bool isTimerFrozen;
+    private bool isTimerStarted;
     private Coroutine freezeCoroutine;
+
+    public bool IsTimerStarted => isTimerStarted;
 
     private void Awake()
     {
@@ -34,7 +38,7 @@ public class GameManager : MonoBehaviour
             RestartGame();
         }
 
-        if (!isGameActive) return;
+        if (!isGameActive || !isTimerStarted) return;
 
         if (!isTimerFrozen)
         {
@@ -45,6 +49,14 @@ public class GameManager : MonoBehaviour
             {
                 OnGameLose();
             }
+        }
+    }
+
+    public void StartTimer()
+    {
+        if (!isTimerStarted && isGameActive)
+        {
+            isTimerStarted = true;
         }
     }
 
@@ -80,8 +92,14 @@ public class GameManager : MonoBehaviour
         timeRemaining = currentLevel.timeLimitSeconds;
         isGameActive = true;
         isTimerFrozen = false;
+        isTimerStarted = false;
 
         gameUI.ShowGame();
+
+        if (doorTransition != null)
+        {
+            doorTransition.PlayOpenAnimation();
+        }
     }
 
     public void OnGameWin()

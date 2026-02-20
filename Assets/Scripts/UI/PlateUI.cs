@@ -6,11 +6,13 @@ public class PlateUI : MonoBehaviour
     [SerializeField] private Transform nextLayerContainer;
     [SerializeField] private GameObject nextLayerIconPrefab;
 
+
     [Header("Next Layer Icons")]
     [SerializeField] private float nextLayerIconYOffset = -1.2f;
     [SerializeField] private float nextLayerIconSpacing = 0.6f;
     [SerializeField] private float nextLayerIconScale = 0.5f;
     [SerializeField] private Sprite[] lockIconSprites = new Sprite[3];
+    [SerializeField] private Sprite hiddenSushiSprite;
 
     [Header("Reserve Plate Visuals")]
     [SerializeField] private Sprite reservePlateSprite;
@@ -99,6 +101,7 @@ public class PlateUI : MonoBehaviour
         var types = nextLayer.GetAllTypes();
         var slotIndices = nextLayer.SlotIndices;
         var lockStages = nextLayer.GetLockStages();
+        var hiddenStates = nextLayer.GetHiddenStates();
 
         for (int i = 0; i < types.Count; i++)
         {
@@ -113,6 +116,21 @@ public class PlateUI : MonoBehaviour
             if (data != null && spriteRenderer != null)
             {
                 spriteRenderer.sprite = data.sprite;
+            }
+
+            bool isHidden = hiddenStates != null && i < hiddenStates.Count && hiddenStates[i];
+
+            if (isHidden && hiddenSushiSprite != null)
+            {
+                var hiddenObj = new GameObject("HiddenOverlay");
+                hiddenObj.transform.SetParent(icon.transform);
+                hiddenObj.transform.localPosition = Vector3.zero;
+                hiddenObj.transform.localScale = Vector3.one * 1.5f;
+
+                var hiddenRenderer = hiddenObj.AddComponent<SpriteRenderer>();
+                hiddenRenderer.sprite = hiddenSushiSprite;
+                hiddenRenderer.sortingLayerName = spriteRenderer.sortingLayerName;
+                hiddenRenderer.sortingOrder = spriteRenderer.sortingOrder + 1;
             }
 
             var lockIconObj = icon.transform.Find("LockIcon");

@@ -19,6 +19,8 @@ MonoBehaviour:
   maxLayersPerPlate: 5
   timeLimitSeconds: 300
   guaranteedMergeSets: 2
+  concentratedTypeCount: 2
+  hiddenReserveCount: 10
   lockedPlateCount: 3
   mergeUnlockCount: 2
   lockedSushiCount: 4

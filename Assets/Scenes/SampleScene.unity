@@ -167,6 +167,7 @@ MonoBehaviour:
   currentLevel: {fileID: 11400000, guid: d3916d81adad23b47acf92374009d217, type: 2}
   plateManager: {fileID: 1624048182}
   gameUI: {fileID: 1387528949}
+  doorTransition: {fileID: 88095765}
 --- !u!4 &11404575
 Transform:
   m_ObjectHideFlags: 0
@@ -484,6 +485,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 88095764}
+  - component: {fileID: 88095765}
   m_Layer: 5
   m_Name: DoorSet
   m_TagString: Untagged
@@ -514,6 +516,24 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &88095765
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 88095763}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a904d4fcd292ec0439414337e8b04c80, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DoorTransition
+  leftDoor1: {fileID: 1476541710}
+  leftDoor2: {fileID: 724257472}
+  rightDoor1: {fileID: 724044751}
+  rightDoor2: {fileID: 505426439}
+  moveDuration: 1.5
+  easeType: 27
 --- !u!114 &90160395 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2455267321332537711, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
@@ -534,20 +554,24 @@ PrefabInstance:
     m_TransformParent: {fileID: 423205660}
     m_Modifications:
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
+      propertyPath: normalPlateSprite
+      value: 
+      objectReference: {fileID: 21300000, guid: c05d854ba83e0da44b574f36be0d5cac, type: 3}
+    - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: nextLayerIconScale
       value: 0.45
       objectReference: {fileID: 0}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: reservePlateSprite
       value: 
-      objectReference: {fileID: 21300000, guid: f887143ed985c3d4f8f5c7badd64cf9b, type: 3}
+      objectReference: {fileID: 21300000, guid: 810bedb4709ca274ebc64c8a06d3288c, type: 3}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: reservePlateSpacing
       value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: nextLayerIconSpacing
-      value: 0.4
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: nextLayerIconYOffset
@@ -575,11 +599,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3656881526420188457, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.x
-      value: 3.28
+      value: 3.24
       objectReference: {fileID: 0}
     - target: {fileID: 3656881526420188457, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.y
-      value: 1.26
+      value: 1.25
       objectReference: {fileID: 0}
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_Size.x
@@ -592,7 +616,7 @@ PrefabInstance:
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: fbaaa947aed4c404ca49cb3f73b811ec, type: 3}
+      objectReference: {fileID: 21300000, guid: c05d854ba83e0da44b574f36be0d5cac, type: 3}
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_WasSpriteAssigned
       value: 1
@@ -1069,14 +1093,14 @@ PrefabInstance:
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: reservePlateSprite
       value: 
-      objectReference: {fileID: 21300000, guid: f887143ed985c3d4f8f5c7badd64cf9b, type: 3}
+      objectReference: {fileID: 21300000, guid: 810bedb4709ca274ebc64c8a06d3288c, type: 3}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: reservePlateSpacing
       value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: nextLayerIconSpacing
-      value: 0.4
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: nextLayerIconYOffset
@@ -1104,11 +1128,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3656881526420188457, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.x
-      value: 3.28
+      value: 3.24
       objectReference: {fileID: 0}
     - target: {fileID: 3656881526420188457, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.y
-      value: 1.26
+      value: 1.25
       objectReference: {fileID: 0}
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_Size.x
@@ -1121,7 +1145,7 @@ PrefabInstance:
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: fbaaa947aed4c404ca49cb3f73b811ec, type: 3}
+      objectReference: {fileID: 21300000, guid: c05d854ba83e0da44b574f36be0d5cac, type: 3}
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_WasSpriteAssigned
       value: 1
@@ -1691,14 +1715,14 @@ PrefabInstance:
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: reservePlateSprite
       value: 
-      objectReference: {fileID: 21300000, guid: f887143ed985c3d4f8f5c7badd64cf9b, type: 3}
+      objectReference: {fileID: 21300000, guid: 810bedb4709ca274ebc64c8a06d3288c, type: 3}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: reservePlateSpacing
       value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: nextLayerIconSpacing
-      value: 0.4
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: nextLayerIconYOffset
@@ -1726,11 +1750,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3656881526420188457, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.x
-      value: 3.28
+      value: 3.24
       objectReference: {fileID: 0}
     - target: {fileID: 3656881526420188457, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.y
-      value: 1.26
+      value: 1.25
       objectReference: {fileID: 0}
     - target: {fileID: 4301052573761671227, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_IsActive
@@ -1747,7 +1771,7 @@ PrefabInstance:
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: fbaaa947aed4c404ca49cb3f73b811ec, type: 3}
+      objectReference: {fileID: 21300000, guid: c05d854ba83e0da44b574f36be0d5cac, type: 3}
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_WasSpriteAssigned
       value: 1
@@ -1816,14 +1840,14 @@ PrefabInstance:
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: reservePlateSprite
       value: 
-      objectReference: {fileID: 21300000, guid: f887143ed985c3d4f8f5c7badd64cf9b, type: 3}
+      objectReference: {fileID: 21300000, guid: 810bedb4709ca274ebc64c8a06d3288c, type: 3}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: reservePlateSpacing
       value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: nextLayerIconSpacing
-      value: 0.4
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: nextLayerIconYOffset
@@ -1851,11 +1875,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3656881526420188457, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.x
-      value: 3.28
+      value: 3.24
       objectReference: {fileID: 0}
     - target: {fileID: 3656881526420188457, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.y
-      value: 1.26
+      value: 1.25
       objectReference: {fileID: 0}
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_Size.x
@@ -1868,7 +1892,7 @@ PrefabInstance:
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: fbaaa947aed4c404ca49cb3f73b811ec, type: 3}
+      objectReference: {fileID: 21300000, guid: c05d854ba83e0da44b574f36be0d5cac, type: 3}
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_WasSpriteAssigned
       value: 1
@@ -2377,14 +2401,14 @@ PrefabInstance:
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: reservePlateSprite
       value: 
-      objectReference: {fileID: 21300000, guid: f887143ed985c3d4f8f5c7badd64cf9b, type: 3}
+      objectReference: {fileID: 21300000, guid: 810bedb4709ca274ebc64c8a06d3288c, type: 3}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: reservePlateSpacing
       value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: nextLayerIconSpacing
-      value: 0.4
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: nextLayerIconYOffset
@@ -2412,11 +2436,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3656881526420188457, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.x
-      value: 3.28
+      value: 3.24
       objectReference: {fileID: 0}
     - target: {fileID: 3656881526420188457, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.y
-      value: 1.26
+      value: 1.25
       objectReference: {fileID: 0}
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_Size.x
@@ -2429,7 +2453,7 @@ PrefabInstance:
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: fbaaa947aed4c404ca49cb3f73b811ec, type: 3}
+      objectReference: {fileID: 21300000, guid: c05d854ba83e0da44b574f36be0d5cac, type: 3}
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_WasSpriteAssigned
       value: 1
@@ -3221,14 +3245,14 @@ PrefabInstance:
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: reservePlateSprite
       value: 
-      objectReference: {fileID: 21300000, guid: f887143ed985c3d4f8f5c7badd64cf9b, type: 3}
+      objectReference: {fileID: 21300000, guid: 810bedb4709ca274ebc64c8a06d3288c, type: 3}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: reservePlateSpacing
       value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: nextLayerIconSpacing
-      value: 0.4
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: nextLayerIconYOffset
@@ -3256,11 +3280,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3656881526420188457, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.x
-      value: 3.28
+      value: 3.24
       objectReference: {fileID: 0}
     - target: {fileID: 3656881526420188457, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.y
-      value: 1.26
+      value: 1.25
       objectReference: {fileID: 0}
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_Size.x
@@ -3273,7 +3297,7 @@ PrefabInstance:
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: fbaaa947aed4c404ca49cb3f73b811ec, type: 3}
+      objectReference: {fileID: 21300000, guid: c05d854ba83e0da44b574f36be0d5cac, type: 3}
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_WasSpriteAssigned
       value: 1
@@ -3777,14 +3801,14 @@ PrefabInstance:
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: reservePlateSprite
       value: 
-      objectReference: {fileID: 21300000, guid: f887143ed985c3d4f8f5c7badd64cf9b, type: 3}
+      objectReference: {fileID: 21300000, guid: 810bedb4709ca274ebc64c8a06d3288c, type: 3}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: reservePlateSpacing
       value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: nextLayerIconSpacing
-      value: 0.4
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: nextLayerIconYOffset
@@ -3812,11 +3836,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3656881526420188457, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.x
-      value: 3.28
+      value: 3.24
       objectReference: {fileID: 0}
     - target: {fileID: 3656881526420188457, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.y
-      value: 1.26
+      value: 1.25
       objectReference: {fileID: 0}
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_Size.x
@@ -3829,7 +3853,7 @@ PrefabInstance:
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: fbaaa947aed4c404ca49cb3f73b811ec, type: 3}
+      objectReference: {fileID: 21300000, guid: c05d854ba83e0da44b574f36be0d5cac, type: 3}
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_WasSpriteAssigned
       value: 1
@@ -4061,14 +4085,14 @@ PrefabInstance:
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: reservePlateSprite
       value: 
-      objectReference: {fileID: 21300000, guid: f887143ed985c3d4f8f5c7badd64cf9b, type: 3}
+      objectReference: {fileID: 21300000, guid: 810bedb4709ca274ebc64c8a06d3288c, type: 3}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: reservePlateSpacing
       value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: nextLayerIconSpacing
-      value: 0.4
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: nextLayerIconYOffset
@@ -4096,11 +4120,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3656881526420188457, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.x
-      value: 3.28
+      value: 3.24
       objectReference: {fileID: 0}
     - target: {fileID: 3656881526420188457, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.y
-      value: 1.26
+      value: 1.25
       objectReference: {fileID: 0}
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_Size.x
@@ -4113,7 +4137,7 @@ PrefabInstance:
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: fbaaa947aed4c404ca49cb3f73b811ec, type: 3}
+      objectReference: {fileID: 21300000, guid: c05d854ba83e0da44b574f36be0d5cac, type: 3}
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_WasSpriteAssigned
       value: 1
@@ -4693,14 +4717,14 @@ PrefabInstance:
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: reservePlateSprite
       value: 
-      objectReference: {fileID: 21300000, guid: f887143ed985c3d4f8f5c7badd64cf9b, type: 3}
+      objectReference: {fileID: 21300000, guid: 810bedb4709ca274ebc64c8a06d3288c, type: 3}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: reservePlateSpacing
       value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: nextLayerIconSpacing
-      value: 0.4
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: nextLayerIconYOffset
@@ -4728,11 +4752,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3656881526420188457, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.x
-      value: 3.28
+      value: 3.24
       objectReference: {fileID: 0}
     - target: {fileID: 3656881526420188457, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.y
-      value: 1.26
+      value: 1.25
       objectReference: {fileID: 0}
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_Size.x
@@ -4745,7 +4769,7 @@ PrefabInstance:
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: fbaaa947aed4c404ca49cb3f73b811ec, type: 3}
+      objectReference: {fileID: 21300000, guid: c05d854ba83e0da44b574f36be0d5cac, type: 3}
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_WasSpriteAssigned
       value: 1
@@ -5004,14 +5028,14 @@ PrefabInstance:
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: reservePlateSprite
       value: 
-      objectReference: {fileID: 21300000, guid: f887143ed985c3d4f8f5c7badd64cf9b, type: 3}
+      objectReference: {fileID: 21300000, guid: 810bedb4709ca274ebc64c8a06d3288c, type: 3}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: reservePlateSpacing
       value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: nextLayerIconSpacing
-      value: 0.4
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: nextLayerIconYOffset
@@ -5039,11 +5063,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3656881526420188457, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.x
-      value: 3.28
+      value: 3.24
       objectReference: {fileID: 0}
     - target: {fileID: 3656881526420188457, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.y
-      value: 1.26
+      value: 1.25
       objectReference: {fileID: 0}
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_Size.x
@@ -5056,7 +5080,7 @@ PrefabInstance:
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: fbaaa947aed4c404ca49cb3f73b811ec, type: 3}
+      objectReference: {fileID: 21300000, guid: c05d854ba83e0da44b574f36be0d5cac, type: 3}
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_WasSpriteAssigned
       value: 1
@@ -5258,14 +5282,14 @@ PrefabInstance:
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: reservePlateSprite
       value: 
-      objectReference: {fileID: 21300000, guid: f887143ed985c3d4f8f5c7badd64cf9b, type: 3}
+      objectReference: {fileID: 21300000, guid: 810bedb4709ca274ebc64c8a06d3288c, type: 3}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: reservePlateSpacing
       value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: nextLayerIconSpacing
-      value: 0.4
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: nextLayerIconYOffset
@@ -5293,11 +5317,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3656881526420188457, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.x
-      value: 3.28
+      value: 3.24
       objectReference: {fileID: 0}
     - target: {fileID: 3656881526420188457, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.y
-      value: 1.26
+      value: 1.25
       objectReference: {fileID: 0}
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_Size.x
@@ -5310,7 +5334,7 @@ PrefabInstance:
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: fbaaa947aed4c404ca49cb3f73b811ec, type: 3}
+      objectReference: {fileID: 21300000, guid: c05d854ba83e0da44b574f36be0d5cac, type: 3}
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_WasSpriteAssigned
       value: 1
@@ -5375,14 +5399,14 @@ PrefabInstance:
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: reservePlateSprite
       value: 
-      objectReference: {fileID: 21300000, guid: f887143ed985c3d4f8f5c7badd64cf9b, type: 3}
+      objectReference: {fileID: 21300000, guid: 810bedb4709ca274ebc64c8a06d3288c, type: 3}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: reservePlateSpacing
       value: 0.1
       objectReference: {fileID: 0}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: nextLayerIconSpacing
-      value: 0.4
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 1726270559867563848, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: nextLayerIconYOffset
@@ -5410,11 +5434,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3656881526420188457, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.x
-      value: 3.28
+      value: 3.24
       objectReference: {fileID: 0}
     - target: {fileID: 3656881526420188457, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_SpriteTilingProperty.oldSize.y
-      value: 1.26
+      value: 1.25
       objectReference: {fileID: 0}
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_Size.x
@@ -5427,7 +5451,7 @@ PrefabInstance:
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: fbaaa947aed4c404ca49cb3f73b811ec, type: 3}
+      objectReference: {fileID: 21300000, guid: c05d854ba83e0da44b574f36be0d5cac, type: 3}
     - target: {fileID: 4324064087187067808, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
       propertyPath: m_WasSpriteAssigned
       value: 1

@@ -9567,7 +9567,7 @@ GameObject:
   - component: {fileID: 5673252675300596376}
   - component: {fileID: 2814090464843256820}
   m_Layer: 0
-  m_Name: HearBroken_VFX
+  m_Name: HeartBroken_VFX
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
