@@ -27,6 +27,10 @@ public class Plate : MonoBehaviour
     [Header("VFX")]
     [SerializeField] private GameObject mergeParticleVFXPrefab;
 
+    [Header("Hidden Reveal Animation")]
+    [SerializeField] private float hiddenRevealDelay = 0.3f;
+    [SerializeField] private float hiddenRevealDuration = 0.5f;
+
     private List<Sushi> activeSushis = new List<Sushi>(3) { null, null, null };
     private Queue<Layer> layerQueue = new Queue<Layer>();
     private PlateUI plateUI;
@@ -329,6 +333,7 @@ public class Plate : MonoBehaviour
 
         activeSushis = new List<Sushi>(3) { null, null, null };
 
+        GameManager.Instance?.OnSushiMerged();
         SushiLockSystem.Instance?.OnMergeCompleted();
         PlateUnlockSystem.Instance?.OnSushiMerged(mergedTypeId);
 
@@ -342,7 +347,6 @@ public class Plate : MonoBehaviour
             GameStateChecker.Instance.CheckWinCondition();
         }
     }
-
     private void CheckNextLayerRefill()
     {
         if (ActiveCount == 0 && LayerCount > 0)
@@ -366,6 +370,7 @@ public class Plate : MonoBehaviour
             var types = nextLayer.GetAllTypes();
             var slotIndices = nextLayer.SlotIndices;
             var lockStages = nextLayer.GetLockStages();
+            var hiddenStates = nextLayer.GetHiddenStates();
 
             for (int i = 0; i < types.Count; i++)
             {
@@ -388,6 +393,13 @@ public class Plate : MonoBehaviour
 
                 animatingSushis.Add(sushi);
 
+                bool isHidden = hiddenStates != null && i < hiddenStates.Count && hiddenStates[i];
+
+                if (isHidden && plateUI != null)
+                {
+                    CreateHiddenOverlay(sushi, targetPos);
+                }
+
                 sushi.transform.DOMove(targetPos, refillDuration)
                     .SetEase(Ease.OutBack)
                     .OnComplete(() => animatingSushis.Remove(sushi));
@@ -396,6 +408,54 @@ public class Plate : MonoBehaviour
                     .SetEase(Ease.OutBack);
             }
         }
+    }
+
+    private void CreateHiddenOverlay(Sushi sushi, Vector3 targetPos)
+    {
+        var hiddenSprite = plateUI.GetHiddenSushiSprite();
+        if (hiddenSprite == null) return;
+
+        var hiddenObj = new GameObject("HiddenOverlay");
+        hiddenObj.transform.position = sushi.transform.position;
+        hiddenObj.transform.SetParent(sushi.transform);
+        hiddenObj.transform.localScale = Vector3.one * 1.5f;
+
+        var hiddenRenderer = hiddenObj.AddComponent<SpriteRenderer>();
+        hiddenRenderer.sprite = hiddenSprite;
+        hiddenRenderer.sortingLayerName = sushi.SpriteRenderer.sortingLayerName;
+        hiddenRenderer.sortingOrder = sushi.SpriteRenderer.sortingOrder + 1;
+
+        DOVirtual.DelayedCall(refillDuration, () =>
+        {
+            if (hiddenObj != null)
+            {
+                RevealHiddenSushi(hiddenObj);
+            }
+        });
+    }
+
+    private void RevealHiddenSushi(GameObject hiddenObj)
+    {
+        Vector3 startPos = hiddenObj.transform.position;
+        Vector3 targetPos = startPos + new Vector3(1.5f, 1.5f, 0);
+
+        hiddenObj.transform.SetParent(null);
+
+        hiddenObj.transform.DOMove(targetPos, hiddenRevealDuration)
+            .SetEase(Ease.OutQuad);
+
+        hiddenObj.transform.DORotate(new Vector3(0, 0, -90), hiddenRevealDuration, RotateMode.FastBeyond360)
+            .SetEase(Ease.OutQuad);
+
+        hiddenObj.transform.DOScale(Vector3.zero, hiddenRevealDuration)
+            .SetEase(Ease.InBack)
+            .OnComplete(() =>
+            {
+                if (hiddenObj != null)
+                {
+                    Destroy(hiddenObj);
+                }
+            });
     }
 
     private void UpdateVisuals()

@@ -12,6 +12,12 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameUI gameUI;
     [SerializeField] private DoorTransition doorTransition;
 
+    private int totalSushiSets;
+    private int mergedSetsCount;
+
+    public int TotalSets => totalSushiSets;
+    public int MergedSets => mergedSetsCount;
+
     private LevelGenerator levelGenerator;
     private float timeRemaining;
     private bool isGameActive;
@@ -51,6 +57,36 @@ public class GameManager : MonoBehaviour
             }
         }
     }
+    private void StartGame()
+    {
+        levelGenerator = new LevelGenerator(currentLevel);
+        var plateDataList = levelGenerator.GeneratePlates();
+
+        plateManager.Initialize(plateDataList);
+        GameStateChecker.Instance.Initialize(plateManager);
+
+        totalSushiSets = currentLevel.totalSushiCount / 3;
+        mergedSetsCount = 0;
+
+        timeRemaining = currentLevel.timeLimitSeconds;
+        isGameActive = true;
+        isTimerFrozen = false;
+        isTimerStarted = false;
+
+        gameUI.ShowGame();
+        gameUI.UpdateProgress(mergedSetsCount, totalSushiSets);
+
+        if (doorTransition != null)
+        {
+            doorTransition.PlayOpenAnimation();
+        }
+    }
+
+    public void OnSushiMerged()
+    {
+        mergedSetsCount++;
+        gameUI.UpdateProgress(mergedSetsCount, totalSushiSets);
+    }
 
     public void StartTimer()
     {
@@ -81,26 +117,6 @@ public class GameManager : MonoBehaviour
         freezeCoroutine = null;
     }
 
-    private void StartGame()
-    {
-        levelGenerator = new LevelGenerator(currentLevel);
-        var plateDataList = levelGenerator.GeneratePlates();
-
-        plateManager.Initialize(plateDataList);
-        GameStateChecker.Instance.Initialize(plateManager);
-
-        timeRemaining = currentLevel.timeLimitSeconds;
-        isGameActive = true;
-        isTimerFrozen = false;
-        isTimerStarted = false;
-
-        gameUI.ShowGame();
-
-        if (doorTransition != null)
-        {
-            doorTransition.PlayOpenAnimation();
-        }
-    }
 
     public void OnGameWin()
     {

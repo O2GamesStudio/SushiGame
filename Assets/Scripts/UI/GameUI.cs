@@ -8,6 +8,9 @@ public class GameUI : MonoBehaviour
     [SerializeField] private LosePanel losePanel;
     [SerializeField] private Color frozenColor = Color.cyan;
 
+    [Header("Progress Display")]
+    [SerializeField] private TextMeshProUGUI progressText;
+
     private Color normalColor = Color.white;
 
     public void UpdateTimer(float seconds)
@@ -27,7 +30,13 @@ public class GameUI : MonoBehaviour
         winPanel.gameObject.SetActive(false);
         losePanel.gameObject.SetActive(false);
     }
-
+    public void UpdateProgress(int current, int total)
+    {
+        if (progressText != null)
+        {
+            progressText.text = $"{current}/{total}";
+        }
+    }
     public void ShowWin()
     {
         winPanel.gameObject.SetActive(true);

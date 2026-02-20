@@ -351,7 +351,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &39197462
@@ -792,7 +792,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 0
+  m_hasFontAssetChanged: 1
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &243475320
@@ -4256,6 +4256,7 @@ MonoBehaviour:
   winPanel: {fileID: 1246754862}
   losePanel: {fileID: 741905816}
   frozenColor: {r: 0, g: 1, b: 1, a: 1}
+  progressText: {fileID: 1678803347}
 --- !u!114 &1419415412 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2455267321332537711, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}

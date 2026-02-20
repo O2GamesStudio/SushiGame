@@ -164,6 +164,10 @@ MonoBehaviour:
   refillDuration: 0.5
   refillStartOffsetY: 2
   mergeParticleVFXPrefab: {fileID: 8161787575350642960, guid: 173b68f673c67024fbf1c11d0312e546, type: 3}
+  mergeParticleVFX: {fileID: 8161787575350642961, guid: 173b68f673c67024fbf1c11d0312e546, type: 3}
+  hiddenSushiSprite: {fileID: 21300000, guid: e4317dac23de5ca4bbbef7e93f0732cf, type: 3}
+  hiddenRevealDelay: 0.3
+  hiddenRevealDuration: 0.5
 --- !u!114 &1726270559867563848
 MonoBehaviour:
   m_ObjectHideFlags: 0

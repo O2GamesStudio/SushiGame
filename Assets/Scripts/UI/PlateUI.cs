@@ -33,7 +33,10 @@ public class PlateUI : MonoBehaviour
     {
         ClearReservePlates();
     }
-
+    public Sprite GetHiddenSushiSprite()
+    {
+        return hiddenSushiSprite;
+    }
     public void UpdateLockState(PlateState state, int requiredSushiTypeId)
     {
         bool isLocked = state != PlateState.Normal;
