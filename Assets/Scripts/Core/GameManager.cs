@@ -74,6 +74,7 @@ public class GameManager : MonoBehaviour
         isTimerStarted = false;
 
         gameUI.ShowGame();
+        gameUI.UpdateTimer(timeRemaining);
         gameUI.UpdateProgress(mergedSetsCount, totalSushiSets);
 
         if (doorTransition != null)

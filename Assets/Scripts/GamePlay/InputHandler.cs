@@ -33,6 +33,11 @@ public class InputHandler : MonoBehaviour
 
     private void OnMouseDown()
     {
+        if (GameManager.Instance != null && !GameManager.Instance.IsTimerStarted)
+        {
+            GameManager.Instance.StartTimer();
+        }
+
         hintSystem?.ResetTimer();
 
         var sushi = GetSushiAtMousePosition();
