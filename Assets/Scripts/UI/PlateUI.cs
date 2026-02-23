@@ -6,7 +6,6 @@ public class PlateUI : MonoBehaviour
     [SerializeField] private Transform nextLayerContainer;
     [SerializeField] private GameObject nextLayerIconPrefab;
 
-
     [Header("Next Layer Icons")]
     [SerializeField] private float nextLayerIconYOffset = -1.2f;
     [SerializeField] private float nextLayerIconSpacing = 0.6f;
@@ -28,23 +27,25 @@ public class PlateUI : MonoBehaviour
 
     private List<GameObject> nextLayerIcons = new List<GameObject>();
     private List<SpriteRenderer> reservePlateRenderers = new List<SpriteRenderer>();
+    private Sushi requiredSushiView;
+
+    private void Awake()
+    {
+        if (requiredSushiIcon != null)
+            requiredSushiView = requiredSushiIcon.GetComponent<Sushi>();
+    }
 
     private void OnDestroy()
     {
         ClearReservePlates();
     }
-    public Sprite GetHiddenSushiSprite()
-    {
-        return hiddenSushiSprite;
-    }
+
+    public Sprite GetHiddenSushiSprite() => hiddenSushiSprite;
+
     public void UpdateLockState(PlateState state, int requiredSushiTypeId)
     {
-        bool isLocked = state != PlateState.Normal;
-
         if (plateSpriteRenderer != null)
-        {
-            plateSpriteRenderer.sprite = isLocked ? lockedPlateSprite : normalPlateSprite;
-        }
+            plateSpriteRenderer.sprite = state != PlateState.Normal ? lockedPlateSprite : normalPlateSprite;
 
         if (state == PlateState.LockedSushi && requiredSushiTypeId >= 0)
         {
@@ -53,61 +54,30 @@ public class PlateUI : MonoBehaviour
                 requiredSushiIcon.SetActive(true);
 
                 var data = SushiPool.Instance.GetData(requiredSushiTypeId);
-                if (data != null)
-                {
-                    var ricePart = requiredSushiIcon.transform.Find("RicePart");
-                    var toppingPart = requiredSushiIcon.transform.Find("ToppingPart");
-
-                    if (ricePart != null)
-                    {
-                        var riceRenderer = ricePart.GetComponent<SpriteRenderer>();
-                        if (riceRenderer != null)
-                        {
-                            riceRenderer.sprite = data.riceSprite;
-                        }
-                    }
-
-                    if (toppingPart != null)
-                    {
-                        var toppingRenderer = toppingPart.GetComponent<SpriteRenderer>();
-                        if (toppingRenderer != null)
-                        {
-                            toppingRenderer.sprite = data.toppingSprite;
-                        }
-                    }
-                }
+                if (data != null && requiredSushiView != null)
+                    requiredSushiView.Initialize(requiredSushiTypeId, data.riceSprite, data.toppingSprite, data.toppingOffsetX, data.toppingOffsetY);
             }
 
             if (adIcon != null)
-            {
                 adIcon.SetActive(false);
-            }
         }
         else if (state == PlateState.LockedAd)
         {
             if (adIcon != null)
-            {
                 adIcon.SetActive(true);
-            }
 
             if (requiredSushiIcon != null)
-            {
                 requiredSushiIcon.SetActive(false);
-            }
 
             ClearNextLayerDisplay();
         }
         else
         {
             if (requiredSushiIcon != null)
-            {
                 requiredSushiIcon.SetActive(false);
-            }
 
             if (adIcon != null)
-            {
                 adIcon.SetActive(false);
-            }
         }
     }
 
@@ -132,7 +102,7 @@ public class PlateUI : MonoBehaviour
             var data = SushiPool.Instance.GetData(types[i]);
 
             if (sushiView != null && data != null)
-                sushiView.Initialize(types[i], data.riceSprite, data.toppingSprite, data.toppingOffsetY);
+                sushiView.Initialize(types[i], data.riceSprite, data.toppingSprite, data.toppingOffsetX, data.toppingOffsetY);
 
             bool isHidden = hiddenStates != null && i < hiddenStates.Count && hiddenStates[i];
             if (isHidden && hiddenSushiSprite != null)
@@ -148,7 +118,7 @@ public class PlateUI : MonoBehaviour
                 if (sushiView?.SpriteRenderer != null)
                 {
                     hiddenRenderer.sortingLayerName = sushiView.SpriteRenderer.sortingLayerName;
-                    hiddenRenderer.sortingOrder = sushiView.SpriteRenderer.sortingOrder + 2;
+                    hiddenRenderer.sortingOrder = sushiView.SpriteRenderer.sortingOrder + 3;
                 }
             }
 
@@ -164,9 +134,7 @@ public class PlateUI : MonoBehaviour
         foreach (var icon in nextLayerIcons)
         {
             if (icon != null)
-            {
                 Destroy(icon);
-            }
         }
         nextLayerIcons.Clear();
     }
@@ -192,9 +160,7 @@ public class PlateUI : MonoBehaviour
         {
             int lastIndex = reservePlateRenderers.Count - 1;
             if (reservePlateRenderers[lastIndex] != null)
-            {
                 Destroy(reservePlateRenderers[lastIndex].gameObject);
-            }
             reservePlateRenderers.RemoveAt(lastIndex);
         }
 
@@ -213,9 +179,7 @@ public class PlateUI : MonoBehaviour
         foreach (var renderer in reservePlateRenderers)
         {
             if (renderer != null && renderer.gameObject != null)
-            {
                 Destroy(renderer.gameObject);
-            }
         }
         reservePlateRenderers.Clear();
     }

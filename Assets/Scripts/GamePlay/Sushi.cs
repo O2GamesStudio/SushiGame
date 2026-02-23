@@ -72,7 +72,7 @@ public class Sushi : MonoBehaviour
         }
     }
 
-    public void Initialize(int id, Sprite riceSprite, Sprite toppingSprite, float toppingOffsetY = 0f)
+    public void Initialize(int id, Sprite riceSprite, Sprite toppingSprite, float toppingOffsetX = 0f, float toppingOffsetY = 0f)
     {
         typeId = id;
 
@@ -82,7 +82,7 @@ public class Sushi : MonoBehaviour
         if (toppingRenderer != null)
         {
             toppingRenderer.sprite = toppingSprite;
-            toppingRenderer.transform.localPosition = new Vector3(0f, toppingOffsetY, 0f);
+            toppingRenderer.transform.localPosition = new Vector3(toppingOffsetX, toppingOffsetY, 0f);
         }
 
         gameObject.name = $"Sushi_{id}";

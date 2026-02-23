@@ -128,7 +128,7 @@ public class SushiPackagingEffect : MonoBehaviour
         var renderer = lidObj.AddComponent<SpriteRenderer>();
         renderer.sprite = lidSprite;
         renderer.sortingLayerName = "Sushi";
-        renderer.sortingOrder = lidSortingOrder;
+        renderer.sortingOrder = lidSortingOrder + 1;
 
         return lidObj;
     }

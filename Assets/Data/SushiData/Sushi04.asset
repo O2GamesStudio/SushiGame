@@ -15,4 +15,5 @@ MonoBehaviour:
   typeId: 3
   riceSprite: {fileID: 21300000, guid: 54e4e1c7817cddb4dae3050ed7a23de1, type: 3}
   toppingSprite: {fileID: 21300000, guid: f973e8a0997643c4cbab5f0f06e3982d, type: 3}
-  toppingOffsetY: 0.18
+  toppingOffsetX: -0.086
+  toppingOffsetY: 0.178
