@@ -114,7 +114,6 @@ public class PlateUI : MonoBehaviour
     public void UpdateNextLayerDisplay(Layer nextLayer)
     {
         ClearNextLayerDisplay();
-
         if (nextLayer == null) return;
 
         var types = nextLayer.GetAllTypes();
@@ -125,42 +124,17 @@ public class PlateUI : MonoBehaviour
         for (int i = 0; i < types.Count; i++)
         {
             var icon = Instantiate(nextLayerIconPrefab, nextLayerContainer);
-
             float xPos = (slotIndices[i] - 1) * nextLayerIconSpacing;
-            icon.transform.localPosition = new Vector3(xPos, nextLayerIconYOffset, 0);
+            icon.transform.localPosition = new Vector3(xPos, nextLayerIconYOffset, 0f);
             icon.transform.localScale = Vector3.one * nextLayerIconScale;
 
-            SpriteRenderer riceRenderer = null;
-            SpriteRenderer toppingRenderer = null;
-
+            var sushiView = icon.GetComponent<Sushi>();
             var data = SushiPool.Instance.GetData(types[i]);
-            if (data != null)
-            {
-                var ricePart = icon.transform.Find("RicePart");
-                var toppingPart = icon.transform.Find("ToppingPart");
 
-                if (ricePart != null)
-                {
-                    riceRenderer = ricePart.GetComponent<SpriteRenderer>();
-                    if (riceRenderer != null)
-                    {
-                        riceRenderer.sprite = data.riceSprite;
-                    }
-                }
-
-                if (toppingPart != null)
-                {
-                    toppingRenderer = toppingPart.GetComponent<SpriteRenderer>();
-                    if (toppingRenderer != null)
-                    {
-                        toppingRenderer.sprite = data.toppingSprite;
-                        toppingRenderer.sortingOrder = riceRenderer != null ? riceRenderer.sortingOrder + 1 : 1;
-                    }
-                }
-            }
+            if (sushiView != null && data != null)
+                sushiView.Initialize(types[i], data.riceSprite, data.toppingSprite, data.toppingOffsetY);
 
             bool isHidden = hiddenStates != null && i < hiddenStates.Count && hiddenStates[i];
-
             if (isHidden && hiddenSushiSprite != null)
             {
                 var hiddenObj = new GameObject("HiddenOverlay");
@@ -171,33 +145,15 @@ public class PlateUI : MonoBehaviour
                 var hiddenRenderer = hiddenObj.AddComponent<SpriteRenderer>();
                 hiddenRenderer.sprite = hiddenSushiSprite;
 
-                if (riceRenderer != null)
+                if (sushiView?.SpriteRenderer != null)
                 {
-                    hiddenRenderer.sortingLayerName = riceRenderer.sortingLayerName;
-                    hiddenRenderer.sortingOrder = riceRenderer.sortingOrder + 2;
+                    hiddenRenderer.sortingLayerName = sushiView.SpriteRenderer.sortingLayerName;
+                    hiddenRenderer.sortingOrder = sushiView.SpriteRenderer.sortingOrder + 2;
                 }
             }
 
-            var lockIconObj = icon.transform.Find("LockIcon");
-            if (lockIconObj != null)
-            {
-                var lockRenderer = lockIconObj.GetComponent<SpriteRenderer>();
-
-                if (lockStages[i] > 0 && lockRenderer != null)
-                {
-                    lockIconObj.gameObject.SetActive(true);
-
-                    int spriteIndex = lockStages[i] - 1;
-                    if (spriteIndex >= 0 && spriteIndex < lockIconSprites.Length && lockIconSprites[spriteIndex] != null)
-                    {
-                        lockRenderer.sprite = lockIconSprites[spriteIndex];
-                    }
-                }
-                else
-                {
-                    lockIconObj.gameObject.SetActive(false);
-                }
-            }
+            if (sushiView != null && lockStages[i] > 0)
+                sushiView.SetLockStage(lockStages[i]);
 
             nextLayerIcons.Add(icon);
         }

@@ -380,49 +380,48 @@ public class Plate : MonoBehaviour
 
     private void RefillFromNextLayer()
     {
-        if (layerQueue.Count > 0)
+        if (layerQueue.Count == 0) return;
+
+        var nextLayer = layerQueue.Dequeue();
+        var types = nextLayer.GetAllTypes();
+        var slotIndices = nextLayer.SlotIndices;
+        var lockStages = nextLayer.GetLockStages();
+        var hiddenStates = nextLayer.GetHiddenStates();
+
+        for (int i = 0; i < types.Count; i++)
         {
-            var nextLayer = layerQueue.Dequeue();
-            var types = nextLayer.GetAllTypes();
-            var slotIndices = nextLayer.SlotIndices;
-            var lockStages = nextLayer.GetLockStages();
-            var hiddenStates = nextLayer.GetHiddenStates();
+            var sushi = SushiPool.Instance.Get(types[i]);
+            activeSushis[slotIndices[i]] = sushi;
+            sushi.SetCurrentPlate(this);
 
-            for (int i = 0; i < types.Count; i++)
+            if (lockStages[i] > 0)
             {
-                var sushi = SushiPool.Instance.Get(types[i]);
-                activeSushis[slotIndices[i]] = sushi;
-                sushi.SetCurrentPlate(this);
-
-                if (lockStages[i] > 0)
-                {
-                    sushi.SetLockStage(lockStages[i]);
-                    SushiLockSystem.Instance?.RegisterLockedSushi(sushi);
-                }
-
-                sushi.transform.SetParent(sushiSlots[slotIndices[i]]);
-
-                Vector3 targetPos = sushiSlots[slotIndices[i]].position;
-                Vector3 startPos = targetPos + Vector3.down * refillStartOffsetY;
-                sushi.transform.position = startPos;
-                sushi.transform.localScale = Vector3.one * 0.5f;
-
-                animatingSushis.Add(sushi);
-
-                bool isHidden = hiddenStates != null && i < hiddenStates.Count && hiddenStates[i];
-
-                if (isHidden && plateUI != null)
-                {
-                    CreateHiddenOverlay(sushi, targetPos);
-                }
-
-                sushi.transform.DOMove(targetPos, refillDuration)
-                    .SetEase(Ease.OutBack)
-                    .OnComplete(() => animatingSushis.Remove(sushi));
-
-                sushi.transform.DOScale(Vector3.one, refillDuration)
-                    .SetEase(Ease.OutBack);
+                sushi.SetLockStage(lockStages[i]);
+                SushiLockSystem.Instance?.RegisterLockedSushi(sushi);
             }
+
+            sushi.transform.SetParent(sushiSlots[slotIndices[i]]);
+
+            Vector3 targetLocalPos = new Vector3(0f, 0.08f, -1f);
+            Vector3 targetWorldPos = sushiSlots[slotIndices[i]].TransformPoint(targetLocalPos);
+            Vector3 startPos = targetWorldPos + Vector3.down * refillStartOffsetY;
+
+            sushi.transform.position = startPos;
+            sushi.transform.localScale = Vector3.one * 0.5f;
+
+            animatingSushis.Add(sushi);
+
+            bool isHidden = hiddenStates != null && i < hiddenStates.Count && hiddenStates[i];
+
+            if (isHidden && plateUI != null)
+                CreateHiddenOverlay(sushi, targetWorldPos);
+
+            sushi.transform.DOLocalMove(targetLocalPos, refillDuration)
+                .SetEase(Ease.OutBack)
+                .OnComplete(() => animatingSushis.Remove(sushi));
+
+            sushi.transform.DOScale(Vector3.one, refillDuration)
+                .SetEase(Ease.OutBack);
         }
     }
 

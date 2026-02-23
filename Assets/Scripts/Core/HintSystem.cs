@@ -20,6 +20,7 @@ public class HintSystem : MonoBehaviour
     private bool isHinting = false;
     private List<Sushi> currentHintSushis = new List<Sushi>();
     private Dictionary<Sushi, Sequence> activeSequences = new Dictionary<Sushi, Sequence>();
+    private Dictionary<Sushi, Vector3> originalToppingPositions = new Dictionary<Sushi, Vector3>();
 
     private void Update()
     {
@@ -70,9 +71,10 @@ public class HintSystem : MonoBehaviour
 
         if (ricePart == null || toppingPart == null) return;
 
-        Sequence hintSequence = DOTween.Sequence();
-
         Vector3 originalToppingPos = toppingPart.localPosition;
+        originalToppingPositions[sushi] = originalToppingPos;
+
+        Sequence hintSequence = DOTween.Sequence();
 
         hintSequence.Append(
             DOTween.To(() => Vector3.one, x =>
@@ -108,9 +110,7 @@ public class HintSystem : MonoBehaviour
         foreach (var kvp in activeSequences)
         {
             if (kvp.Value != null)
-            {
                 kvp.Value.Kill();
-            }
         }
         activeSequences.Clear();
 
@@ -129,13 +129,16 @@ public class HintSystem : MonoBehaviour
                     if (sushi.ToppingPart != null)
                     {
                         sushi.ToppingPart.DOKill();
-                        sushi.ToppingPart.localPosition = Vector3.zero;
+                        sushi.ToppingPart.localPosition = originalToppingPositions.TryGetValue(sushi, out var origPos)
+                            ? origPos
+                            : sushi.ToppingPart.localPosition;
                     }
                 }
             }
             currentHintSushis.Clear();
         }
 
+        originalToppingPositions.Clear();
         isHinting = false;
     }
 
