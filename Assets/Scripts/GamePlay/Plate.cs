@@ -483,7 +483,7 @@ public class Plate : MonoBehaviour
                 var sushi = activeSushis[i];
                 sushi.transform.SetParent(sushiSlots[i]);
                 sushi.transform.position = sushiSlots[i].position;
-                sushi.transform.localPosition = new Vector3(0, 0, -1);
+                sushi.transform.localPosition = new Vector3(0, 0.08f, -1);
                 sushi.transform.localScale = Vector3.one;
                 sushi.gameObject.SetActive(!IsLocked);
             }

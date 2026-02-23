@@ -7,17 +7,20 @@ public class HintSystem : MonoBehaviour
 {
     [SerializeField] private PlateManager plateManager;
     [SerializeField] private float hintDelay = 5f;
-    [SerializeField] private float shakeDuration = 0.5f;
-    [SerializeField] private float shakeStrength = 0.05f;
-    [SerializeField] private int shakeVibrato = 10;
+
+    [Header("Hint Animation")]
+    [SerializeField] private float stretchDuration = 0.3f;
+    [SerializeField] private float stretchScale = 1.15f;
+    [SerializeField] private Ease stretchEase = Ease.InOutSine;
 
     private float idleTimer = 0f;
-    private bool isShaking = false;
+    private bool isHinting = false;
     private List<Sushi> currentHintSushis = new List<Sushi>();
+    private Dictionary<Sushi, Sequence> activeSequences = new Dictionary<Sushi, Sequence>();
 
     private void Update()
     {
-        if (!isShaking)
+        if (!isHinting)
         {
             idleTimer += Time.deltaTime;
 
@@ -40,15 +43,14 @@ public class HintSystem : MonoBehaviour
 
         if (mergeableSet != null && mergeableSet.Count == 3)
         {
-            isShaking = true;
+            isHinting = true;
             currentHintSushis = mergeableSet;
 
             foreach (var sushi in currentHintSushis)
             {
                 if (sushi != null && sushi.gameObject.activeSelf)
                 {
-                    sushi.transform.DOShakePosition(shakeDuration, shakeStrength, shakeVibrato)
-                        .SetLoops(-1, LoopType.Restart);
+                    PlayStretchAnimation(sushi);
                 }
             }
         }
@@ -58,20 +60,47 @@ public class HintSystem : MonoBehaviour
         }
     }
 
+    private void PlayStretchAnimation(Sushi sushi)
+    {
+        float squashScale = 1f / stretchScale;
+
+        Sequence stretchSequence = DOTween.Sequence();
+
+        stretchSequence.Append(sushi.transform.DOScale(new Vector3(stretchScale, squashScale, 1f), stretchDuration).SetEase(stretchEase));
+        stretchSequence.Append(sushi.transform.DOScale(Vector3.one, stretchDuration).SetEase(stretchEase));
+        stretchSequence.Append(sushi.transform.DOScale(new Vector3(squashScale, stretchScale, 1f), stretchDuration).SetEase(stretchEase));
+        stretchSequence.Append(sushi.transform.DOScale(Vector3.one, stretchDuration).SetEase(stretchEase));
+
+        stretchSequence.SetLoops(-1, LoopType.Restart);
+
+        activeSequences[sushi] = stretchSequence;
+    }
+
     private void StopHint()
     {
+        foreach (var kvp in activeSequences)
+        {
+            if (kvp.Value != null)
+            {
+                kvp.Value.Kill();
+            }
+        }
+        activeSequences.Clear();
+
         if (currentHintSushis.Count > 0)
         {
             foreach (var sushi in currentHintSushis)
             {
-                if (sushi != null)
+                if (sushi != null && sushi.transform != null)
                 {
                     sushi.transform.DOKill();
+                    sushi.transform.localScale = Vector3.one;
                 }
             }
             currentHintSushis.Clear();
         }
-        isShaking = false;
+
+        isHinting = false;
     }
 
     private List<Sushi> FindMergeableSet()

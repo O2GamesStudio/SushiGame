@@ -37,6 +37,11 @@ public class Sushi : MonoBehaviour
         if (lockIcon != null)
         {
             lockIconRenderer = lockIcon.GetComponent<SpriteRenderer>();
+            if (lockIconRenderer != null)
+            {
+                lockIconRenderer.sortingLayerName = SpriteRenderer.sortingLayerName;
+                lockIconRenderer.sortingOrder = SpriteRenderer.sortingOrder + 1;
+            }
             lockIcon.SetActive(false);
         }
     }
@@ -81,6 +86,10 @@ public class Sushi : MonoBehaviour
         if (lockStage > 0)
         {
             lockIcon.SetActive(true);
+
+            lockIconRenderer.sortingLayerName = SpriteRenderer.sortingLayerName;
+            lockIconRenderer.sortingOrder = SpriteRenderer.sortingOrder + 1;
+
             int spriteIndex = lockStage - 1;
             if (spriteIndex >= 0 && spriteIndex < lockStageSprites.Length)
             {
