@@ -25,10 +25,11 @@ public class SushiPackagingEffect : MonoBehaviour
     [SerializeField] private int lidSortingOrder = 51;
     [SerializeField] private int sushiInContainerSortingOrder = 49;
 
-    public void PlayPackagingEffect(Vector3 platePosition, List<Sushi> sushis, Action onComplete)
+    public void PlayPackagingEffect(Vector3 platePosition, List<Sushi> sushis, Action<Vector3> onLidClosed, Action onComplete)
     {
         if (containerSprite == null || lidSprite == null || sushis.Count != 3)
         {
+            onLidClosed?.Invoke(platePosition);
             onComplete?.Invoke();
             return;
         }
@@ -38,8 +39,24 @@ public class SushiPackagingEffect : MonoBehaviour
 
         MoveSushisToContainer(sushis, containerPosition, () =>
         {
-            DropLidAndComplete(container, containerPosition, sushis, onComplete);
+            DropLidAndComplete(container, containerPosition, sushis, onLidClosed, onComplete);
         });
+    }
+    private void DropLidAndComplete(GameObject container, Vector3 position, List<Sushi> sushis, Action<Vector3> onLidClosed, Action onComplete)
+    {
+        GameObject lid = CreateLid(position);
+
+        lid.transform.DOMove(position, lidDropDuration)
+            .SetEase(Ease.OutBounce)
+            .OnComplete(() =>
+            {
+                onLidClosed?.Invoke(position);
+
+                DOVirtual.DelayedCall(packageDisappearDelay, () =>
+                {
+                    DisappearPackage(container, lid, sushis, onComplete);
+                });
+            });
     }
 
     private GameObject CreateContainer(Vector3 position)

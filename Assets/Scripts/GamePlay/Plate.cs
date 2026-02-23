@@ -313,22 +313,30 @@ public class Plate : MonoBehaviour
 
         if (packagingEffect != null)
         {
-            packagingEffect.PlayPackagingEffect(transform.position, sushisToReturn, () =>
-            {
-                OnPackagingComplete(sushisToReturn, mergedTypeId);
-            });
+            packagingEffect.PlayPackagingEffect(
+                transform.position,
+                sushisToReturn,
+                (containerPosition) =>
+                {
+                    SpawnMergeParticle(containerPosition);
+                },
+                () =>
+                {
+                    OnPackagingComplete(sushisToReturn, mergedTypeId);
+                }
+            );
         }
         else
         {
+            SpawnMergeParticle(transform.position);
             OnPackagingComplete(sushisToReturn, mergedTypeId);
         }
     }
-
-    private void OnPackagingComplete(List<Sushi> sushis, int mergedTypeId)
+    private void SpawnMergeParticle(Vector3 position)
     {
         if (mergeParticleVFXPrefab != null)
         {
-            var vfx = LeanPool.Spawn(mergeParticleVFXPrefab, transform.position, Quaternion.identity);
+            var vfx = LeanPool.Spawn(mergeParticleVFXPrefab, position, Quaternion.identity);
 
             var particleSystem = vfx.GetComponent<ParticleSystem>();
             if (particleSystem != null)
@@ -341,7 +349,10 @@ public class Plate : MonoBehaviour
                 LeanPool.Despawn(vfx, 2f);
             }
         }
+    }
 
+    private void OnPackagingComplete(List<Sushi> sushis, int mergedTypeId)
+    {
         foreach (var sushi in sushis)
         {
             SushiLockSystem.Instance?.ClearLockedSushi(sushi);
@@ -362,17 +373,6 @@ public class Plate : MonoBehaviour
             GameStateChecker.Instance.CheckWinCondition();
         }
     }
-
-    private void CheckNextLayerRefill()
-    {
-        if (ActiveCount == 0 && LayerCount > 0)
-        {
-            RefillFromNextLayer();
-            plateUI?.UpdateNextLayerDisplay(CurrentNextLayer);
-            plateUI?.UpdateReservePlates(LayerCount);
-        }
-    }
-
     public void RecheckMerge()
     {
         CheckMerge();
