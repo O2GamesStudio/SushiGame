@@ -1,8 +1,10 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "SushiData", menuName = "SushiMerge/SushiData")]
+[CreateAssetMenu(fileName = "SushiData", menuName = "Game/SushiData")]
 public class SushiData : ScriptableObject
 {
-    public int id;
-    public Sprite sprite;
+    public int typeId;
+    public Sprite riceSprite;
+    public Sprite toppingSprite;
+    public float toppingOffsetY = 0f;
 }

@@ -197,9 +197,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::HintSystem
   plateManager: {fileID: 1624048182}
   hintDelay: 5
-  shakeDuration: 0.5
-  shakeStrength: 0.07
-  shakeVibrato: 10
+  riceSqueezeDuration: 0.15
+  riceSqueezeScale: 0.95
+  riceStretchScale: 1.05
+  toppingBounceHeight: 0.3
+  toppingBounceDuration: 0.4
+  bounceEase: 6
 --- !u!114 &11404577
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4455,7 +4458,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02b3194fc7c99f74f9c256cbce76a642, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SushiPool
-  sushiPrefab: {fileID: 2823495874691246852, guid: e5a0842a1dcce4a49a45400f6cc075bf, type: 3}
+  sushiPrefab: {fileID: 921084539746202509, guid: 4994f4efc80640f488b3edb9cff6c7ff, type: 3}
+  initialPoolSize: 20
   sushiDataList:
   - {fileID: 11400000, guid: 5752e56d1c506c948bbce55ad3b2a96c, type: 2}
   - {fileID: 11400000, guid: 9d5e86f85bb545a4cac4cfae923ceb56, type: 2}
@@ -4464,11 +4468,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 18d1b502b4124aa42a97a202986f681a, type: 2}
   - {fileID: 11400000, guid: a33b027534794d0409eb137d82e1e2ee, type: 2}
   - {fileID: 11400000, guid: 95987e9540bbc96499c9b27349d413e3, type: 2}
-  - {fileID: 11400000, guid: 2d64c879c08a0df4392b8e728c16686f, type: 2}
-  - {fileID: 11400000, guid: c4da4d6280ac2ac46834834ac0ad43d2, type: 2}
-  - {fileID: 11400000, guid: 7b47f18631091d24388380964fddab20, type: 2}
-  - {fileID: 11400000, guid: 15284d92ae277174e8f9fb9cb39abdb8, type: 2}
-  - {fileID: 11400000, guid: 0f76a9579e8ad014ebd097fa4aa470a7, type: 2}
 --- !u!4 &1501768729
 Transform:
   m_ObjectHideFlags: 0

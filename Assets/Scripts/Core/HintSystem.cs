@@ -9,9 +9,12 @@ public class HintSystem : MonoBehaviour
     [SerializeField] private float hintDelay = 5f;
 
     [Header("Hint Animation")]
-    [SerializeField] private float stretchDuration = 0.3f;
-    [SerializeField] private float stretchScale = 1.15f;
-    [SerializeField] private Ease stretchEase = Ease.InOutSine;
+    [SerializeField] private float riceSqueezeDuration = 0.15f;
+    [SerializeField] private float riceSqueezeScale = 0.95f;
+    [SerializeField] private float riceStretchScale = 1.05f;
+    [SerializeField] private float toppingBounceHeight = 0.3f;
+    [SerializeField] private float toppingBounceDuration = 0.4f;
+    [SerializeField] private Ease bounceEase = Ease.OutQuad;
 
     private float idleTimer = 0f;
     private bool isHinting = false;
@@ -62,18 +65,42 @@ public class HintSystem : MonoBehaviour
 
     private void PlayStretchAnimation(Sushi sushi)
     {
-        float squashScale = 1f / stretchScale;
+        Transform ricePart = sushi.RicePart;
+        Transform toppingPart = sushi.ToppingPart;
 
-        Sequence stretchSequence = DOTween.Sequence();
+        if (ricePart == null || toppingPart == null) return;
 
-        stretchSequence.Append(sushi.transform.DOScale(new Vector3(stretchScale, squashScale, 1f), stretchDuration).SetEase(stretchEase));
-        stretchSequence.Append(sushi.transform.DOScale(Vector3.one, stretchDuration).SetEase(stretchEase));
-        stretchSequence.Append(sushi.transform.DOScale(new Vector3(squashScale, stretchScale, 1f), stretchDuration).SetEase(stretchEase));
-        stretchSequence.Append(sushi.transform.DOScale(Vector3.one, stretchDuration).SetEase(stretchEase));
+        Sequence hintSequence = DOTween.Sequence();
 
-        stretchSequence.SetLoops(-1, LoopType.Restart);
+        Vector3 originalToppingPos = toppingPart.localPosition;
 
-        activeSequences[sushi] = stretchSequence;
+        hintSequence.Append(
+            DOTween.To(() => Vector3.one, x =>
+            {
+                ricePart.localScale = new Vector3(riceSqueezeScale, riceStretchScale, 1f);
+            }, Vector3.one, riceSqueezeDuration)
+        );
+
+        hintSequence.Join(
+            toppingPart.DOLocalMoveY(originalToppingPos.y + toppingBounceHeight, toppingBounceDuration)
+                .SetEase(bounceEase)
+        );
+
+        hintSequence.Append(
+            DOTween.To(() => Vector3.one, x =>
+            {
+                ricePart.localScale = Vector3.one;
+            }, Vector3.one, riceSqueezeDuration)
+        );
+
+        hintSequence.Join(
+            toppingPart.DOLocalMoveY(originalToppingPos.y, toppingBounceDuration)
+                .SetEase(Ease.OutBounce)
+        );
+
+        hintSequence.SetLoops(-1, LoopType.Restart);
+
+        activeSequences[sushi] = hintSequence;
     }
 
     private void StopHint()
@@ -91,10 +118,19 @@ public class HintSystem : MonoBehaviour
         {
             foreach (var sushi in currentHintSushis)
             {
-                if (sushi != null && sushi.transform != null)
+                if (sushi != null)
                 {
-                    sushi.transform.DOKill();
-                    sushi.transform.localScale = Vector3.one;
+                    if (sushi.RicePart != null)
+                    {
+                        sushi.RicePart.DOKill();
+                        sushi.RicePart.localScale = Vector3.one;
+                    }
+
+                    if (sushi.ToppingPart != null)
+                    {
+                        sushi.ToppingPart.DOKill();
+                        sushi.ToppingPart.localPosition = Vector3.zero;
+                    }
                 }
             }
             currentHintSushis.Clear();

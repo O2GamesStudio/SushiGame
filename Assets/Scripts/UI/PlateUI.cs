@@ -51,13 +51,29 @@ public class PlateUI : MonoBehaviour
             if (requiredSushiIcon != null)
             {
                 requiredSushiIcon.SetActive(true);
-                var renderer = requiredSushiIcon.GetComponent<SpriteRenderer>();
-                if (renderer != null)
+
+                var data = SushiPool.Instance.GetData(requiredSushiTypeId);
+                if (data != null)
                 {
-                    var data = SushiPool.Instance.GetData(requiredSushiTypeId);
-                    if (data != null)
+                    var ricePart = requiredSushiIcon.transform.Find("RicePart");
+                    var toppingPart = requiredSushiIcon.transform.Find("ToppingPart");
+
+                    if (ricePart != null)
                     {
-                        renderer.sprite = data.sprite;
+                        var riceRenderer = ricePart.GetComponent<SpriteRenderer>();
+                        if (riceRenderer != null)
+                        {
+                            riceRenderer.sprite = data.riceSprite;
+                        }
+                    }
+
+                    if (toppingPart != null)
+                    {
+                        var toppingRenderer = toppingPart.GetComponent<SpriteRenderer>();
+                        if (toppingRenderer != null)
+                        {
+                            toppingRenderer.sprite = data.toppingSprite;
+                        }
                     }
                 }
             }
@@ -114,11 +130,33 @@ public class PlateUI : MonoBehaviour
             icon.transform.localPosition = new Vector3(xPos, nextLayerIconYOffset, 0);
             icon.transform.localScale = Vector3.one * nextLayerIconScale;
 
-            var spriteRenderer = icon.GetComponent<SpriteRenderer>();
+            SpriteRenderer riceRenderer = null;
+            SpriteRenderer toppingRenderer = null;
+
             var data = SushiPool.Instance.GetData(types[i]);
-            if (data != null && spriteRenderer != null)
+            if (data != null)
             {
-                spriteRenderer.sprite = data.sprite;
+                var ricePart = icon.transform.Find("RicePart");
+                var toppingPart = icon.transform.Find("ToppingPart");
+
+                if (ricePart != null)
+                {
+                    riceRenderer = ricePart.GetComponent<SpriteRenderer>();
+                    if (riceRenderer != null)
+                    {
+                        riceRenderer.sprite = data.riceSprite;
+                    }
+                }
+
+                if (toppingPart != null)
+                {
+                    toppingRenderer = toppingPart.GetComponent<SpriteRenderer>();
+                    if (toppingRenderer != null)
+                    {
+                        toppingRenderer.sprite = data.toppingSprite;
+                        toppingRenderer.sortingOrder = riceRenderer != null ? riceRenderer.sortingOrder + 1 : 1;
+                    }
+                }
             }
 
             bool isHidden = hiddenStates != null && i < hiddenStates.Count && hiddenStates[i];
@@ -132,8 +170,12 @@ public class PlateUI : MonoBehaviour
 
                 var hiddenRenderer = hiddenObj.AddComponent<SpriteRenderer>();
                 hiddenRenderer.sprite = hiddenSushiSprite;
-                hiddenRenderer.sortingLayerName = spriteRenderer.sortingLayerName;
-                hiddenRenderer.sortingOrder = spriteRenderer.sortingOrder + 1;
+
+                if (riceRenderer != null)
+                {
+                    hiddenRenderer.sortingLayerName = riceRenderer.sortingLayerName;
+                    hiddenRenderer.sortingOrder = riceRenderer.sortingOrder + 2;
+                }
             }
 
             var lockIconObj = icon.transform.Find("LockIcon");

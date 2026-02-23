@@ -79,58 +79,31 @@ public class SushiPackagingEffect : MonoBehaviour
         for (int i = 0; i < sushis.Count; i++)
         {
             var sushi = sushis[i];
-
             float xOffset = (i - 1) * sushiSpacing;
-            Vector3 targetPosition = containerPosition + new Vector3(xOffset, 0, 0);
+            Vector3 targetPosition = containerPosition + new Vector3(xOffset, 0f, 0f);
 
             sushi.transform.SetParent(null);
-
-            var allRenderers = sushi.GetComponentsInChildren<SpriteRenderer>();
-
-            foreach (var renderer in allRenderers)
-            {
-                renderer.sortingLayerName = "Sushi";
-                renderer.sortingOrder = sushiInContainerSortingOrder;
-            }
+            SetSushiSortingOrder(sushi, sushiInContainerSortingOrder);
 
             Vector3 finalPosition = targetPosition;
-            finalPosition.z = 0;
-
-            int capturedIndex = i;
+            finalPosition.z = 0f;
 
             sushi.transform.DOMove(finalPosition, sushiMoveToContainerDuration)
                 .SetEase(Ease.InQuad)
-                .OnStart(() =>
-                {
-                    var renderers = sushi.GetComponentsInChildren<SpriteRenderer>();
-                    foreach (var r in renderers)
-                    {
-                        r.sortingLayerName = "Sushi";
-                        r.sortingOrder = sushiInContainerSortingOrder;
-                    }
-                })
                 .OnComplete(() =>
                 {
                     completedCount++;
                     if (completedCount >= sushis.Count)
-                    {
                         onComplete?.Invoke();
-                    }
                 });
 
             sushi.transform.DOScale(Vector3.one * 0.7f, sushiMoveToContainerDuration)
                 .SetEase(Ease.InQuad);
         }
     }
-    private void SetSushiSortingOrder(Sushi sushi, int order)
+    private void SetSushiSortingOrder(Sushi sushi, int baseOrder)
     {
-        var allRenderers = sushi.GetComponentsInChildren<SpriteRenderer>();
-
-        foreach (var renderer in allRenderers)
-        {
-            renderer.sortingLayerName = "Sushi";
-            renderer.sortingOrder = order;
-        }
+        sushi.SetBaseSortingOrder("Sushi", baseOrder);
     }
     private void DropLidAndComplete(GameObject container, Vector3 position, List<Sushi> sushis, Action onComplete)
     {

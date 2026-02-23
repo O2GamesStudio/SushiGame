@@ -1,69 +1,94 @@
-using UnityEngine;
-using UnityEngine.Pool;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class SushiPool : MonoBehaviour
 {
     public static SushiPool Instance { get; private set; }
 
-    [SerializeField] private Sushi sushiPrefab;
-    [SerializeField] private List<SushiData> sushiDataList;
+    [SerializeField] private GameObject sushiPrefab;
+    [SerializeField] private int initialPoolSize = 20;
+    [SerializeField] private List<SushiData> sushiDataList = new List<SushiData>();
 
-    private ObjectPool<Sushi> pool;
-    private Dictionary<int, SushiData> dataDict;
+    private Queue<Sushi> pool = new Queue<Sushi>();
+    private Dictionary<int, SushiData> dataMap = new Dictionary<int, SushiData>();
 
     private void Awake()
     {
-        Instance = this;
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
 
-        dataDict = new Dictionary<int, SushiData>();
+        InitializeDataMap();
+        InitializePool();
+    }
+
+    private void InitializeDataMap()
+    {
+        dataMap.Clear();
         foreach (var data in sushiDataList)
         {
             if (data != null)
             {
-                dataDict[data.id] = data;
+                dataMap[data.typeId] = data;
             }
         }
+    }
 
-        pool = new ObjectPool<Sushi>(
-            createFunc: () => Instantiate(sushiPrefab, transform),
-            actionOnGet: sushi =>
-            {
-                sushi.gameObject.SetActive(true);
-            },
-            actionOnRelease: sushi =>
-            {
-                sushi.Reset();
-                sushi.gameObject.SetActive(false);
-            },
-            actionOnDestroy: sushi => Destroy(sushi.gameObject),
-            defaultCapacity: 60,
-            maxSize: 100
-        );
+    private void InitializePool()
+    {
+        for (int i = 0; i < initialPoolSize; i++)
+        {
+            var sushi = CreateNewSushi();
+            sushi.gameObject.SetActive(false);
+            pool.Enqueue(sushi);
+        }
+    }
+
+    private Sushi CreateNewSushi()
+    {
+        var sushiObj = Instantiate(sushiPrefab, transform);
+        var sushi = sushiObj.GetComponent<Sushi>();
+        return sushi;
     }
 
     public Sushi Get(int typeId)
     {
-        var sushi = pool.Get();
-        if (dataDict.TryGetValue(typeId, out var data))
+        var data = GetData(typeId);
+        if (data == null)
         {
-            sushi.Initialize(typeId, data.sprite);
+            Debug.LogError($"[SushiPool] SushiData를 찾을 수 없습니다: typeId={typeId}");
+            return null;
         }
+
+        var sushi = pool.Count > 0 ? pool.Dequeue() : CreateNewSushi();
+        sushi.Initialize(typeId, data.riceSprite, data.toppingSprite, data.toppingOffsetY);
+        sushi.gameObject.SetActive(true);
         return sushi;
-    }
-    public List<int> GetAllAvailableTypeIds()
-    {
-        return new List<int>(dataDict.Keys);
     }
 
     public void Return(Sushi sushi)
     {
+        if (sushi == null) return;
+
+        sushi.Reset();
+        sushi.gameObject.SetActive(false);
         sushi.transform.SetParent(transform);
-        pool.Release(sushi);
+        pool.Enqueue(sushi);
     }
 
     public SushiData GetData(int typeId)
     {
-        return dataDict.TryGetValue(typeId, out var data) ? data : null;
+        return dataMap.ContainsKey(typeId) ? dataMap[typeId] : null;
+    }
+
+    public List<int> GetAllAvailableTypeIds()
+    {
+        return new List<int>(dataMap.Keys);
     }
 }

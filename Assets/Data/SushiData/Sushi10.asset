@@ -12,5 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ae960acc2c7070446befb926089e8ef6, type: 3}
   m_Name: Sushi10
   m_EditorClassIdentifier: Assembly-CSharp::SushiData
-  id: 10
-  sprite: {fileID: 21300000, guid: 590dcef560ecdd0478260ff88c9ae75a, type: 3}
+  typeId: 9
+  riceSprite: {fileID: 21300000, guid: 54e4e1c7817cddb4dae3050ed7a23de1, type: 3}
+  toppingSprite: {fileID: 21300000, guid: 2d0d8150c6728fc4abc41c6f41305cb9, type: 3}
+  toppingOffsetY: 0.18

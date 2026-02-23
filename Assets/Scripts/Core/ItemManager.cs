@@ -103,7 +103,7 @@ public class ItemManager : MonoBehaviour
             var data = SushiPool.Instance.GetData(combinedTypes[index]);
             if (data != null)
             {
-                sushi.Initialize(combinedTypes[index], data.sprite);
+                sushi.Initialize(combinedTypes[index], data.riceSprite, data.toppingSprite);
             }
             index++;
         }
@@ -294,8 +294,8 @@ public class ItemManager : MonoBehaviour
 
                         if (data1 != null && data2 != null)
                         {
-                            plateSushis[2].Initialize(targetType, data1.sprite);
-                            allActiveSushis[i].Initialize(sameType, data2.sprite);
+                            plateSushis[2].Initialize(targetType, data1.riceSprite, data1.toppingSprite);
+                            allActiveSushis[i].Initialize(sameType, data2.riceSprite, data2.toppingSprite);
                             break;
                         }
                     }
@@ -362,7 +362,7 @@ public class ItemManager : MonoBehaviour
                                 var data = SushiPool.Instance.GetData(temp);
                                 if (data != null)
                                 {
-                                    sushi.Initialize(temp, data.sprite);
+                                    sushi.Initialize(temp, data.riceSprite, data.toppingSprite);
                                 }
                                 break;
                             }
@@ -401,8 +401,8 @@ public class ItemManager : MonoBehaviour
 
                         if (data1 != null && data2 != null)
                         {
-                            plateSushis[2].Initialize(targetType, data1.sprite);
-                            allActiveSushis[i].Initialize(sameType, data2.sprite);
+                            plateSushis[2].Initialize(targetType, data1.riceSprite, data1.toppingSprite);
+                            allActiveSushis[i].Initialize(sameType, data2.riceSprite, data2.toppingSprite);
                             break;
                         }
                     }
