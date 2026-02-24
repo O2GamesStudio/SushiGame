@@ -1,47 +1,55 @@
 using UnityEngine;
-using UnityEngine.UI;
 using System.Collections.Generic;
 
 public class MergeEventUI : MonoBehaviour
 {
     [SerializeField] private GameObject eventRoot;
-    [SerializeField] private Image timerFillAmount;
-    [SerializeField] private Transform eventSushiContainer;
-    [SerializeField] private GameObject eventSushiIconPrefab;
+    [SerializeField] private UnityEngine.UI.Image timerFillAmount;
+    [SerializeField] private EventSushiIcon[] sushiSlots;
 
-    private List<GameObject> sushiIcons = new List<GameObject>();
-    private Dictionary<int, GameObject> typeToIcon = new Dictionary<int, GameObject>();
+    private List<int> slotTypeIds = new List<int>();
+
+    private void Awake()
+    {
+        foreach (var slot in sushiSlots)
+        {
+            if (slot != null)
+                slot.gameObject.SetActive(false);
+        }
+    }
 
     public void ShowEvent(List<int> sushiTypes)
     {
-        ClearIcons();
+        slotTypeIds.Clear();
         eventRoot?.SetActive(true);
 
-        foreach (var typeId in sushiTypes)
+        for (int i = 0; i < sushiSlots.Length; i++)
         {
-            var icon = Instantiate(eventSushiIconPrefab, eventSushiContainer);
-            var data = SushiPool.Instance.GetData(typeId);
+            if (sushiSlots[i] == null) continue;
 
-            if (data != null)
+            if (i < sushiTypes.Count)
             {
-                var iconView = icon.GetComponent<EventSushiIcon>();
-                if (iconView != null)
-                    iconView.SetData(data);
-            }
+                var data = SushiPool.Instance.GetData(sushiTypes[i]);
+                if (data != null)
+                    sushiSlots[i].SetData(data);
 
-            sushiIcons.Add(icon);
-            typeToIcon[typeId] = icon;
+                sushiSlots[i].gameObject.SetActive(true);
+                slotTypeIds.Add(sushiTypes[i]);
+            }
+            else
+            {
+                sushiSlots[i].gameObject.SetActive(false);
+            }
         }
     }
 
     public void RemoveSushi(int typeId)
     {
-        if (!typeToIcon.ContainsKey(typeId)) return;
+        int index = slotTypeIds.IndexOf(typeId);
+        if (index < 0 || index >= sushiSlots.Length) return;
 
-        var icon = typeToIcon[typeId];
-        typeToIcon.Remove(typeId);
-        sushiIcons.Remove(icon);
-        Destroy(icon);
+        sushiSlots[index].gameObject.SetActive(false);
+        slotTypeIds[index] = -1;
     }
 
     public void UpdateTimer(float remaining, float total)
@@ -53,17 +61,13 @@ public class MergeEventUI : MonoBehaviour
     public void HideEvent()
     {
         eventRoot?.SetActive(false);
-        ClearIcons();
-    }
 
-    private void ClearIcons()
-    {
-        foreach (var icon in sushiIcons)
+        foreach (var slot in sushiSlots)
         {
-            if (icon != null)
-                Destroy(icon);
+            if (slot != null)
+                slot.gameObject.SetActive(false);
         }
-        sushiIcons.Clear();
-        typeToIcon.Clear();
+
+        slotTypeIds.Clear();
     }
 }
