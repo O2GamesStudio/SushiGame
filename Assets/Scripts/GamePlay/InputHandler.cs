@@ -12,31 +12,21 @@ public class InputHandler : MonoBehaviour
     private Plate selectedPlate;
     private Sushi draggedSushi;
     private Vector3 originalPosition;
-    private SpriteRenderer draggedSushiRenderer;
-    private int originalSortingOrder;
 
     private void Update()
     {
         if (Input.GetMouseButtonDown(0))
-        {
             OnMouseDown();
-        }
         else if (Input.GetMouseButton(0) && draggedSushi != null)
-        {
             OnMouseDrag();
-        }
         else if (Input.GetMouseButtonUp(0) && draggedSushi != null)
-        {
             OnMouseUp();
-        }
     }
 
     private void OnMouseDown()
     {
         if (GameManager.Instance != null && !GameManager.Instance.IsTimerStarted)
-        {
             GameManager.Instance.StartTimer();
-        }
 
         hintSystem?.ResetTimer();
 
@@ -56,14 +46,6 @@ public class InputHandler : MonoBehaviour
             {
                 draggedSushi = sushi;
                 originalPosition = draggedSushi.transform.position;
-
-                draggedSushiRenderer = draggedSushi.GetComponent<SpriteRenderer>();
-                if (draggedSushiRenderer != null)
-                {
-                    originalSortingOrder = draggedSushiRenderer.sortingOrder;
-                    draggedSushiRenderer.sortingOrder = 100;
-                }
-
                 draggedSushi.SetDragState(true);
             }
             return;
@@ -73,10 +55,7 @@ public class InputHandler : MonoBehaviour
         if (clickedPlate != null && clickedPlate.IsLocked)
         {
             if (clickedPlate.State == PlateState.LockedAd)
-            {
                 PlateUnlockSystem.Instance?.TryUnlockAdPlate(clickedPlate);
-            }
-            return;
         }
     }
 
@@ -91,92 +70,67 @@ public class InputHandler : MonoBehaviour
     {
         var targetPlate = GetPlateAtMousePosition();
         var dropPosition = draggedSushi.transform.position;
+        var sushi = draggedSushi;
+        var fromPlate = selectedPlate;
+        var returnPos = originalPosition;
+
+        draggedSushi = null;
+        selectedPlate = null;
 
         if (targetPlate != null)
         {
-            if (targetPlate == selectedPlate)
+            if (targetPlate == fromPlate)
             {
-                int closestSlot = targetPlate.GetClosestSlotIncludingCurrent(dropPosition, draggedSushi);
+                int closestSlot = targetPlate.GetClosestSlotIncludingCurrent(dropPosition, sushi);
                 if (closestSlot >= 0)
                 {
-                    if (selectedPlate.MoveSushiWithinPlate(draggedSushi, closestSlot))
-                    {
-                        RestoreSortingOrder();
-                        draggedSushi.SetDragState(false);
-                    }
-                    else
-                    {
-                        ReturnToOriginalPosition();
-                    }
+                    sushi.SetDragState(false);
+                    if (!fromPlate.MoveSushiWithinPlate(sushi, closestSlot))
+                        ReturnToPosition(sushi, returnPos);
                 }
                 else
                 {
-                    ReturnToOriginalPosition();
+                    ReturnToPosition(sushi, returnPos);
                 }
             }
             else
             {
-                if (plateManager.CanMoveSushi(selectedPlate, targetPlate))
+                if (plateManager.CanMoveSushi(fromPlate, targetPlate))
                 {
-                    plateManager.MoveSushi(selectedPlate, targetPlate, draggedSushi, dropPosition);
-                    RestoreSortingOrder();
-                    draggedSushi.SetDragState(false);
+                    sushi.SetDragState(false);
+                    plateManager.MoveSushi(fromPlate, targetPlate, sushi, dropPosition);
                 }
                 else
                 {
-                    ReturnToOriginalPosition();
+                    ReturnToPosition(sushi, returnPos);
                 }
             }
         }
         else
         {
-            ReturnToOriginalPosition();
+            ReturnToPosition(sushi, returnPos);
         }
-
-        draggedSushi = null;
-        selectedPlate = null;
-        draggedSushiRenderer = null;
     }
 
-    private void ReturnToOriginalPosition()
+    private void ReturnToPosition(Sushi sushi, Vector3 returnPos)
     {
-        draggedSushi.transform.DOMove(originalPosition, 0.2f).SetEase(Ease.OutQuad);
-        draggedSushi.SetDragState(false);
-        RestoreSortingOrder();
-    }
-
-    private void RestoreSortingOrder()
-    {
-        if (draggedSushiRenderer != null)
-        {
-            draggedSushiRenderer.sortingOrder = originalSortingOrder;
-        }
+        sushi.transform.DOMove(returnPos, 0.2f)
+            .SetEase(Ease.OutQuad)
+            .OnComplete(() => sushi.SetDragState(false));
     }
 
     private Sushi GetSushiAtMousePosition()
     {
         var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         var hit = Physics2D.Raycast(ray.origin, ray.direction, Mathf.Infinity, sushiLayer);
-
-        if (hit.collider != null)
-        {
-            return hit.collider.GetComponent<Sushi>();
-        }
-
-        return null;
+        return hit.collider != null ? hit.collider.GetComponent<Sushi>() : null;
     }
 
     private Plate GetPlateAtMousePosition()
     {
         var ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         var hit = Physics2D.Raycast(ray.origin, ray.direction, Mathf.Infinity, plateLayer);
-
-        if (hit.collider != null)
-        {
-            return hit.collider.GetComponent<Plate>();
-        }
-
-        return null;
+        return hit.collider != null ? hit.collider.GetComponent<Plate>() : null;
     }
 
     private Plate GetPlateContainingSushi(Sushi sushi)
@@ -185,9 +139,7 @@ public class InputHandler : MonoBehaviour
         foreach (var plate in plates)
         {
             if (plate.gameObject.activeSelf && plate.ContainsSushi(sushi))
-            {
                 return plate;
-            }
         }
         return null;
     }

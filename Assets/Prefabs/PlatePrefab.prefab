@@ -196,6 +196,8 @@ MonoBehaviour:
   plateSpriteRenderer: {fileID: 4324064087187067808}
   normalPlateSprite: {fileID: 21300000, guid: c05d854ba83e0da44b574f36be0d5cac, type: 3}
   lockedPlateSprite: {fileID: 21300000, guid: 944b133f191df3d468c724caaded208f, type: 3}
+  singleSlotNormalPlateSprite: {fileID: 21300000, guid: 681f266b66efb2f449476c37625ebdb9, type: 3}
+  singleSlotLockedPlateSprite: {fileID: 21300000, guid: 681f266b66efb2f449476c37625ebdb9, type: 3}
   requiredSushiIcon: {fileID: 5267222043789972958}
   adIcon: {fileID: 4301052573761671227}
 --- !u!114 &-7329004432275051021
@@ -463,7 +465,7 @@ Transform:
   m_GameObject: {fileID: 5302130434789918716}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.9, y: 0, z: 0}
+  m_LocalPosition: {x: -1, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -494,7 +496,7 @@ Transform:
   m_GameObject: {fileID: 6160064661393937849}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.9, y: 0, z: 0}
+  m_LocalPosition: {x: 1, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

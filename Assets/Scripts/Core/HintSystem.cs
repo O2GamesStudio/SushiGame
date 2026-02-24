@@ -74,33 +74,27 @@ public class HintSystem : MonoBehaviour
         Vector3 originalToppingPos = toppingPart.localPosition;
         originalToppingPositions[sushi] = originalToppingPos;
 
+        var toppingRenderer = toppingPart.GetComponent<SpriteRenderer>();
+        int originalOrder = toppingRenderer != null ? toppingRenderer.sortingOrder : 0;
+
+        if (toppingRenderer != null)
+            toppingRenderer.sortingOrder = originalOrder + 1;
+
         Sequence hintSequence = DOTween.Sequence();
 
-        hintSequence.Append(
-            DOTween.To(() => Vector3.one, x =>
-            {
-                ricePart.localScale = new Vector3(riceSqueezeScale, riceStretchScale, 1f);
-            }, Vector3.one, riceSqueezeDuration)
-        );
+        Sequence toppingSequence = DOTween.Sequence();
+        toppingSequence.Append(toppingPart.DOLocalMoveY(originalToppingPos.y + toppingBounceHeight, 0.2f).SetEase(Ease.OutQuad));
+        toppingSequence.Append(toppingPart.DOShakePosition(0.3f, new Vector3(0.05f, 0.02f, 0f), 15, 0f, false, false));
+        toppingSequence.Append(toppingPart.DOLocalMove(originalToppingPos, toppingBounceDuration).SetEase(Ease.OutBounce));
 
-        hintSequence.Join(
-            toppingPart.DOLocalMoveY(originalToppingPos.y + toppingBounceHeight, toppingBounceDuration)
-                .SetEase(bounceEase)
-        );
-
-        hintSequence.Append(
-            DOTween.To(() => Vector3.one, x =>
-            {
-                ricePart.localScale = Vector3.one;
-            }, Vector3.one, riceSqueezeDuration)
-        );
-
-        hintSequence.Join(
-            toppingPart.DOLocalMoveY(originalToppingPos.y, toppingBounceDuration)
-                .SetEase(Ease.OutBounce)
-        );
-
+        hintSequence.Join(toppingSequence);
+        hintSequence.AppendInterval(0.3f);
         hintSequence.SetLoops(-1, LoopType.Restart);
+        hintSequence.OnKill(() =>
+        {
+            if (toppingRenderer != null)
+                toppingRenderer.sortingOrder = originalOrder;
+        });
 
         activeSequences[sushi] = hintSequence;
     }

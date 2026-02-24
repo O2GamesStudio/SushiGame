@@ -22,12 +22,15 @@ public class PlateUI : MonoBehaviour
     [SerializeField] private SpriteRenderer plateSpriteRenderer;
     [SerializeField] private Sprite normalPlateSprite;
     [SerializeField] private Sprite lockedPlateSprite;
+    [SerializeField] private Sprite singleSlotNormalPlateSprite;
+    [SerializeField] private Sprite singleSlotLockedPlateSprite;
     [SerializeField] private GameObject requiredSushiIcon;
     [SerializeField] private GameObject adIcon;
 
     private List<GameObject> nextLayerIcons = new List<GameObject>();
     private List<SpriteRenderer> reservePlateRenderers = new List<SpriteRenderer>();
     private Sushi requiredSushiView;
+    private int slotCount = 3;
 
     private void Awake()
     {
@@ -42,10 +45,25 @@ public class PlateUI : MonoBehaviour
 
     public Sprite GetHiddenSushiSprite() => hiddenSushiSprite;
 
+    public void SetSlotCount(int count)
+    {
+        slotCount = count;
+        UpdatePlateSprite(PlateState.Normal);
+    }
+
+    private void UpdatePlateSprite(PlateState state)
+    {
+        if (plateSpriteRenderer == null) return;
+
+        if (slotCount == 1)
+            plateSpriteRenderer.sprite = state != PlateState.Normal ? singleSlotLockedPlateSprite : singleSlotNormalPlateSprite;
+        else
+            plateSpriteRenderer.sprite = state != PlateState.Normal ? lockedPlateSprite : normalPlateSprite;
+    }
+
     public void UpdateLockState(PlateState state, int requiredSushiTypeId)
     {
-        if (plateSpriteRenderer != null)
-            plateSpriteRenderer.sprite = state != PlateState.Normal ? lockedPlateSprite : normalPlateSprite;
+        UpdatePlateSprite(state);
 
         if (state == PlateState.LockedSushi && requiredSushiTypeId >= 0)
         {

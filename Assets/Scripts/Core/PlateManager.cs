@@ -9,9 +9,7 @@ public class PlateManager : MonoBehaviour
     {
         var plateIndices = new List<int>();
         for (int i = 0; i < plates.Count; i++)
-        {
             plateIndices.Add(i);
-        }
 
         for (int i = plateIndices.Count - 1; i > 0; i--)
         {
@@ -20,26 +18,27 @@ public class PlateManager : MonoBehaviour
         }
 
         for (int i = 0; i < plates.Count; i++)
-        {
             plates[i].gameObject.SetActive(false);
-        }
 
         for (int i = 0; i < plateDataList.Count; i++)
         {
             int plateIndex = plateIndices[i];
+            var data = plateDataList[i];
+
             plates[plateIndex].gameObject.SetActive(true);
             plates[plateIndex].Initialize(
-                plateDataList[i].ActiveTypes,
-                plateDataList[i].Layers,
-                plateDataList[i].ActiveLockStages
+                data.ActiveTypes,
+                data.Layers,
+                data.ActiveLockStages,
+                data.SlotCount
             );
 
-            if (plateDataList[i].State != PlateState.Normal)
+            if (data.State != PlateState.Normal)
             {
                 PlateUnlockSystem.Instance?.RegisterLockedPlate(
                     plates[plateIndex],
-                    plateDataList[i].State,
-                    plateDataList[i].RequiredSushiTypeId
+                    data.State,
+                    data.RequiredSushiTypeId
                 );
             }
         }
@@ -70,8 +69,5 @@ public class PlateManager : MonoBehaviour
         return true;
     }
 
-    public List<Plate> GetAllPlates()
-    {
-        return plates;
-    }
+    public List<Plate> GetAllPlates() => plates;
 }

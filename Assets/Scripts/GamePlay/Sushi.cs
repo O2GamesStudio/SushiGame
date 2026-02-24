@@ -4,6 +4,7 @@ using DG.Tweening;
 [RequireComponent(typeof(PolygonCollider2D))]
 public class Sushi : MonoBehaviour
 {
+    public bool IsDragging { get; private set; }
     [SerializeField] private int typeId = -1;
 
     [Header("Sushi Parts")]
@@ -210,29 +211,33 @@ public class Sushi : MonoBehaviour
 
     public void SetDragState(bool isDragging)
     {
+        IsDragging = isDragging;
+
         if (isDragging)
         {
             transform.DOScale(originalScale * dragScale, 0.2f).SetEase(Ease.OutBack);
+
+            if (riceRenderer != null)
+                riceRenderer.sortingOrder = 50;
+            if (toppingRenderer != null)
+                toppingRenderer.sortingOrder = 51;
+            if (lockIconRenderer != null)
+                lockIconRenderer.sortingOrder = 52;
+
             if (riceMaterialInstance != null)
-            {
                 riceMaterialInstance.SetFloat("_OutlineThickness", outlineThickness);
-            }
             if (toppingMaterialInstance != null)
-            {
                 toppingMaterialInstance.SetFloat("_OutlineThickness", outlineThickness);
-            }
         }
         else
         {
             transform.DOScale(originalScale, 0.2f).SetEase(Ease.OutQuad);
+            EnforceSortingOrder();
+
             if (riceMaterialInstance != null)
-            {
                 riceMaterialInstance.SetFloat("_OutlineThickness", 0f);
-            }
             if (toppingMaterialInstance != null)
-            {
                 toppingMaterialInstance.SetFloat("_OutlineThickness", 0f);
-            }
         }
     }
 }

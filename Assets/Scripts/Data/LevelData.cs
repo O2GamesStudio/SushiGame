@@ -26,4 +26,7 @@ public class LevelData : ScriptableObject
 
     [Header("Initial Empty Slots")]
     public int sushiInitEraseCount = 0;
+
+    [Header("Single Slot Plates")]
+    public int singleSlotPlateCount = 0;
 }

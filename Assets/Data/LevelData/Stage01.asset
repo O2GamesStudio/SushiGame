@@ -25,3 +25,4 @@ MonoBehaviour:
   mergeUnlockCount: 2
   lockedSushiCount: 4
   sushiInitEraseCount: 5
+  singleSlotPlateCount: 1
