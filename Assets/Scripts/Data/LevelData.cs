@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 [CreateAssetMenu(fileName = "LevelData", menuName = "SushiMerge/LevelData")]
 public class LevelData : ScriptableObject
@@ -29,4 +30,14 @@ public class LevelData : ScriptableObject
 
     [Header("Single Slot Plates")]
     public int singleSlotPlateCount = 0;
+
+    [Header("Merge Events")]
+    public MergeEventData[] mergeEvents;
+}
+
+[Serializable]
+public class MergeEventData
+{
+    public int mergeTriggerCount;
+    public int eventSushiCount;
 }

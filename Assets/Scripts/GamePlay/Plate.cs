@@ -347,7 +347,7 @@ public class Plate : MonoBehaviour
             SushiPool.Instance.Return(sushi);
         }
 
-        GameManager.Instance?.OnSushiMerged();
+        GameManager.Instance?.OnSushiMerged(mergedTypeId);
         SushiLockSystem.Instance?.OnMergeCompleted();
 
         if (IsEmpty)
