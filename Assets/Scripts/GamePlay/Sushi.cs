@@ -4,7 +4,6 @@ using DG.Tweening;
 [RequireComponent(typeof(PolygonCollider2D))]
 public class Sushi : MonoBehaviour
 {
-    public bool IsDragging { get; private set; }
     [SerializeField] private int typeId = -1;
 
     [Header("Sushi Parts")]
@@ -26,12 +25,14 @@ public class Sushi : MonoBehaviour
     public bool IsLocked => lockStage > 0;
     public int LockStage => lockStage;
     public Plate CurrentPlate { get; private set; }
+    public bool IsDragging { get; private set; }
 
     private Vector3 originalScale;
     private Material riceMaterialInstance;
     private Material toppingMaterialInstance;
     private int lockStage = 0;
     private SpriteRenderer lockIconRenderer;
+    private int originalRiceSortingOrder;
 
     private void Awake()
     {
@@ -51,15 +52,14 @@ public class Sushi : MonoBehaviour
 
         originalScale = transform.localScale;
 
-        if (riceRenderer != null && riceRenderer.material != null)
+        if (riceRenderer != null)
         {
             riceMaterialInstance = riceRenderer.material;
+            originalRiceSortingOrder = riceRenderer.sortingOrder;
         }
 
-        if (toppingRenderer != null && toppingRenderer.material != null)
-        {
+        if (toppingRenderer != null)
             toppingMaterialInstance = toppingRenderer.material;
-        }
 
         if (lockIcon != null)
         {
@@ -111,6 +111,7 @@ public class Sushi : MonoBehaviour
             lockIconRenderer.sortingOrder = baseOrder + 2;
         }
     }
+
     public void SetBaseSortingOrder(string layerName, int baseOrder)
     {
         if (riceRenderer != null)
@@ -159,15 +160,12 @@ public class Sushi : MonoBehaviour
         if (lockStage > 0)
         {
             lockIcon.SetActive(true);
-
             lockIconRenderer.sortingLayerName = riceRenderer.sortingLayerName;
             lockIconRenderer.sortingOrder = riceRenderer.sortingOrder + 2;
 
             int spriteIndex = lockStage - 1;
             if (spriteIndex >= 0 && spriteIndex < lockStageSprites.Length)
-            {
                 lockIconRenderer.sprite = lockStageSprites[spriteIndex];
-            }
         }
         else
         {
@@ -184,7 +182,10 @@ public class Sushi : MonoBehaviour
         gameObject.name = "Sushi_Reset";
 
         if (riceRenderer != null)
+        {
             riceRenderer.transform.localScale = Vector3.one;
+            riceRenderer.sortingOrder = originalRiceSortingOrder;
+        }
 
         if (toppingRenderer != null)
         {
@@ -193,20 +194,16 @@ public class Sushi : MonoBehaviour
 
         CurrentPlate = null;
         lockStage = 0;
+        IsDragging = false;
+
         if (lockIcon != null)
-        {
             lockIcon.SetActive(false);
-        }
 
         if (riceMaterialInstance != null)
-        {
             riceMaterialInstance.SetFloat("_OutlineThickness", 0f);
-        }
 
         if (toppingMaterialInstance != null)
-        {
             toppingMaterialInstance.SetFloat("_OutlineThickness", 0f);
-        }
     }
 
     public void SetDragState(bool isDragging)
@@ -232,6 +229,10 @@ public class Sushi : MonoBehaviour
         else
         {
             transform.DOScale(originalScale, 0.2f).SetEase(Ease.OutQuad);
+
+            if (riceRenderer != null)
+                riceRenderer.sortingOrder = originalRiceSortingOrder;
+
             EnforceSortingOrder();
 
             if (riceMaterialInstance != null)

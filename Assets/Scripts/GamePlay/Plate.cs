@@ -306,13 +306,18 @@ public class Plate : MonoBehaviour
             packagingEffect.PlayPackagingEffect(
                 transform.position,
                 sushisToReturn,
-                (containerPosition) => SpawnMergeParticle(containerPosition),
+                (containerPosition) =>
+                {
+                    SpawnMergeParticle(containerPosition);
+                    PlateUnlockSystem.Instance?.OnSushiMerged(mergedTypeId);
+                },
                 () => OnPackagingComplete(sushisToReturn, mergedTypeId)
             );
         }
         else
         {
             SpawnMergeParticle(transform.position);
+            PlateUnlockSystem.Instance?.OnSushiMerged(mergedTypeId);
             OnPackagingComplete(sushisToReturn, mergedTypeId);
         }
 
@@ -344,7 +349,6 @@ public class Plate : MonoBehaviour
 
         GameManager.Instance?.OnSushiMerged();
         SushiLockSystem.Instance?.OnMergeCompleted();
-        PlateUnlockSystem.Instance?.OnSushiMerged(mergedTypeId);
 
         if (IsEmpty)
             GameStateChecker.Instance.CheckWinCondition();
