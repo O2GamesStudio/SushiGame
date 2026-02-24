@@ -15,6 +15,7 @@ public class PlateUI : MonoBehaviour
 
     [Header("Reserve Plate Visuals")]
     [SerializeField] private Sprite reservePlateSprite;
+    [SerializeField] private Sprite singleSlotReservePlateSprite;
     [SerializeField] private float reservePlateSpacing = 0.05f;
     [SerializeField] private Vector3 reservePlateStartOffset = new Vector3(0, -1.3f, 0);
 
@@ -25,18 +26,13 @@ public class PlateUI : MonoBehaviour
     [SerializeField] private Sprite singleSlotNormalPlateSprite;
     [SerializeField] private Sprite singleSlotLockedPlateSprite;
     [SerializeField] private GameObject requiredSushiIcon;
+    [SerializeField] private SpriteRenderer requiredSushiRiceRenderer;
+    [SerializeField] private SpriteRenderer requiredSushiToppingRenderer;
     [SerializeField] private GameObject adIcon;
 
     private List<GameObject> nextLayerIcons = new List<GameObject>();
     private List<SpriteRenderer> reservePlateRenderers = new List<SpriteRenderer>();
-    private Sushi requiredSushiView;
     private int slotCount = 3;
-
-    private void Awake()
-    {
-        if (requiredSushiIcon != null)
-            requiredSushiView = requiredSushiIcon.GetComponent<Sushi>();
-    }
 
     private void OnDestroy()
     {
@@ -72,8 +68,17 @@ public class PlateUI : MonoBehaviour
                 requiredSushiIcon.SetActive(true);
 
                 var data = SushiPool.Instance.GetData(requiredSushiTypeId);
-                if (data != null && requiredSushiView != null)
-                    requiredSushiView.Initialize(requiredSushiTypeId, data.riceSprite, data.toppingSprite, data.toppingOffsetX, data.toppingOffsetY);
+                if (data != null)
+                {
+                    if (requiredSushiRiceRenderer != null)
+                        requiredSushiRiceRenderer.sprite = data.riceSprite;
+
+                    if (requiredSushiToppingRenderer != null)
+                    {
+                        requiredSushiToppingRenderer.sprite = data.toppingSprite;
+                        requiredSushiToppingRenderer.transform.localPosition = new Vector3(data.toppingOffsetX, data.toppingOffsetY, 0f);
+                    }
+                }
             }
 
             if (adIcon != null)
@@ -112,7 +117,8 @@ public class PlateUI : MonoBehaviour
         for (int i = 0; i < types.Count; i++)
         {
             var icon = Instantiate(nextLayerIconPrefab, nextLayerContainer);
-            float xPos = (slotIndices[i] - 1) * nextLayerIconSpacing;
+
+            float xPos = slotCount == 1 ? 0f : (slotIndices[i] - 1) * nextLayerIconSpacing;
             icon.transform.localPosition = new Vector3(xPos, nextLayerIconYOffset, 0f);
             icon.transform.localScale = Vector3.one * nextLayerIconScale;
 
@@ -159,7 +165,8 @@ public class PlateUI : MonoBehaviour
 
     public void UpdateReservePlates(int layerCount)
     {
-        if (reservePlateSprite == null) return;
+        Sprite targetSprite = slotCount == 1 ? singleSlotReservePlateSprite : reservePlateSprite;
+        if (targetSprite == null) return;
 
         while (reservePlateRenderers.Count < layerCount)
         {
@@ -167,7 +174,7 @@ public class PlateUI : MonoBehaviour
             plateObj.transform.SetParent(transform);
 
             var renderer = plateObj.AddComponent<SpriteRenderer>();
-            renderer.sprite = reservePlateSprite;
+            renderer.sprite = targetSprite;
             renderer.sortingLayerName = "Plate";
             renderer.sortingOrder = -1 - reservePlateRenderers.Count;
 
@@ -186,6 +193,7 @@ public class PlateUI : MonoBehaviour
         {
             if (reservePlateRenderers[i] != null)
             {
+                reservePlateRenderers[i].sprite = targetSprite;
                 Vector3 position = transform.position + reservePlateStartOffset + Vector3.down * (i * reservePlateSpacing);
                 reservePlateRenderers[i].transform.position = position;
             }
