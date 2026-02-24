@@ -23,6 +23,7 @@ public class Plate : MonoBehaviour
     [Header("Refill Animation")]
     [SerializeField] private float refillDuration = 0.5f;
     [SerializeField] private float refillStartOffsetY = 2f;
+    [SerializeField] private float refillDelay = 0.3f;
 
     [Header("VFX")]
     [SerializeField] private GameObject mergeParticleVFXPrefab;
@@ -314,6 +315,13 @@ public class Plate : MonoBehaviour
             SpawnMergeParticle(transform.position);
             OnPackagingComplete(sushisToReturn, mergedTypeId);
         }
+
+        DOVirtual.DelayedCall(refillDelay, () =>
+        {
+            RefillFromNextLayer();
+            plateUI?.UpdateNextLayerDisplay(CurrentNextLayer);
+            plateUI?.UpdateReservePlates(LayerCount);
+        });
     }
 
     private void SpawnMergeParticle(Vector3 position)
@@ -337,10 +345,6 @@ public class Plate : MonoBehaviour
         GameManager.Instance?.OnSushiMerged();
         SushiLockSystem.Instance?.OnMergeCompleted();
         PlateUnlockSystem.Instance?.OnSushiMerged(mergedTypeId);
-
-        RefillFromNextLayer();
-        plateUI?.UpdateNextLayerDisplay(CurrentNextLayer);
-        plateUI?.UpdateReservePlates(LayerCount);
 
         if (IsEmpty)
             GameStateChecker.Instance.CheckWinCondition();
