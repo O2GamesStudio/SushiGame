@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "821138631090",
+    "project_id": "sushimerge",
+    "storage_bucket": "sushimerge.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:821138631090:android:f1f72860ee25d87291dcab",
+        "android_client_info": {
+          "package_name": "com.O2GamesStudio.SushiMaster"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAY-lNBdn3GY595A1c3tu6YCB8wz_cwQAo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
