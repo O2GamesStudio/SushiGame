@@ -19,8 +19,8 @@ public class EventSushiIcon : MonoBehaviour
             toppingImage.sprite = data.toppingSprite;
             toppingImage.SetNativeSize();
             toppingImage.rectTransform.anchoredPosition = new Vector2(
-                data.toppingOffsetX * 100f,
-                data.toppingOffsetY * 100f
+                data.toppingOffsetX * data.riceSprite.pixelsPerUnit,
+                data.toppingOffsetY * data.riceSprite.pixelsPerUnit
             );
         }
     }

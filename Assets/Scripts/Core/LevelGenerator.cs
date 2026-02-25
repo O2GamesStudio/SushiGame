@@ -99,25 +99,80 @@ public class LevelGenerator
         var plates = new List<PlateData>();
 
         if (concentratedTypes.Count > 0)
-        {
             GeneratePlatesWithConcentration(plates);
-        }
         else
-        {
             GeneratePlatesNormal(plates);
-        }
 
         CreateInitialEmptySlots(plates);
         AssignLockedPlates(plates);
 
         if (levelData.hiddenReserveCount > 0)
-        {
             ApplyHiddenReserves(plates);
-        }
 
+        FixTypeMultiples(plates);
         ValidatePlates(plates);
 
         return plates;
+    }
+    private void FixTypeMultiples(List<PlateData> plates)
+    {
+        var typeCountMap = new Dictionary<int, int>();
+
+        for (int i = 0; i < plates.Count; i++)
+        {
+            foreach (var typeId in plates[i].ActiveTypes)
+            {
+                if (!typeCountMap.ContainsKey(typeId)) typeCountMap[typeId] = 0;
+                typeCountMap[typeId]++;
+            }
+            foreach (var layer in plates[i].Layers)
+                foreach (var typeId in layer.SushiTypes)
+                {
+                    if (!typeCountMap.ContainsKey(typeId)) typeCountMap[typeId] = 0;
+                    typeCountMap[typeId]++;
+                }
+        }
+
+        foreach (var kvp in typeCountMap)
+        {
+            int typeId = kvp.Key;
+            int count = kvp.Value;
+            int remainder = count % 3;
+            if (remainder == 0) continue;
+
+            int toAdd = 3 - remainder;
+
+            for (int added = 0; added < toAdd; added++)
+            {
+                bool placed = false;
+
+                for (int i = 0; i < plates.Count && !placed; i++)
+                {
+                    if (adPlateIndices.Contains(i)) continue;
+                    if (singleSlotPlateIndices.Contains(i)) continue;
+
+                    if (plates[i].ActiveTypes.Count < 3)
+                    {
+                        plates[i].ActiveTypes.Add(typeId);
+                        placed = true;
+                    }
+                }
+
+                if (!placed)
+                {
+                    for (int i = 0; i < plates.Count && !placed; i++)
+                    {
+                        if (adPlateIndices.Contains(i)) continue;
+
+                        if (plates[i].Layers.Count < levelData.maxLayersPerPlate)
+                        {
+                            plates[i].Layers.Add(new Layer(new List<int> { typeId }));
+                            placed = true;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private void ApplyHiddenReserves(List<PlateData> plates)
@@ -674,8 +729,24 @@ public class LevelGenerator
     {
         if (levelData.sushiInitEraseCount <= 0) return;
 
-        var plateSlotMap = new Dictionary<int, List<int>>();
+        var typeCountMap = new Dictionary<int, int>();
+        for (int i = 0; i < plates.Count; i++)
+        {
+            if (adPlateIndices.Contains(i)) continue;
+            foreach (var typeId in plates[i].ActiveTypes)
+            {
+                if (!typeCountMap.ContainsKey(typeId)) typeCountMap[typeId] = 0;
+                typeCountMap[typeId]++;
+            }
+            foreach (var layer in plates[i].Layers)
+                foreach (var typeId in layer.SushiTypes)
+                {
+                    if (!typeCountMap.ContainsKey(typeId)) typeCountMap[typeId] = 0;
+                    typeCountMap[typeId]++;
+                }
+        }
 
+        var plateSlotMap = new Dictionary<int, List<int>>();
         for (int i = 0; i < plates.Count; i++)
         {
             if (adPlateIndices.Contains(i)) continue;
@@ -683,9 +754,7 @@ public class LevelGenerator
 
             plateSlotMap[i] = new List<int>();
             for (int j = 0; j < plates[i].ActiveTypes.Count; j++)
-            {
                 plateSlotMap[i].Add(j);
-            }
         }
 
         var movedSushis = new List<int>();
@@ -712,9 +781,15 @@ public class LevelGenerator
             {
                 int slotIndex = slots[i];
                 int sushiType = plates[plateIndex].ActiveTypes[slotIndex];
-                movedSushis.Add(sushiType);
-                plates[plateIndex].ActiveTypes[slotIndex] = -1;
-                remainingEraseCount--;
+
+                if (typeCountMap[sushiType] <= 3) continue;
+                if ((typeCountMap[sushiType] - 1) % 3 != 0)
+                {
+                    movedSushis.Add(sushiType);
+                    plates[plateIndex].ActiveTypes[slotIndex] = -1;
+                    typeCountMap[sushiType]--;
+                    remainingEraseCount--;
+                }
             }
         }
 
@@ -722,7 +797,6 @@ public class LevelGenerator
         {
             if (adPlateIndices.Contains(i)) continue;
             if (sushiMergePlateIndices.Contains(i)) continue;
-
             plates[i].ActiveTypes.RemoveAll(typeId => typeId == -1);
         }
 

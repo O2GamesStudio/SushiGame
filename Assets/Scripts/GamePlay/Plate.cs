@@ -302,26 +302,28 @@ public class Plate : MonoBehaviour
             activeSushis.Add(null);
 
         SushiLockSystem.Instance?.OnMergeCompleted();
+        SpawnMergeParticle(transform.position);
 
-        if (packagingEffect != null)
+        DOVirtual.DelayedCall(0.2f, () =>
         {
-            packagingEffect.PlayPackagingEffect(
-                transform.position,
-                sushisToReturn,
-                (containerPosition) =>
-                {
-                    SpawnMergeParticle(containerPosition);
-                    PlateUnlockSystem.Instance?.OnSushiMerged(mergedTypeId);
-                },
-                () => OnPackagingComplete(sushisToReturn, mergedTypeId)
-            );
-        }
-        else
-        {
-            SpawnMergeParticle(transform.position);
-            PlateUnlockSystem.Instance?.OnSushiMerged(mergedTypeId);
-            OnPackagingComplete(sushisToReturn, mergedTypeId);
-        }
+            if (packagingEffect != null)
+            {
+                packagingEffect.PlayPackagingEffect(
+                    transform.position,
+                    sushisToReturn,
+                    (containerPosition) =>
+                    {
+                        PlateUnlockSystem.Instance?.OnSushiMerged(mergedTypeId);
+                    },
+                    () => OnPackagingComplete(sushisToReturn, mergedTypeId)
+                );
+            }
+            else
+            {
+                PlateUnlockSystem.Instance?.OnSushiMerged(mergedTypeId);
+                OnPackagingComplete(sushisToReturn, mergedTypeId);
+            }
+        });
 
         DOVirtual.DelayedCall(refillDelay, () =>
         {
