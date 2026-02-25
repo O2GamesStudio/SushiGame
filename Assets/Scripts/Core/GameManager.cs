@@ -11,6 +11,9 @@ public class GameManager : MonoBehaviour
     [SerializeField] private PlateManager plateManager;
     [SerializeField] private GameUI gameUI;
     [SerializeField] private DoorTransition doorTransition;
+    [SerializeField] private UnityEngine.UI.Button lobbyButton;
+    [SerializeField] private UnityEngine.UI.Button restartButton;
+
 
     private int totalSushiSets;
     private int mergedSetsCount;
@@ -34,15 +37,22 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        var transferData = GameDataTransfer.Instance?.CurrentLevelData;
+        if (transferData != null)
+            currentLevel = transferData;
+
+        if (lobbyButton != null)
+            lobbyButton.onClick.AddListener(GoToLobby);
+
+        if (restartButton != null)
+            restartButton.onClick.AddListener(RestartGame);
+
         StartGame();
     }
-
     private void Update()
     {
         if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
-        {
             RestartGame();
-        }
 
         if (!isGameActive || !isTimerStarted) return;
 
@@ -52,11 +62,10 @@ public class GameManager : MonoBehaviour
             gameUI.UpdateTimer(timeRemaining);
 
             if (timeRemaining <= 0)
-            {
                 OnGameLose();
-            }
         }
     }
+
     private void StartGame()
     {
         levelGenerator = new LevelGenerator(currentLevel);
@@ -80,9 +89,7 @@ public class GameManager : MonoBehaviour
         MergeEventSystem.Instance?.Initialize(currentLevel.mergeEvents);
 
         if (doorTransition != null)
-        {
             doorTransition.PlayOpenAnimation();
-        }
     }
 
     public void OnSushiMerged(int mergedTypeId = -1)
@@ -102,17 +109,13 @@ public class GameManager : MonoBehaviour
     public void StartTimer()
     {
         if (!isTimerStarted && isGameActive)
-        {
             isTimerStarted = true;
-        }
     }
 
     public void FreezeTimer(float duration)
     {
         if (freezeCoroutine != null)
-        {
             StopCoroutine(freezeCoroutine);
-        }
         freezeCoroutine = StartCoroutine(FreezeTimerCoroutine(duration));
     }
 
@@ -128,17 +131,43 @@ public class GameManager : MonoBehaviour
         freezeCoroutine = null;
     }
 
-
     public void OnGameWin()
     {
         isGameActive = false;
         gameUI.ShowWin();
+        OnStageClear();
     }
 
     public void OnGameLose()
     {
         isGameActive = false;
         gameUI.ShowLose();
+    }
+
+    private void OnStageClear()
+    {
+        var userData = GameDataTransfer.Instance?.CurrentUserData;
+        if (userData == null) return;
+
+        int clearedStage = userData.currentStage;
+        int nextStage = clearedStage + 1;
+
+        userData.currentStage = nextStage;
+        GameDataTransfer.Instance.SetUserData(userData);
+
+        string userId = FirebaseManager.Instance?.CurrentUser?.UserId;
+        if (!string.IsNullOrEmpty(userId))
+        {
+            UserDataService.Instance?.UpdateStage(userId, nextStage,
+                () => Debug.Log($"[GameManager] 스테이지 업데이트 완료: {nextStage}"),
+                (error) => Debug.LogError($"[GameManager] 스테이지 업데이트 실패: {error}")
+            );
+        }
+    }
+
+    public void GoToLobby()
+    {
+        SceneManager.LoadScene("LobbyScene");
     }
 
     public void RestartGame()

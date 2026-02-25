@@ -80,7 +80,11 @@ InitTestScene*.unity*
 /[Aa]ssets/Unity.VisualScripting.Generated/VisualScripting.Core/Property Providers.meta
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
-
 # Firebase Large Files
 /[Aa]ssets/Firebase/Plugins/x86_64/*.bundle
 /[Aa]ssets/Firebase/Plugins/x86_64/*.so
+# Firebase Config
+google-services.json
+google-services.json.meta
+google-services-desktop.json
+google-services-desktop.json.meta
