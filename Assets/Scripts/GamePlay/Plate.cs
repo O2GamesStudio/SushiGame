@@ -301,6 +301,8 @@ public class Plate : MonoBehaviour
         for (int i = 0; i < slotCount; i++)
             activeSushis.Add(null);
 
+        SushiLockSystem.Instance?.OnMergeCompleted();
+
         if (packagingEffect != null)
         {
             packagingEffect.PlayPackagingEffect(
@@ -348,7 +350,6 @@ public class Plate : MonoBehaviour
         }
 
         GameManager.Instance?.OnSushiMerged(mergedTypeId);
-        SushiLockSystem.Instance?.OnMergeCompleted();
 
         if (IsEmpty)
             GameStateChecker.Instance.CheckWinCondition();
