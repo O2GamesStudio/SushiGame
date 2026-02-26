@@ -4613,8 +4613,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameUI
   timerText: {fileID: 627902402}
-  winPanel: {fileID: 1246754862}
-  losePanel: {fileID: 741905816}
+  winPanel: {fileID: 1246754860}
+  losePanel: {fileID: 741905814}
   frozenColor: {r: 0, g: 1, b: 1, a: 1}
   progressText: {fileID: 1678803347}
 --- !u!114 &1419415412 stripped

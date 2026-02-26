@@ -20,6 +20,7 @@ public class AppInitializer : MonoBehaviour
                 string userId = firebaseManager.CurrentUser.UserId;
                 userDataService.LoadUserData(userId, (userData) =>
                 {
+                    Debug.Log($"[Firebase] currentStage: {userData.currentStage}");
                     GameDataTransfer.Instance.SetUserData(userData);
                     loadingUI?.Hide();
                     LobbyManager.Instance.Initialize(userData.currentStage);

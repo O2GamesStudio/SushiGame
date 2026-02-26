@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement;
 using System.Collections;
 
 public class GameManager : MonoBehaviour
@@ -13,7 +12,6 @@ public class GameManager : MonoBehaviour
     [SerializeField] private DoorTransition doorTransition;
     [SerializeField] private UnityEngine.UI.Button lobbyButton;
     [SerializeField] private UnityEngine.UI.Button restartButton;
-
 
     private int totalSushiSets;
     private int mergedSetsCount;
@@ -41,29 +39,24 @@ public class GameManager : MonoBehaviour
         if (transferData != null)
             currentLevel = transferData;
 
-        if (lobbyButton != null)
-            lobbyButton.onClick.AddListener(GoToLobby);
-
-        if (restartButton != null)
-            restartButton.onClick.AddListener(RestartGame);
+        lobbyButton?.onClick.AddListener(SceneLoader.LoadLobby);
+        restartButton?.onClick.AddListener(SceneLoader.ReloadGame);
 
         StartGame();
     }
+
     private void Update()
     {
         if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
-            RestartGame();
+            SceneLoader.ReloadGame();
 
-        if (!isGameActive || !isTimerStarted) return;
+        if (!isGameActive || !isTimerStarted || isTimerFrozen) return;
 
-        if (!isTimerFrozen)
-        {
-            timeRemaining -= Time.deltaTime;
-            gameUI.UpdateTimer(timeRemaining);
+        timeRemaining -= Time.deltaTime;
+        gameUI.UpdateTimer(timeRemaining);
 
-            if (timeRemaining <= 0)
-                OnGameLose();
-        }
+        if (timeRemaining <= 0)
+            OnGameLose();
     }
 
     private void StartGame()
@@ -97,13 +90,12 @@ public class GameManager : MonoBehaviour
         mergedSetsCount++;
         gameUI.UpdateProgress(mergedSetsCount, totalSushiSets);
 
-        if (MergeEventSystem.Instance != null)
-        {
-            if (MergeEventSystem.Instance.IsEventActive)
-                MergeEventSystem.Instance.OnSushiMergedDuringEvent(mergedTypeId);
-            else
-                MergeEventSystem.Instance.OnSushiMerged(mergedSetsCount);
-        }
+        if (MergeEventSystem.Instance == null) return;
+
+        if (MergeEventSystem.Instance.IsEventActive)
+            MergeEventSystem.Instance.OnSushiMergedDuringEvent(mergedTypeId);
+        else
+            MergeEventSystem.Instance.OnSushiMerged(mergedSetsCount);
     }
 
     public void StartTimer()
@@ -149,29 +141,12 @@ public class GameManager : MonoBehaviour
         var userData = GameDataTransfer.Instance?.CurrentUserData;
         if (userData == null) return;
 
-        int clearedStage = userData.currentStage;
-        int nextStage = clearedStage + 1;
-
+        int nextStage = userData.currentStage + 1;
         userData.currentStage = nextStage;
         GameDataTransfer.Instance.SetUserData(userData);
 
         string userId = FirebaseManager.Instance?.CurrentUser?.UserId;
         if (!string.IsNullOrEmpty(userId))
-        {
-            UserDataService.Instance?.UpdateStage(userId, nextStage,
-                () => Debug.Log($"[GameManager] 스테이지 업데이트 완료: {nextStage}"),
-                (error) => Debug.LogError($"[GameManager] 스테이지 업데이트 실패: {error}")
-            );
-        }
-    }
-
-    public void GoToLobby()
-    {
-        SceneManager.LoadScene("LobbyScene");
-    }
-
-    public void RestartGame()
-    {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            UserDataService.Instance?.UpdateStage(userId, nextStage);
     }
 }

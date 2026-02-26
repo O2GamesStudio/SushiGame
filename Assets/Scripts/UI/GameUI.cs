@@ -4,8 +4,8 @@ using TMPro;
 public class GameUI : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI timerText;
-    [SerializeField] private WinPanel winPanel;
-    [SerializeField] private LosePanel losePanel;
+    [SerializeField] private GameObject winPanel;
+    [SerializeField] private GameObject losePanel;
     [SerializeField] private Color frozenColor = Color.cyan;
 
     [Header("Progress Display")]
@@ -27,23 +27,16 @@ public class GameUI : MonoBehaviour
 
     public void ShowGame()
     {
-        winPanel.gameObject.SetActive(false);
-        losePanel.gameObject.SetActive(false);
+        winPanel.SetActive(false);
+        losePanel.SetActive(false);
     }
+
     public void UpdateProgress(int current, int total)
     {
         if (progressText != null)
-        {
             progressText.text = $"{current}/{total}";
-        }
-    }
-    public void ShowWin()
-    {
-        winPanel.gameObject.SetActive(true);
     }
 
-    public void ShowLose()
-    {
-        losePanel.gameObject.SetActive(true);
-    }
+    public void ShowWin() => winPanel.SetActive(true);
+    public void ShowLose() => losePanel.SetActive(true);
 }

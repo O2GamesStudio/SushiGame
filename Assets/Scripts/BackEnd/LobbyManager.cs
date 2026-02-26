@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 using TMPro;
 
 public class LobbyManager : MonoBehaviour
@@ -54,34 +53,20 @@ public class LobbyManager : MonoBehaviour
     private void OnStartButtonClicked()
     {
         int index = currentStage - 1;
-
-        if (index < 0 || index >= levelDataList.Length)
-        {
-            Debug.LogError($"[LobbyManager] 스테이지 {currentStage}에 해당하는 LevelData가 없습니다.");
-            return;
-        }
+        if (index < 0 || index >= levelDataList.Length) return;
 
         GameDataTransfer.Instance.SetLevelData(levelDataList[index]);
-
-        loadingUI?.Show();
-        var async = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("GameScene");
-        async.completed += _ => loadingUI?.Hide();
+        SceneLoader.LoadGameAsync(loadingUI);
     }
 
     private void OnGoogleLinkButtonClicked()
     {
-        GooglePlayGamesManager.Instance?.StartGoogleSignIn(
-            (idToken) =>
-            {
-                FirebaseManager.Instance.LinkWithGoogle(idToken,
-                    () =>
-                    {
-                        UpdateGoogleLinkButton();
-                        Debug.Log("[LobbyManager] 구글 연동 완료");
-                    },
-                    (error) => Debug.LogError($"[LobbyManager] 구글 연동 실패: {error}")
-                );
-            }
-        );
+        GooglePlayGamesManager.Instance?.StartGoogleSignIn(idToken =>
+        {
+            FirebaseManager.Instance.LinkWithGoogle(idToken,
+                () => UpdateGoogleLinkButton(),
+                null
+            );
+        });
     }
 }
