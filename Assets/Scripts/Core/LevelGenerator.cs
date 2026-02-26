@@ -240,34 +240,27 @@ public class LevelGenerator
         foreach (var plateTypes in cachedGuaranteedSushis)
         {
             plates[currentPlateIndex].ActiveTypes = new List<int>(plateTypes);
-
             foreach (var typeId in plateTypes)
             {
-                if (!activeTypeCount.ContainsKey(typeId))
-                    activeTypeCount[typeId] = 0;
+                if (!activeTypeCount.ContainsKey(typeId)) activeTypeCount[typeId] = 0;
                 activeTypeCount[typeId]++;
             }
-
             currentPlateIndex++;
         }
 
         var concentratedTypesShuffled = concentratedTypes.ToList();
         Shuffle(concentratedTypesShuffled);
-
         var pendingLayerSushis = new List<int>();
 
         foreach (var typeId in concentratedTypesShuffled)
         {
             if (!concentratedSushis.ContainsKey(typeId)) continue;
-
             var typeSushis = concentratedSushis[typeId];
             if (typeSushis.Count == 0) continue;
 
-            if (!activeTypeCount.ContainsKey(typeId))
-                activeTypeCount[typeId] = 0;
+            if (!activeTypeCount.ContainsKey(typeId)) activeTypeCount[typeId] = 0;
 
             int targetPlateStart = currentPlateIndex % levelData.plateCount;
-            int plateSpread = Random.Range(1, 3);
 
             for (int i = 0; i < typeSushis.Count; i++)
             {
@@ -310,12 +303,6 @@ public class LevelGenerator
                             plate.ActiveTypes[2] = dispersedSushis[0];
                             dispersedSushis[0] = temp;
                         }
-                        else if (pendingLayerSushis.Count > 0)
-                        {
-                            int temp = plate.ActiveTypes[2];
-                            plate.ActiveTypes[2] = pendingLayerSushis[0];
-                            pendingLayerSushis[0] = temp;
-                        }
                     }
                 }
                 else
@@ -324,7 +311,7 @@ public class LevelGenerator
                 }
             }
 
-            currentPlateIndex += plateSpread;
+            currentPlateIndex++;
         }
 
         Shuffle(dispersedSushis);
@@ -338,21 +325,17 @@ public class LevelGenerator
             bool isSingleSlot = singleSlotPlateIndices.Contains(i);
             int maxActive = isSingleSlot ? 1 : 3;
             int targetCount = isLockedSushiPlate ? Random.Range(1, maxActive + 1) : maxActive;
-            int addedCount = 0;
 
             while (plates[i].ActiveTypes.Count < targetCount && dispersedIndex < dispersedSushis.Count)
             {
                 int typeToAdd = dispersedSushis[dispersedIndex];
-
-                if (!activeTypeCount.ContainsKey(typeToAdd))
-                    activeTypeCount[typeToAdd] = 0;
+                if (!activeTypeCount.ContainsKey(typeToAdd)) activeTypeCount[typeToAdd] = 0;
 
                 if (activeTypeCount[typeToAdd] < 3)
                 {
                     plates[i].ActiveTypes.Add(typeToAdd);
                     activeTypeCount[typeToAdd]++;
                     dispersedIndex++;
-                    addedCount++;
                 }
                 else
                 {
@@ -361,175 +344,76 @@ public class LevelGenerator
                 }
             }
 
-            if (addedCount == 0 && plates[i].ActiveTypes.Count == 0 && pendingLayerSushis.Count > 0)
-            {
-                plates[i].ActiveTypes.Add(pendingLayerSushis[0]);
-                pendingLayerSushis.RemoveAt(0);
-            }
-
             if (plates[i].ActiveTypes.Count == 3 && HasSameThree(plates[i].ActiveTypes))
                 FixSameThreeInPlate(plates[i], dispersedSushis, ref dispersedIndex);
+        }
 
-            int layerCount = Random.Range(levelData.minLayersPerPlate, levelData.maxLayersPerPlate + 1);
+        while (dispersedIndex < dispersedSushis.Count)
+            pendingLayerSushis.Add(dispersedSushis[dispersedIndex++]);
 
-            for (int j = 0; j < layerCount && dispersedIndex < dispersedSushis.Count; j++)
+        Shuffle(pendingLayerSushis);
+
+        var validPlateIndices = new List<int>();
+        for (int i = 0; i < plates.Count; i++)
+            if (!adPlateIndices.Contains(i))
+                validPlateIndices.Add(i);
+
+        int poolIndex = 0;
+
+        // 최소 레이어 보장 - 첫 초밥 반드시 추가 후 랜덤 size
+        for (int minLayer = 0; minLayer < levelData.minLayersPerPlate; minLayer++)
+        {
+            foreach (int i in validPlateIndices)
             {
+                if (poolIndex >= pendingLayerSushis.Count) break;
+
+                bool isSingleSlot = singleSlotPlateIndices.Contains(i);
                 int layerSize = isSingleSlot ? 1 : Random.Range(1, 4);
                 var layerTypes = new List<int>();
 
-                for (int k = 0; k < layerSize && dispersedIndex < dispersedSushis.Count; k++)
-                    layerTypes.Add(dispersedSushis[dispersedIndex++]);
+                layerTypes.Add(pendingLayerSushis[poolIndex++]);
 
-                if (layerTypes.Count == 3 && HasSameThree(layerTypes))
-                {
-                    if (dispersedIndex < dispersedSushis.Count)
-                    {
-                        int temp = layerTypes[2];
-                        layerTypes[2] = dispersedSushis[dispersedIndex];
-                        dispersedSushis[dispersedIndex] = temp;
-                    }
-                    else if (pendingLayerSushis.Count > 0 && pendingLayerSushis[0] != layerTypes[0])
-                    {
-                        int temp = layerTypes[2];
-                        layerTypes[2] = pendingLayerSushis[0];
-                        pendingLayerSushis[0] = temp;
-                    }
-                }
+                for (int k = 1; k < layerSize && poolIndex < pendingLayerSushis.Count; k++)
+                    layerTypes.Add(pendingLayerSushis[poolIndex++]);
 
                 plates[i].Layers.Add(new Layer(layerTypes));
             }
         }
 
-        Shuffle(pendingLayerSushis);
-        int pendingIndex = 0;
-
-        while (pendingIndex < pendingLayerSushis.Count)
+        // 남은 초밥 랜덤 접시에 랜덤 size로 추가
+        var shuffledPlates = new List<int>(validPlateIndices);
+        while (poolIndex < pendingLayerSushis.Count)
         {
-            for (int i = 0; i < plates.Count && pendingIndex < pendingLayerSushis.Count; i++)
+            Shuffle(shuffledPlates);
+            bool anyAdded = false;
+
+            foreach (int i in shuffledPlates)
             {
-                if (adPlateIndices.Contains(i)) continue;
+                if (poolIndex >= pendingLayerSushis.Count) break;
+                if (plates[i].Layers.Count >= levelData.maxLayersPerPlate) continue;
 
                 bool isSingleSlot = singleSlotPlateIndices.Contains(i);
-                var plate = plates[i];
+                int layerSize = isSingleSlot ? 1 : Random.Range(1, 4);
+                var layerTypes = new List<int>();
 
-                if (plate.Layers.Count < levelData.maxLayersPerPlate)
+                for (int k = 0; k < layerSize && poolIndex < pendingLayerSushis.Count; k++)
+                    layerTypes.Add(pendingLayerSushis[poolIndex++]);
+
+                if (HasSameThree(layerTypes))
                 {
-                    var newLayer = new List<int>();
-                    int layerSize = isSingleSlot ? 1 : Mathf.Min(3, pendingLayerSushis.Count - pendingIndex);
-
-                    for (int j = 0; j < layerSize; j++)
-                        newLayer.Add(pendingLayerSushis[pendingIndex++]);
-
-                    if (newLayer.Count == 3 && HasSameThree(newLayer))
-                    {
-                        if (pendingIndex < pendingLayerSushis.Count && pendingLayerSushis[pendingIndex] != newLayer[0])
-                        {
-                            int temp = newLayer[2];
-                            newLayer[2] = pendingLayerSushis[pendingIndex];
-                            pendingLayerSushis[pendingIndex] = temp;
-                        }
-                        else if (dispersedIndex < dispersedSushis.Count && dispersedSushis[dispersedIndex] != newLayer[0])
-                        {
-                            int temp = newLayer[2];
-                            newLayer[2] = dispersedSushis[dispersedIndex];
-                            dispersedSushis[dispersedIndex] = temp;
-                        }
-                        else
-                        {
-                            for (int k = 0; k < pendingLayerSushis.Count; k++)
-                            {
-                                if (pendingLayerSushis[k] != newLayer[0])
-                                {
-                                    int temp = newLayer[2];
-                                    newLayer[2] = pendingLayerSushis[k];
-                                    pendingLayerSushis[k] = temp;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-
-                    plates[i].Layers.Add(new Layer(newLayer));
+                    int tempIdx = poolIndex;
+                    FixSameThree(layerTypes, ref tempIdx);
+                    poolIndex = tempIdx;
                 }
+
+                plates[i].Layers.Add(new Layer(layerTypes));
+                anyAdded = true;
             }
+
+            if (!anyAdded) break;
         }
 
-        while (dispersedIndex < dispersedSushis.Count)
-        {
-            for (int i = 0; i < plates.Count && dispersedIndex < dispersedSushis.Count; i++)
-            {
-                if (adPlateIndices.Contains(i)) continue;
-                if (sushiMergePlateIndices.Contains(i)) continue;
-
-                bool isSingleSlot = singleSlotPlateIndices.Contains(i);
-                int maxActive = isSingleSlot ? 1 : 3;
-                var plate = plates[i];
-
-                if (plate.ActiveTypes.Count < maxActive)
-                {
-                    int typeToAdd = dispersedSushis[dispersedIndex];
-
-                    if (!activeTypeCount.ContainsKey(typeToAdd))
-                        activeTypeCount[typeToAdd] = 0;
-
-                    if (activeTypeCount[typeToAdd] < 3)
-                    {
-                        plate.ActiveTypes.Add(typeToAdd);
-                        activeTypeCount[typeToAdd]++;
-                        dispersedIndex++;
-
-                        if (plate.ActiveTypes.Count == 3 && HasSameThree(plate.ActiveTypes))
-                        {
-                            if (dispersedIndex < dispersedSushis.Count && dispersedSushis[dispersedIndex] != plate.ActiveTypes[0])
-                            {
-                                int temp = plate.ActiveTypes[2];
-                                plate.ActiveTypes[2] = dispersedSushis[dispersedIndex];
-                                dispersedSushis[dispersedIndex] = temp;
-                            }
-                            else if (pendingLayerSushis.Count > 0 && pendingLayerSushis[0] != plate.ActiveTypes[0])
-                            {
-                                int temp = plate.ActiveTypes[2];
-                                plate.ActiveTypes[2] = pendingLayerSushis[0];
-                                pendingLayerSushis[0] = temp;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        pendingLayerSushis.Add(typeToAdd);
-                        dispersedIndex++;
-                    }
-                }
-                else if (plate.Layers.Count < levelData.maxLayersPerPlate)
-                {
-                    var newLayer = new List<int>();
-                    int layerSize = isSingleSlot ? 1 : Mathf.Min(3, dispersedSushis.Count - dispersedIndex);
-
-                    for (int j = 0; j < layerSize; j++)
-                        newLayer.Add(dispersedSushis[dispersedIndex++]);
-
-                    if (newLayer.Count == 3 && HasSameThree(newLayer))
-                    {
-                        if (dispersedIndex < dispersedSushis.Count && dispersedSushis[dispersedIndex] != newLayer[0])
-                        {
-                            int temp = newLayer[2];
-                            newLayer[2] = dispersedSushis[dispersedIndex];
-                            dispersedSushis[dispersedIndex] = temp;
-                        }
-                        else if (pendingLayerSushis.Count > 0 && pendingLayerSushis[0] != newLayer[0])
-                        {
-                            int temp = newLayer[2];
-                            newLayer[2] = pendingLayerSushis[0];
-                            pendingLayerSushis[0] = temp;
-                        }
-                    }
-
-                    plates[i].Layers.Add(new Layer(newLayer));
-                }
-            }
-        }
-
-        EnsureNoEmptyPlates(plates, pendingLayerSushis);
+        EnsureNoEmptyPlates(plates, pendingLayerSushis.Skip(poolIndex).ToList());
     }
     private void EnsureNoEmptyPlates(List<PlateData> plates, List<int> pendingLayerSushis)
     {
@@ -594,16 +478,11 @@ public class LevelGenerator
 
             if (!isAdPlate)
             {
-                int targetCount = 3;
-                if (isLockedSushiPlate)
-                    targetCount = Random.Range(1, 4);
-                else if (isSingleSlot)
-                    targetCount = 1;
+                int targetCount = isLockedSushiPlate ? Random.Range(1, 4) : (isSingleSlot ? 1 : 3);
 
                 if (i < cachedGuaranteedSushis.Count)
                 {
                     plateData.ActiveTypes = cachedGuaranteedSushis[i];
-
                     while (plateData.ActiveTypes.Count < targetCount && index < allSushiTypes.Count)
                         plateData.ActiveTypes.Add(allSushiTypes[index++]);
                 }
@@ -617,10 +496,50 @@ public class LevelGenerator
                     FixSameThree(plateData.ActiveTypes, ref index);
             }
 
-            int layerCount = isAdPlate ? 0 : Random.Range(levelData.minLayersPerPlate, levelData.maxLayersPerPlate + 1);
+            plates.Add(plateData);
+        }
 
-            for (int j = 0; j < layerCount && index < allSushiTypes.Count; j++)
+        var validPlateIndices = new List<int>();
+        for (int i = 0; i < plates.Count; i++)
+            if (!adPlateIndices.Contains(i))
+                validPlateIndices.Add(i);
+
+        // 최소 레이어 보장 - 첫 초밥 반드시 추가 후 랜덤 size
+        for (int minLayer = 0; minLayer < levelData.minLayersPerPlate; minLayer++)
+        {
+            foreach (int i in validPlateIndices)
             {
+                if (index >= allSushiTypes.Count) break;
+
+                bool isSingleSlot = singleSlotPlateIndices.Contains(i);
+                int layerSize = isSingleSlot ? 1 : Random.Range(1, 4);
+                var layerTypes = new List<int>();
+
+                layerTypes.Add(allSushiTypes[index++]);
+
+                for (int k = 1; k < layerSize && index < allSushiTypes.Count; k++)
+                    layerTypes.Add(allSushiTypes[index++]);
+
+                if (HasSameThree(layerTypes))
+                    FixSameThree(layerTypes, ref index);
+
+                plates[i].Layers.Add(new Layer(layerTypes));
+            }
+        }
+
+        // 남은 초밥을 랜덤 접시에 랜덤 size로 추가 분배
+        var shuffledPlates = new List<int>(validPlateIndices);
+        while (index < allSushiTypes.Count)
+        {
+            Shuffle(shuffledPlates);
+            bool anyAdded = false;
+
+            foreach (int i in shuffledPlates)
+            {
+                if (index >= allSushiTypes.Count) break;
+                if (plates[i].Layers.Count >= levelData.maxLayersPerPlate) continue;
+
+                bool isSingleSlot = singleSlotPlateIndices.Contains(i);
                 int layerSize = isSingleSlot ? 1 : Random.Range(1, 4);
                 var layerTypes = new List<int>();
 
@@ -630,13 +549,12 @@ public class LevelGenerator
                 if (HasSameThree(layerTypes))
                     FixSameThree(layerTypes, ref index);
 
-                plateData.Layers.Add(new Layer(layerTypes));
+                plates[i].Layers.Add(new Layer(layerTypes));
+                anyAdded = true;
             }
 
-            plates.Add(plateData);
+            if (!anyAdded) break;
         }
-
-        DistributeRemainingSushis(plates, ref index);
     }
 
     private void FixSameThreeInPlate(PlateData plate, List<int> dispersedSushis, ref int dispersedIndex)

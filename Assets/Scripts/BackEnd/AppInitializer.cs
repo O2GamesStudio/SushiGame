@@ -17,10 +17,17 @@ public class AppInitializer : MonoBehaviour
             userDataService.Initialize();
             firebaseManager.SignInAnonymous(() =>
             {
+                var cachedUserData = GameDataTransfer.Instance.CurrentUserData;
+                if (cachedUserData != null)
+                {
+                    loadingUI?.Hide();
+                    LobbyManager.Instance.Initialize(cachedUserData.currentStage);
+                    return;
+                }
+
                 string userId = firebaseManager.CurrentUser.UserId;
                 userDataService.LoadUserData(userId, (userData) =>
                 {
-                    Debug.Log($"[Firebase] currentStage: {userData.currentStage}");
                     GameDataTransfer.Instance.SetUserData(userData);
                     loadingUI?.Hide();
                     LobbyManager.Instance.Initialize(userData.currentStage);

@@ -13,6 +13,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private UnityEngine.UI.Button lobbyButton;
     [SerializeField] private UnityEngine.UI.Button restartButton;
 
+    private bool isStageClearProcessed = false;
     private int totalSushiSets;
     private int mergedSetsCount;
 
@@ -138,6 +139,9 @@ public class GameManager : MonoBehaviour
 
     private void OnStageClear()
     {
+        if (isStageClearProcessed) return;
+        isStageClearProcessed = true;
+
         var userData = GameDataTransfer.Instance?.CurrentUserData;
         if (userData == null) return;
 
