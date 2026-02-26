@@ -12,9 +12,7 @@ public static class SceneLoader
     public static void LoadGameAsync(LoadingUI loadingUI = null)
     {
         loadingUI?.Show();
-        var op = SceneManager.LoadSceneAsync(GameScene);
-        if (loadingUI != null)
-            op.completed += _ => loadingUI.Hide();
+        SceneManager.LoadSceneAsync(GameScene);
     }
 
     public static void LoadLobbyAsync(LoadingUI loadingUI = null)

@@ -67,7 +67,7 @@ public class SushiPool : MonoBehaviour
         }
 
         var sushi = pool.Count > 0 ? pool.Dequeue() : CreateNewSushi();
-        sushi.Initialize(typeId, data.riceSprite, data.toppingSprite, data.toppingOffsetX, data.toppingOffsetY);
+        sushi.Initialize(typeId, data.riceSprite, data.toppingSprite, data.sushiType, data.toppingOffsetX, data.toppingOffsetY);
         sushi.gameObject.SetActive(true);
         return sushi;
     }

@@ -5,6 +5,7 @@ using DG.Tweening;
 public class Sushi : MonoBehaviour
 {
     [SerializeField] private int typeId = -1;
+    public SushiType SushiType { get; private set; }
 
     [Header("Sushi Parts")]
     [SerializeField] private SpriteRenderer riceRenderer;
@@ -21,7 +22,7 @@ public class Sushi : MonoBehaviour
     public int TypeId => typeId;
     public SpriteRenderer SpriteRenderer => riceRenderer;
     public Transform RicePart => riceRenderer.transform;
-    public Transform ToppingPart => toppingRenderer.transform;
+    public Transform ToppingPart => toppingRenderer != null ? toppingRenderer.transform : null;
     public bool IsLocked => lockStage > 0;
     public int LockStage => lockStage;
     public Plate CurrentPlate { get; private set; }
@@ -73,9 +74,11 @@ public class Sushi : MonoBehaviour
         }
     }
 
-    public void Initialize(int id, Sprite riceSprite, Sprite toppingSprite, float toppingOffsetX = 0f, float toppingOffsetY = 0f)
+    public void Initialize(int id, Sprite riceSprite, Sprite toppingSprite, SushiType sushiType = SushiType.Nigiri, float toppingOffsetX = 0f, float toppingOffsetY = 0f)
+
     {
         typeId = id;
+        SushiType = sushiType;
 
         if (riceRenderer != null)
             riceRenderer.sprite = riceSprite;

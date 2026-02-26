@@ -76,6 +76,7 @@ public class PlateUI : MonoBehaviour
                     if (requiredSushiToppingRenderer != null)
                     {
                         requiredSushiToppingRenderer.sprite = data.toppingSprite;
+                        requiredSushiToppingRenderer.gameObject.SetActive(data.toppingSprite != null);
                         requiredSushiToppingRenderer.transform.localPosition = new Vector3(data.toppingOffsetX, data.toppingOffsetY, 0f);
                     }
                 }
@@ -126,7 +127,7 @@ public class PlateUI : MonoBehaviour
             var data = SushiPool.Instance.GetData(types[i]);
 
             if (sushiView != null && data != null)
-                sushiView.Initialize(types[i], data.riceSprite, data.toppingSprite, data.toppingOffsetX, data.toppingOffsetY);
+                sushiView.Initialize(types[i], data.riceSprite, data.toppingSprite, data.sushiType, data.toppingOffsetX, data.toppingOffsetY);
 
             bool isHidden = hiddenStates != null && i < hiddenStates.Count && hiddenStates[i];
             if (isHidden && hiddenSushiSprite != null)

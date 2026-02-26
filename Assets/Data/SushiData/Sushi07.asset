@@ -13,7 +13,8 @@ MonoBehaviour:
   m_Name: Sushi07
   m_EditorClassIdentifier: Assembly-CSharp::SushiData
   typeId: 6
+  sushiType: 0
   riceSprite: {fileID: 21300000, guid: 54e4e1c7817cddb4dae3050ed7a23de1, type: 3}
   toppingSprite: {fileID: 21300000, guid: 7fa626723464b3b4583ebf78c7649abf, type: 3}
-  toppingOffsetX: -0.22
-  toppingOffsetY: 0.19
+  toppingOffsetX: -0.029
+  toppingOffsetY: 0.224

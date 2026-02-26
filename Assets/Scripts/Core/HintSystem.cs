@@ -9,12 +9,13 @@ public class HintSystem : MonoBehaviour
     [SerializeField] private float hintDelay = 5f;
 
     [Header("Hint Animation")]
-    [SerializeField] private float riceSqueezeDuration = 0.15f;
-    [SerializeField] private float riceSqueezeScale = 0.95f;
-    [SerializeField] private float riceStretchScale = 1.05f;
     [SerializeField] private float toppingBounceHeight = 0.3f;
     [SerializeField] private float toppingBounceDuration = 0.4f;
-    [SerializeField] private Ease bounceEase = Ease.OutQuad;
+
+    [Header("Integrated  Hint Animation")]
+    [SerializeField] private float unitScalePunch = 0.15f;
+    [SerializeField] private float unitScaleDuration = 0.4f;
+    [SerializeField] private float unitShakeStrength = 0.08f;
 
     private float idleTimer = 0f;
     private bool isHinting = false;
@@ -27,11 +28,8 @@ public class HintSystem : MonoBehaviour
         if (!isHinting)
         {
             idleTimer += Time.deltaTime;
-
             if (idleTimer >= hintDelay)
-            {
                 ShowHint();
-            }
         }
     }
 
@@ -53,9 +51,7 @@ public class HintSystem : MonoBehaviour
             foreach (var sushi in currentHintSushis)
             {
                 if (sushi != null && sushi.gameObject.activeSelf)
-                {
-                    PlayStretchAnimation(sushi);
-                }
+                    PlayHintAnimation(sushi);
             }
         }
         else
@@ -64,12 +60,18 @@ public class HintSystem : MonoBehaviour
         }
     }
 
-    private void PlayStretchAnimation(Sushi sushi)
+    private void PlayHintAnimation(Sushi sushi)
     {
-        Transform ricePart = sushi.RicePart;
-        Transform toppingPart = sushi.ToppingPart;
+        if (sushi.SushiType == SushiType.Integrated)
+            PlayUnitAnimation(sushi);
+        else
+            PlayToppingAnimation(sushi);
+    }
 
-        if (ricePart == null || toppingPart == null) return;
+    private void PlayToppingAnimation(Sushi sushi)
+    {
+        Transform toppingPart = sushi.ToppingPart;
+        if (toppingPart == null) return;
 
         Vector3 originalToppingPos = toppingPart.localPosition;
         originalToppingPositions[sushi] = originalToppingPos;
@@ -80,58 +82,64 @@ public class HintSystem : MonoBehaviour
         if (toppingRenderer != null)
             toppingRenderer.sortingOrder = originalOrder + 1;
 
-        Sequence hintSequence = DOTween.Sequence();
-
-        Sequence toppingSequence = DOTween.Sequence();
-        toppingSequence.Append(toppingPart.DOLocalMoveY(originalToppingPos.y + toppingBounceHeight, 0.2f).SetEase(Ease.OutQuad));
-        toppingSequence.Append(toppingPart.DOShakePosition(0.3f, new Vector3(0.05f, 0.02f, 0f), 15, 0f, false, false));
-        toppingSequence.Append(toppingPart.DOLocalMove(originalToppingPos, toppingBounceDuration).SetEase(Ease.OutBounce));
-
-        hintSequence.Join(toppingSequence);
-        hintSequence.AppendInterval(0.3f);
-        hintSequence.SetLoops(-1, LoopType.Restart);
-        hintSequence.OnKill(() =>
+        Sequence seq = DOTween.Sequence();
+        seq.Append(toppingPart.DOLocalMoveY(originalToppingPos.y + toppingBounceHeight, 0.2f).SetEase(Ease.OutQuad));
+        seq.Append(toppingPart.DOShakePosition(0.3f, new Vector3(0.05f, 0.02f, 0f), 15, 0f, false, false));
+        seq.Append(toppingPart.DOLocalMove(originalToppingPos, toppingBounceDuration).SetEase(Ease.OutBounce));
+        seq.AppendInterval(0.3f);
+        seq.SetLoops(-1, LoopType.Restart);
+        seq.OnKill(() =>
         {
             if (toppingRenderer != null)
                 toppingRenderer.sortingOrder = originalOrder;
         });
 
-        activeSequences[sushi] = hintSequence;
+        activeSequences[sushi] = seq;
+    }
+
+    private void PlayUnitAnimation(Sushi sushi)
+    {
+        Transform ricePart = sushi.RicePart;
+        if (ricePart == null) return;
+
+        Vector3 originalScale = ricePart.localScale;
+
+        Sequence seq = DOTween.Sequence();
+        seq.Append(ricePart.DOPunchScale(Vector3.one * unitScalePunch, unitScaleDuration, 5, 0.5f));
+        seq.Append(ricePart.DOShakePosition(0.3f, new Vector3(unitShakeStrength, unitShakeStrength * 0.5f, 0f), 15, 0f, false, false));
+        seq.AppendInterval(0.3f);
+        seq.SetLoops(-1, LoopType.Restart);
+        seq.OnKill(() => ricePart.localScale = originalScale);
+
+        activeSequences[sushi] = seq;
     }
 
     private void StopHint()
     {
         foreach (var kvp in activeSequences)
-        {
-            if (kvp.Value != null)
-                kvp.Value.Kill();
-        }
+            kvp.Value?.Kill();
         activeSequences.Clear();
 
-        if (currentHintSushis.Count > 0)
+        foreach (var sushi in currentHintSushis)
         {
-            foreach (var sushi in currentHintSushis)
-            {
-                if (sushi != null)
-                {
-                    if (sushi.RicePart != null)
-                    {
-                        sushi.RicePart.DOKill();
-                        sushi.RicePart.localScale = Vector3.one;
-                    }
+            if (sushi == null) continue;
 
-                    if (sushi.ToppingPart != null)
-                    {
-                        sushi.ToppingPart.DOKill();
-                        sushi.ToppingPart.localPosition = originalToppingPositions.TryGetValue(sushi, out var origPos)
-                            ? origPos
-                            : sushi.ToppingPart.localPosition;
-                    }
-                }
+            if (sushi.RicePart != null)
+            {
+                sushi.RicePart.DOKill();
+                sushi.RicePart.localScale = Vector3.one;
             }
-            currentHintSushis.Clear();
+
+            if (sushi.ToppingPart != null)
+            {
+                sushi.ToppingPart.DOKill();
+                sushi.ToppingPart.localPosition = originalToppingPositions.TryGetValue(sushi, out var origPos)
+                    ? origPos
+                    : sushi.ToppingPart.localPosition;
+            }
         }
 
+        currentHintSushis.Clear();
         originalToppingPositions.Clear();
         isHinting = false;
     }
@@ -157,9 +165,8 @@ public class HintSystem : MonoBehaviour
                 if (sushi == null || !sushi.gameObject.activeSelf || sushi.IsLocked) continue;
 
                 if (!sushisByType.ContainsKey(sushi.TypeId))
-                {
                     sushisByType[sushi.TypeId] = new List<Sushi>();
-                }
+
                 sushisByType[sushi.TypeId].Add(sushi);
             }
         }
@@ -167,10 +174,7 @@ public class HintSystem : MonoBehaviour
         foreach (var kvp in sushisByType)
         {
             if (kvp.Value.Count >= 3)
-            {
-                var shuffled = kvp.Value.OrderBy(x => Random.value).Take(3).ToList();
-                return shuffled;
-            }
+                return kvp.Value.OrderBy(x => Random.value).Take(3).ToList();
         }
 
         return null;
