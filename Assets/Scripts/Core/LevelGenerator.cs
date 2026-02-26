@@ -114,6 +114,22 @@ public class LevelGenerator
 
         return plates;
     }
+    private int GetWeightedLayerSize()
+    {
+        int total = levelData.layerSize1Weight + levelData.layerSize2Weight + levelData.layerSize3Weight;
+        if (total <= 0)
+        {
+            return Random.Range(1, 4);
+        }
+
+        if (total != 100)
+            Debug.LogWarning($"[LevelGenerator] layerSize 가중치 합이 100이 아닙니다. 현재 합계: {total}, 비율대로 적용됩니다.");
+
+        int roll = Random.Range(0, total);
+        if (roll < levelData.layerSize1Weight) return 1;
+        if (roll < levelData.layerSize1Weight + levelData.layerSize2Weight) return 2;
+        return 3;
+    }
     private void FixTypeMultiples(List<PlateData> plates)
     {
         var typeCountMap = new Dictionary<int, int>();
@@ -368,7 +384,7 @@ public class LevelGenerator
                 if (poolIndex >= pendingLayerSushis.Count) break;
 
                 bool isSingleSlot = singleSlotPlateIndices.Contains(i);
-                int layerSize = isSingleSlot ? 1 : Random.Range(1, 4);
+                int layerSize = isSingleSlot ? 1 : GetWeightedLayerSize();
                 var layerTypes = new List<int>();
 
                 layerTypes.Add(pendingLayerSushis[poolIndex++]);
@@ -393,7 +409,7 @@ public class LevelGenerator
                 if (plates[i].Layers.Count >= levelData.maxLayersPerPlate) continue;
 
                 bool isSingleSlot = singleSlotPlateIndices.Contains(i);
-                int layerSize = isSingleSlot ? 1 : Random.Range(1, 4);
+                int layerSize = isSingleSlot ? 1 : GetWeightedLayerSize();
                 var layerTypes = new List<int>();
 
                 for (int k = 0; k < layerSize && poolIndex < pendingLayerSushis.Count; k++)
@@ -512,7 +528,7 @@ public class LevelGenerator
                 if (index >= allSushiTypes.Count) break;
 
                 bool isSingleSlot = singleSlotPlateIndices.Contains(i);
-                int layerSize = isSingleSlot ? 1 : Random.Range(1, 4);
+                int layerSize = isSingleSlot ? 1 : GetWeightedLayerSize();
                 var layerTypes = new List<int>();
 
                 layerTypes.Add(allSushiTypes[index++]);
@@ -540,7 +556,7 @@ public class LevelGenerator
                 if (plates[i].Layers.Count >= levelData.maxLayersPerPlate) continue;
 
                 bool isSingleSlot = singleSlotPlateIndices.Contains(i);
-                int layerSize = isSingleSlot ? 1 : Random.Range(1, 4);
+                int layerSize = isSingleSlot ? 1 : GetWeightedLayerSize();
                 var layerTypes = new List<int>();
 
                 for (int k = 0; k < layerSize && index < allSushiTypes.Count; k++)
@@ -618,7 +634,7 @@ public class LevelGenerator
             else if (plate.Layers.Count < levelData.maxLayersPerPlate)
             {
                 var newLayer = new List<int>();
-                int layerSize = isSingleSlot ? 1 : Mathf.Min(3, allSushiTypes.Count - index);
+                int layerSize = isSingleSlot ? 1 : GetWeightedLayerSize();
 
                 for (int i = 0; i < layerSize; i++)
                     newLayer.Add(allSushiTypes[index++]);
@@ -764,9 +780,10 @@ public class LevelGenerator
             }
 
             var newLayer = new List<int>();
-            int layerSize = isSingleSlot ? 1 : Mathf.Min(3, movedSushis.Count - sushiIndex);
+            int layerSize = isSingleSlot ? 1 : GetWeightedLayerSize();
+            int actualSize = Mathf.Min(layerSize, movedSushis.Count - sushiIndex);
 
-            for (int i = 0; i < layerSize; i++)
+            for (int i = 0; i < actualSize; i++)
                 newLayer.Add(movedSushis[sushiIndex++]);
 
             if (HasSameThree(newLayer))

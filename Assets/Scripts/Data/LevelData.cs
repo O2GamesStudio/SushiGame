@@ -16,6 +16,11 @@ public class LevelData : ScriptableObject
     [Header("타입 분포")]
     [Tooltip("집중 배치할 타입 수")] public int concentratedTypeCount = 2;
 
+    [Header("레이어 크기 확률 (합계 100)")]
+    [Tooltip("레이어 초밥 1개 확률")] public int layerSize1Weight = 25;
+    [Tooltip("레이어 초밥 2개 확률")] public int layerSize2Weight = 50;
+    [Tooltip("레이어 초밥 3개 확률")] public int layerSize3Weight = 25;
+
     [Header("히든 예비 초밥")]
     [Tooltip("숨겨진 예비 초밥 수")] public int hiddenReserveCount = 0;
 
