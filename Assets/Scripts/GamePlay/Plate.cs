@@ -276,15 +276,10 @@ public class Plate : MonoBehaviour
     private void CheckMerge()
     {
         if (ActiveCount != slotCount) return;
+        if (slotCount == 1) return;
 
         var nonNullSushis = activeSushis.Where(s => s != null).ToList();
         if (nonNullSushis.Any(s => s.IsLocked)) return;
-
-        if (slotCount == 1)
-        {
-            ExecuteMerge(nonNullSushis[0].TypeId);
-            return;
-        }
 
         if (nonNullSushis.Count == 3 &&
             nonNullSushis[0].TypeId == nonNullSushis[1].TypeId &&

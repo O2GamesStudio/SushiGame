@@ -681,9 +681,7 @@ public class LevelGenerator
         for (int i = 0; i < plates.Count; i++)
         {
             if (!adPlateIndices.Contains(i))
-            {
                 availablePlates.Add(i);
-            }
         }
 
         int currentPlateIdx = 0;
@@ -692,25 +690,23 @@ public class LevelGenerator
         {
             int plateIndex = availablePlates[currentPlateIdx % availablePlates.Count];
             var plate = plates[plateIndex];
+            bool isSingleSlot = singleSlotPlateIndices.Contains(plateIndex);
+            int maxActive = isSingleSlot ? 1 : 3;
 
-            if (plate.ActiveTypes.Count < 3)
+            if (plate.ActiveTypes.Count < maxActive)
             {
                 plate.ActiveTypes.Add(allSushiTypes[index++]);
             }
             else if (plate.Layers.Count < levelData.maxLayersPerPlate)
             {
                 var newLayer = new List<int>();
-                int layerSize = Mathf.Min(3, allSushiTypes.Count - index);
+                int layerSize = isSingleSlot ? 1 : Mathf.Min(3, allSushiTypes.Count - index);
 
                 for (int i = 0; i < layerSize; i++)
-                {
                     newLayer.Add(allSushiTypes[index++]);
-                }
 
                 if (HasSameThree(newLayer))
-                {
                     FixSameThree(newLayer, ref index);
-                }
 
                 plate.Layers.Add(new Layer(newLayer));
             }
@@ -811,9 +807,7 @@ public class LevelGenerator
         for (int i = 0; i < plates.Count; i++)
         {
             if (!adPlateIndices.Contains(i) && plates[i].Layers.Count < levelData.maxLayersPerPlate)
-            {
                 availablePlates.Add(i);
-            }
         }
 
         if (availablePlates.Count == 0)
@@ -829,9 +823,7 @@ public class LevelGenerator
             }
 
             if (firstNonAdPlate >= 0)
-            {
                 plates[firstNonAdPlate].Layers.Add(new Layer(movedSushis));
-            }
             return;
         }
 
@@ -844,6 +836,7 @@ public class LevelGenerator
         {
             int targetPlateIndex = availablePlates[plateIndex % availablePlates.Count];
             var targetPlate = plates[targetPlateIndex];
+            bool isSingleSlot = singleSlotPlateIndices.Contains(targetPlateIndex);
 
             if (targetPlate.Layers.Count >= levelData.maxLayersPerPlate)
             {
@@ -853,12 +846,10 @@ public class LevelGenerator
             }
 
             var newLayer = new List<int>();
-            int layerSize = Mathf.Min(3, movedSushis.Count - sushiIndex);
+            int layerSize = isSingleSlot ? 1 : Mathf.Min(3, movedSushis.Count - sushiIndex);
 
             for (int i = 0; i < layerSize; i++)
-            {
                 newLayer.Add(movedSushis[sushiIndex++]);
-            }
 
             if (HasSameThree(newLayer))
             {
