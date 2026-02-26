@@ -102,14 +102,26 @@ public class HintSystem : MonoBehaviour
         Transform ricePart = sushi.RicePart;
         if (ricePart == null) return;
 
-        Vector3 originalScale = ricePart.localScale;
+        Vector3 originalPos = ricePart.localPosition;
+        originalToppingPositions[sushi] = originalPos;
+
+        var riceRenderer = ricePart.GetComponent<SpriteRenderer>();
+        int originalOrder = riceRenderer != null ? riceRenderer.sortingOrder : 0;
+
+        if (riceRenderer != null)
+            riceRenderer.sortingOrder = originalOrder + 1;
 
         Sequence seq = DOTween.Sequence();
-        seq.Append(ricePart.DOPunchScale(Vector3.one * unitScalePunch, unitScaleDuration, 5, 0.5f));
-        seq.Append(ricePart.DOShakePosition(0.3f, new Vector3(unitShakeStrength, unitShakeStrength * 0.5f, 0f), 15, 0f, false, false));
+        seq.Append(ricePart.DOLocalMoveY(originalPos.y + toppingBounceHeight, 0.2f).SetEase(Ease.OutQuad));
+        seq.Append(ricePart.DOShakePosition(0.3f, new Vector3(0.05f, 0.02f, 0f), 15, 0f, false, false));
+        seq.Append(ricePart.DOLocalMove(originalPos, toppingBounceDuration).SetEase(Ease.OutBounce));
         seq.AppendInterval(0.3f);
         seq.SetLoops(-1, LoopType.Restart);
-        seq.OnKill(() => ricePart.localScale = originalScale);
+        seq.OnKill(() =>
+        {
+            if (riceRenderer != null)
+                riceRenderer.sortingOrder = originalOrder;
+        });
 
         activeSequences[sushi] = seq;
     }

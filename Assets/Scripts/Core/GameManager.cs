@@ -137,6 +137,11 @@ public class GameManager : MonoBehaviour
         gameUI.ShowLose();
     }
 
+    public void GoToLobby()
+    {
+        SceneLoader.LoadLobby();
+    }
+
     private void OnStageClear()
     {
         if (isStageClearProcessed) return;

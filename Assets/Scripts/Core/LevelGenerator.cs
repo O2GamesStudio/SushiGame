@@ -438,43 +438,66 @@ public class LevelGenerator
             if (adPlateIndices.Contains(i)) continue;
 
             var plate = plates[i];
-            if (plate.ActiveTypes.Count > 0 || plate.Layers.Count > 0) continue;
-
             bool isSingleSlot = singleSlotPlateIndices.Contains(i);
+            int maxActive = isSingleSlot ? 1 : 3;
 
-            if (pendingLayerSushis.Count > 0)
+            if (plate.ActiveTypes.Count == 0)
             {
-                int minCount = isSingleSlot ? 1 : Mathf.Min(3, pendingLayerSushis.Count);
-                for (int j = 0; j < minCount; j++)
+                if (plate.Layers.Count > 0)
                 {
-                    plate.ActiveTypes.Add(pendingLayerSushis[0]);
-                    pendingLayerSushis.RemoveAt(0);
+                    var firstLayer = plate.Layers[0];
+                    int moveCount = Mathf.Min(maxActive, firstLayer.SushiTypes.Count);
+                    for (int k = 0; k < moveCount; k++)
+                        plate.ActiveTypes.Add(firstLayer.SushiTypes[k]);
+
+                    firstLayer.SushiTypes.RemoveRange(0, moveCount);
+                    if (firstLayer.SushiTypes.Count == 0)
+                        plate.Layers.RemoveAt(0);
+                }
+                else if (pendingLayerSushis.Count > 0)
+                {
+                    int minCount = Mathf.Min(maxActive, pendingLayerSushis.Count);
+                    for (int j = 0; j < minCount; j++)
+                    {
+                        plate.ActiveTypes.Add(pendingLayerSushis[0]);
+                        pendingLayerSushis.RemoveAt(0);
+                    }
+                }
+                else
+                {
+                    for (int j = 0; j < plates.Count; j++)
+                    {
+                        if (j == i || adPlateIndices.Contains(j)) continue;
+
+                        var donorPlate = plates[j];
+                        if (donorPlate.Layers.Count > 0)
+                        {
+                            var layerToMove = donorPlate.Layers[donorPlate.Layers.Count - 1];
+                            donorPlate.Layers.RemoveAt(donorPlate.Layers.Count - 1);
+                            int moveCount = isSingleSlot ? 1 : layerToMove.SushiTypes.Count;
+                            for (int k = 0; k < moveCount; k++)
+                                plate.ActiveTypes.Add(layerToMove.SushiTypes[k]);
+                            break;
+                        }
+                        else if (donorPlate.ActiveTypes.Count > 1)
+                        {
+                            int typeToMove = donorPlate.ActiveTypes[donorPlate.ActiveTypes.Count - 1];
+                            donorPlate.ActiveTypes.RemoveAt(donorPlate.ActiveTypes.Count - 1);
+                            plate.ActiveTypes.Add(typeToMove);
+                            break;
+                        }
+                    }
                 }
             }
-            else
+            if (plate.ActiveTypes.Count == 0 && plate.Layers.Count == 0)
             {
-                for (int j = 0; j < plates.Count; j++)
+                if (pendingLayerSushis.Count > 0)
                 {
-                    if (j == i || adPlateIndices.Contains(j)) continue;
-
-                    var donorPlate = plates[j];
-
-                    if (donorPlate.Layers.Count > 0)
+                    int minCount = isSingleSlot ? 1 : Mathf.Min(maxActive, pendingLayerSushis.Count);
+                    for (int j = 0; j < minCount; j++)
                     {
-                        var layerToMove = donorPlate.Layers[donorPlate.Layers.Count - 1];
-                        donorPlate.Layers.RemoveAt(donorPlate.Layers.Count - 1);
-
-                        int moveCount = isSingleSlot ? 1 : layerToMove.SushiTypes.Count;
-                        for (int k = 0; k < moveCount; k++)
-                            plate.ActiveTypes.Add(layerToMove.SushiTypes[k]);
-                        break;
-                    }
-                    else if (donorPlate.ActiveTypes.Count > 1)
-                    {
-                        int typeToMove = donorPlate.ActiveTypes[donorPlate.ActiveTypes.Count - 1];
-                        donorPlate.ActiveTypes.RemoveAt(donorPlate.ActiveTypes.Count - 1);
-                        plate.ActiveTypes.Add(typeToMove);
-                        break;
+                        plate.ActiveTypes.Add(pendingLayerSushis[0]);
+                        pendingLayerSushis.RemoveAt(0);
                     }
                 }
             }
