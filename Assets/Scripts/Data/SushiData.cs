@@ -17,4 +17,6 @@ public class SushiData : ScriptableObject
     public Sprite toppingSprite;
     public float toppingOffsetX = 0f;
     public float toppingOffsetY = 0f;
+    public float plateOffsetY = 0f;
+
 }

@@ -3117,7 +3117,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c3e5c64ee6c01d44fbba9eac04d202d6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LosePanel
-  restartButton: {fileID: 1991247562}
 --- !u!114 &741905817
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4217,7 +4216,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0772e248773ecea49946fef8d57e6926, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WinPanel
-  restartButton: {fileID: 1019166519}
 --- !u!114 &1246754863
 MonoBehaviour:
   m_ObjectHideFlags: 0

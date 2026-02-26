@@ -34,6 +34,7 @@ public class Sushi : MonoBehaviour
     private int lockStage = 0;
     private SpriteRenderer lockIconRenderer;
     private int originalRiceSortingOrder;
+    public float PlateOffsetY { get; private set; }
 
     private void Awake()
     {
@@ -74,11 +75,13 @@ public class Sushi : MonoBehaviour
         }
     }
 
-    public void Initialize(int id, Sprite riceSprite, Sprite toppingSprite, SushiType sushiType = SushiType.Nigiri, float toppingOffsetX = 0f, float toppingOffsetY = 0f)
-
+    public void Initialize(int id, Sprite riceSprite, Sprite toppingSprite,
+    SushiType sushiType = SushiType.Nigiri, float toppingOffsetX = 0f,
+    float toppingOffsetY = 0f, float plateOffsetY = 0f)
     {
         typeId = id;
         SushiType = sushiType;
+        PlateOffsetY = plateOffsetY;
 
         if (riceRenderer != null)
             riceRenderer.sprite = riceSprite;

@@ -386,7 +386,7 @@ public class Plate : MonoBehaviour
 
             sushi.transform.SetParent(sushiSlots[slotTransformIndex]);
 
-            Vector3 targetLocalPos = new Vector3(0f, 0.08f, -1f);
+            Vector3 targetLocalPos = new Vector3(0f, 0.08f + sushi.PlateOffsetY, -1f);
             Vector3 targetWorldPos = sushiSlots[slotTransformIndex].TransformPoint(targetLocalPos);
             Vector3 startPos = targetWorldPos + Vector3.down * refillStartOffsetY;
 
@@ -459,7 +459,7 @@ public class Plate : MonoBehaviour
             if (sushi.transform.parent != sushiSlots[slotIdx])
                 sushi.transform.SetParent(sushiSlots[slotIdx]);
 
-            sushi.transform.localPosition = new Vector3(0f, 0.08f, -1f);
+            sushi.transform.localPosition = new Vector3(0f, 0.08f + sushi.PlateOffsetY, -1f);
             sushi.transform.localScale = Vector3.one;
             sushi.gameObject.SetActive(!IsLocked);
         }

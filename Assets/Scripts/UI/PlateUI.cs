@@ -71,13 +71,16 @@ public class PlateUI : MonoBehaviour
                 if (data != null)
                 {
                     if (requiredSushiRiceRenderer != null)
+                    {
                         requiredSushiRiceRenderer.sprite = data.riceSprite;
+                        requiredSushiRiceRenderer.transform.localPosition = new Vector3(0f, data.plateOffsetY, 0f);
+                    }
 
                     if (requiredSushiToppingRenderer != null)
                     {
                         requiredSushiToppingRenderer.sprite = data.toppingSprite;
                         requiredSushiToppingRenderer.gameObject.SetActive(data.toppingSprite != null);
-                        requiredSushiToppingRenderer.transform.localPosition = new Vector3(data.toppingOffsetX, data.toppingOffsetY, 0f);
+                        requiredSushiToppingRenderer.transform.localPosition = new Vector3(data.toppingOffsetX, data.toppingOffsetY + data.plateOffsetY, 0f);
                     }
                 }
             }
