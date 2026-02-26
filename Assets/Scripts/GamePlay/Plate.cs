@@ -254,8 +254,8 @@ public class Plate : MonoBehaviour
         return closestSlot;
     }
 
+    public void RefreshVisuals() => UpdateVisuals();
     public List<Sushi> GetActiveSushis() => activeSushis.Where(s => s != null).ToList();
-
     public List<Layer> GetAllLayers() => new List<Layer>(layerQueue);
 
     public void UpdateReserveDisplay()

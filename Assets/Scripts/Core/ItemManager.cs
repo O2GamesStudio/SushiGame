@@ -85,16 +85,11 @@ public class ItemManager : MonoBehaviour
             Shuffle(combinedTypes);
 
             if (ValidateShuffleResult(allActiveSushis.Count, combinedTypes))
-            {
                 isValid = true;
-            }
         }
 
         if (!isValid)
-        {
-            Debug.LogWarning("[ItemManager] 셔플 검증 실패, 수동 조정 시작");
             ForceFixSameThree(combinedTypes);
-        }
 
         int index = 0;
 
@@ -102,9 +97,7 @@ public class ItemManager : MonoBehaviour
         {
             var data = SushiPool.Instance.GetData(combinedTypes[index]);
             if (data != null)
-            {
-                sushi.Initialize(combinedTypes[index], data.riceSprite, data.toppingSprite);
-            }
+                sushi.Initialize(combinedTypes[index], data.riceSprite, data.toppingSprite, data.sushiType, data.toppingOffsetX, data.toppingOffsetY, data.plateOffsetY);
             index++;
         }
 
@@ -119,9 +112,7 @@ public class ItemManager : MonoBehaviour
                 for (int i = 0; i < layer.SushiTypes.Count; i++)
                 {
                     if (index < combinedTypes.Count)
-                    {
                         layer.SushiTypes[i] = combinedTypes[index++];
-                    }
                 }
             }
         }
@@ -129,6 +120,7 @@ public class ItemManager : MonoBehaviour
         foreach (var plate in plateManager.GetAllPlates())
         {
             if (!plate.gameObject.activeSelf) continue;
+            plate.RefreshVisuals();
             plate.UpdateReserveDisplay();
             plate.RecheckMerge();
         }
@@ -294,8 +286,8 @@ public class ItemManager : MonoBehaviour
 
                         if (data1 != null && data2 != null)
                         {
-                            plateSushis[2].Initialize(targetType, data1.riceSprite, data1.toppingSprite);
-                            allActiveSushis[i].Initialize(sameType, data2.riceSprite, data2.toppingSprite);
+                            plateSushis[2].Initialize(targetType, data1.riceSprite, data1.toppingSprite, data1.sushiType, data1.toppingOffsetX, data1.toppingOffsetY, data1.plateOffsetY);
+                            allActiveSushis[i].Initialize(sameType, data2.riceSprite, data2.toppingSprite, data2.sushiType, data2.toppingOffsetX, data2.toppingOffsetY, data2.plateOffsetY);
                             break;
                         }
                     }
@@ -361,9 +353,7 @@ public class ItemManager : MonoBehaviour
                                 layer.SushiTypes[2] = sushi.TypeId;
                                 var data = SushiPool.Instance.GetData(temp);
                                 if (data != null)
-                                {
-                                    sushi.Initialize(temp, data.riceSprite, data.toppingSprite);
-                                }
+                                    sushi.Initialize(temp, data.riceSprite, data.toppingSprite, data.sushiType, data.toppingOffsetX, data.toppingOffsetY, data.plateOffsetY);
                                 break;
                             }
                         }
@@ -401,8 +391,8 @@ public class ItemManager : MonoBehaviour
 
                         if (data1 != null && data2 != null)
                         {
-                            plateSushis[2].Initialize(targetType, data1.riceSprite, data1.toppingSprite);
-                            allActiveSushis[i].Initialize(sameType, data2.riceSprite, data2.toppingSprite);
+                            plateSushis[2].Initialize(targetType, data1.riceSprite, data1.toppingSprite, data1.sushiType, data1.toppingOffsetX, data1.toppingOffsetY, data1.plateOffsetY);
+                            allActiveSushis[i].Initialize(sameType, data2.riceSprite, data2.toppingSprite, data2.sushiType, data2.toppingOffsetX, data2.toppingOffsetY, data2.plateOffsetY);
                             break;
                         }
                     }
