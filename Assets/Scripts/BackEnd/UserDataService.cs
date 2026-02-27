@@ -29,6 +29,8 @@ public class UserDataService : MonoBehaviour
 
     public void LoadUserData(string userId, Action<UserData> onSuccess, Action<string> onFailed = null)
     {
+        Debug.Log($"[UserDataService] 유저 데이터 로드 시작: {userId}");
+
         db.Collection(UsersCollection).Document(userId).GetSnapshotAsync().ContinueWithOnMainThread(task =>
         {
             if (task.IsFaulted || task.IsCanceled)
@@ -43,11 +45,13 @@ public class UserDataService : MonoBehaviour
             if (snapshot.Exists)
             {
                 var data = snapshot.ConvertTo<UserData>();
+                Debug.Log($"[UserDataService] 데이터 로드 완료: stage={data.currentStage}");
                 onSuccess?.Invoke(data);
             }
             else
             {
                 var newData = new UserData { currentStage = 1 };
+                Debug.Log($"[UserDataService] 신규 유저 데이터 생성");
                 SaveUserData(userId, newData, () => onSuccess?.Invoke(newData));
             }
         });
@@ -71,10 +75,12 @@ public class UserDataService : MonoBehaviour
 
     public void UpdateStage(string userId, int stage, Action onSuccess = null, Action<string> onFailed = null)
     {
+        Debug.Log($"[UserDataService] 스테이지 업데이트 시작: {stage}");
+
         var update = new System.Collections.Generic.Dictionary<string, object>
-        {
-            { "currentStage", stage }
-        };
+    {
+        { "currentStage", stage }
+    };
 
         db.Collection(UsersCollection).Document(userId).UpdateAsync(update).ContinueWithOnMainThread(task =>
         {
@@ -86,6 +92,7 @@ public class UserDataService : MonoBehaviour
                 return;
             }
 
+            Debug.Log($"[UserDataService] 스테이지 업데이트 완료: {stage}");
             onSuccess?.Invoke();
         });
     }

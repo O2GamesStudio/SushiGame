@@ -5,20 +5,29 @@ public class PlateManager : MonoBehaviour
 {
     [SerializeField] private List<Plate> plates;
 
-    public void Initialize(List<PlateData> plateDataList)
+    public void Initialize(List<PlateData> plateDataList, bool sequentialActivation = false)
     {
-        var plateIndices = new List<int>();
-        for (int i = 0; i < plates.Count; i++)
-            plateIndices.Add(i);
-
-        for (int i = plateIndices.Count - 1; i > 0; i--)
-        {
-            int j = Random.Range(0, i + 1);
-            (plateIndices[i], plateIndices[j]) = (plateIndices[j], plateIndices[i]);
-        }
-
         for (int i = 0; i < plates.Count; i++)
             plates[i].gameObject.SetActive(false);
+
+        List<int> plateIndices = new List<int>();
+
+        if (sequentialActivation)
+        {
+            for (int i = 0; i < plateDataList.Count; i++)
+                plateIndices.Add(i);
+        }
+        else
+        {
+            for (int i = 0; i < plates.Count; i++)
+                plateIndices.Add(i);
+
+            for (int i = plateIndices.Count - 1; i > 0; i--)
+            {
+                int j = Random.Range(0, i + 1);
+                (plateIndices[i], plateIndices[j]) = (plateIndices[j], plateIndices[i]);
+            }
+        }
 
         for (int i = 0; i < plateDataList.Count; i++)
         {

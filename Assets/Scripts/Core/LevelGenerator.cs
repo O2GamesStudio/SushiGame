@@ -376,7 +376,7 @@ public class LevelGenerator
 
         int poolIndex = 0;
 
-        // 최소 레이어 보장 - 첫 초밥 반드시 추가 후 랜덤 size
+        // 최소 레이어 보장 - 첫 초밥 반드시 추가 후 랜덤 size, 접시별 동일 타입 3개 방지
         for (int minLayer = 0; minLayer < levelData.minLayersPerPlate; minLayer++)
         {
             foreach (int i in validPlateIndices)
@@ -390,13 +390,45 @@ public class LevelGenerator
                 layerTypes.Add(pendingLayerSushis[poolIndex++]);
 
                 for (int k = 1; k < layerSize && poolIndex < pendingLayerSushis.Count; k++)
+                {
+                    int candidate = pendingLayerSushis[poolIndex];
+
+                    int existingCount = 0;
+                    foreach (var layer in plates[i].Layers)
+                        foreach (var t in layer.SushiTypes)
+                            if (t == candidate) existingCount++;
+                    existingCount += layerTypes.Count(t => t == candidate);
+
+                    if (existingCount >= 2)
+                    {
+                        bool swapped = false;
+                        for (int s = poolIndex + 1; s < pendingLayerSushis.Count; s++)
+                        {
+                            int alt = pendingLayerSushis[s];
+                            int altCount = 0;
+                            foreach (var layer in plates[i].Layers)
+                                foreach (var t in layer.SushiTypes)
+                                    if (t == alt) altCount++;
+                            altCount += layerTypes.Count(t => t == alt);
+
+                            if (altCount < 2)
+                            {
+                                (pendingLayerSushis[poolIndex], pendingLayerSushis[s]) = (pendingLayerSushis[s], pendingLayerSushis[poolIndex]);
+                                swapped = true;
+                                break;
+                            }
+                        }
+                        if (!swapped) break;
+                    }
+
                     layerTypes.Add(pendingLayerSushis[poolIndex++]);
+                }
 
                 plates[i].Layers.Add(new Layer(layerTypes));
             }
         }
 
-        // 남은 초밥 랜덤 접시에 랜덤 size로 추가
+        // 남은 초밥 랜덤 접시에 랜덤 size로 추가, 동일 타입 3개 방지
         var shuffledPlates = new List<int>(validPlateIndices);
         while (poolIndex < pendingLayerSushis.Count)
         {
@@ -413,7 +445,41 @@ public class LevelGenerator
                 var layerTypes = new List<int>();
 
                 for (int k = 0; k < layerSize && poolIndex < pendingLayerSushis.Count; k++)
+                {
+                    int candidate = pendingLayerSushis[poolIndex];
+
+                    int existingCount = 0;
+                    foreach (var layer in plates[i].Layers)
+                        foreach (var t in layer.SushiTypes)
+                            if (t == candidate) existingCount++;
+                    existingCount += layerTypes.Count(t => t == candidate);
+
+                    if (existingCount >= 2)
+                    {
+                        bool swapped = false;
+                        for (int s = poolIndex + 1; s < pendingLayerSushis.Count; s++)
+                        {
+                            int alt = pendingLayerSushis[s];
+                            int altCount = 0;
+                            foreach (var layer in plates[i].Layers)
+                                foreach (var t in layer.SushiTypes)
+                                    if (t == alt) altCount++;
+                            altCount += layerTypes.Count(t => t == alt);
+
+                            if (altCount < 2)
+                            {
+                                (pendingLayerSushis[poolIndex], pendingLayerSushis[s]) = (pendingLayerSushis[s], pendingLayerSushis[poolIndex]);
+                                swapped = true;
+                                break;
+                            }
+                        }
+                        if (!swapped) break;
+                    }
+
                     layerTypes.Add(pendingLayerSushis[poolIndex++]);
+                }
+
+                if (layerTypes.Count == 0) continue;
 
                 if (HasSameThree(layerTypes))
                 {
@@ -430,6 +496,14 @@ public class LevelGenerator
         }
 
         EnsureNoEmptyPlates(plates, pendingLayerSushis.Skip(poolIndex).ToList());
+    }
+    private bool HasSameThreeInPlateReserve(PlateData plate, int typeId)
+    {
+        int count = 0;
+        foreach (var layer in plate.Layers)
+            foreach (var t in layer.SushiTypes)
+                if (t == typeId) count++;
+        return count >= 3;
     }
     private void EnsureNoEmptyPlates(List<PlateData> plates, List<int> pendingLayerSushis)
     {

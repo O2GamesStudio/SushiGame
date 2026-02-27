@@ -36,6 +36,8 @@ public class LevelData : ScriptableObject
 
     [Header("단일 슬롯 접시")]
     [Tooltip("슬롯이 1개인 접시 수")] public int singleSlotPlateCount = 0;
+    [Header("순차 활성화")]
+    [Tooltip("true시 plate가 순서대로 활성화됨")] public bool sequentialActivation = false;
 
     [Header("머지 이벤트")]
     public MergeEventData[] mergeEvents;

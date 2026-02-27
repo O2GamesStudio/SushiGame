@@ -40,8 +40,27 @@ public class GameManager : MonoBehaviour
         if (transferData != null)
             currentLevel = transferData;
 
-        lobbyButton?.onClick.AddListener(SceneLoader.LoadLobby);
-        restartButton?.onClick.AddListener(SceneLoader.ReloadGame);
+        restartButton?.onClick.AddListener(() => SceneLoader.ReloadGame());
+
+        lobbyButton?.onClick.AddListener(() =>
+        {
+            string userId = FirebaseManager.Instance?.CurrentUser?.UserId;
+            if (!string.IsNullOrEmpty(userId) && isStageClearProcessed)
+            {
+                bool isUpdateComplete = false;
+                UserDataService.Instance?.UpdateStage(
+                    userId,
+                    GameDataTransfer.Instance.CurrentUserData.currentStage,
+                    () => isUpdateComplete = true,
+                    (error) => isUpdateComplete = true
+                );
+                SceneLoader.LoadLobby(() => isUpdateComplete);
+            }
+            else
+            {
+                SceneLoader.LoadLobby();
+            }
+        });
 
         StartGame();
     }
@@ -65,7 +84,7 @@ public class GameManager : MonoBehaviour
         levelGenerator = new LevelGenerator(currentLevel);
         var plateDataList = levelGenerator.GeneratePlates();
 
-        plateManager.Initialize(plateDataList);
+        plateManager.Initialize(plateDataList, currentLevel.sequentialActivation);
         GameStateChecker.Instance.Initialize(plateManager);
 
         totalSushiSets = currentLevel.totalSushiCount / 3;
@@ -135,11 +154,6 @@ public class GameManager : MonoBehaviour
     {
         isGameActive = false;
         gameUI.ShowLose();
-    }
-
-    public void GoToLobby()
-    {
-        SceneLoader.LoadLobby();
     }
 
     private void OnStageClear()

@@ -114,10 +114,6 @@ public class MergeEventSystem : MonoBehaviour
 
             foreach (var sushi in plate.GetActiveSushis())
                 types.Add(sushi.TypeId);
-
-            foreach (var layer in plate.GetAllLayers())
-                foreach (var typeId in layer.SushiTypes)
-                    types.Add(typeId);
         }
 
         return types.ToList();

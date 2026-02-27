@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class AppInitializer : MonoBehaviour
 {
@@ -6,9 +7,41 @@ public class AppInitializer : MonoBehaviour
     [SerializeField] private UserDataService userDataService;
     [SerializeField] private LoadingUI loadingUI;
 
+    private void Awake()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name != "LobbyScene") return;
+        InitializeLobby();
+    }
+
     private void Start()
     {
+        InitializeLobby();
+    }
+
+    private void InitializeLobby()
+    {
+        if (LobbyManager.Instance == null) return;
+
         loadingUI?.Show();
+
+        var cachedUserData = GameDataTransfer.Instance?.CurrentUserData;
+        if (cachedUserData != null)
+        {
+            Debug.Log($"[AppInitializer] 캐시 데이터 사용: stage={cachedUserData.currentStage}");
+            loadingUI?.Hide();
+            LobbyManager.Instance.Initialize(cachedUserData.currentStage);
+            return;
+        }
 
         GooglePlayGamesManager.Instance.Initialize();
 
@@ -18,8 +51,10 @@ public class AppInitializer : MonoBehaviour
             firebaseManager.SignInAnonymous(() =>
             {
                 string userId = firebaseManager.CurrentUser.UserId;
+                Debug.Log($"[AppInitializer] Firestore 로드 시작: {userId}");
                 userDataService.LoadUserData(userId, (userData) =>
                 {
+                    Debug.Log($"[AppInitializer] Firestore 로드 완료: stage={userData.currentStage}");
                     GameDataTransfer.Instance.SetUserData(userData);
                     loadingUI?.Hide();
                     LobbyManager.Instance.Initialize(userData.currentStage);

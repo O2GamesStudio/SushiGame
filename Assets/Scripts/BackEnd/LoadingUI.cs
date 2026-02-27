@@ -4,9 +4,22 @@ using TMPro;
 
 public class LoadingUI : MonoBehaviour
 {
+    public static LoadingUI Instance { get; private set; }
+
     [SerializeField] private GameObject loadingRoot;
     [SerializeField] private Image progressBar;
     [SerializeField] private TextMeshProUGUI errorText;
+
+    private void Awake()
+    {
+        if (Instance != null)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+        DontDestroyOnLoad(transform.root.gameObject);
+    }
 
     public void Show()
     {
