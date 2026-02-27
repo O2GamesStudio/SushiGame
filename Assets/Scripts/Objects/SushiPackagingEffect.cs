@@ -80,15 +80,14 @@ public class SushiPackagingEffect : MonoBehaviour
         {
             var sushi = sushis[i];
             float xOffset = (i - 1) * sushiSpacing;
-            Vector3 targetPosition = containerPosition + new Vector3(xOffset, 0f, 0f);
+            Vector3 targetPosition = containerPosition + new Vector3(xOffset, sushi.PlateOffsetY, 0f);
 
             sushi.transform.SetParent(null);
             SetSushiSortingOrder(sushi, sushiInContainerSortingOrder);
 
-            Vector3 finalPosition = targetPosition;
-            finalPosition.z = 0f;
+            targetPosition.z = 0f;
 
-            sushi.transform.DOMove(finalPosition, sushiMoveToContainerDuration)
+            sushi.transform.DOMove(targetPosition, sushiMoveToContainerDuration)
                 .SetEase(Ease.InQuad)
                 .OnComplete(() =>
                 {
