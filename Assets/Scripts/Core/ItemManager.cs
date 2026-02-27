@@ -86,16 +86,8 @@ public class ItemManager : MonoBehaviour
         if (!isValid)
             ForceFixSameThree(combinedTypes);
 
-        int index = 0;
-
-        foreach (var sushi in allActiveSushis)
-        {
-            var data = SushiPool.Instance.GetData(combinedTypes[index]);
-            if (data != null)
-                sushi.Initialize(combinedTypes[index], data.riceSprite, data.toppingSprite, data.sushiType, data.toppingOffsetX, data.toppingOffsetY, data.plateOffsetY);
-            index++;
-        }
-
+        // Reserve 먼저 즉시 업데이트
+        int index = allActiveSushis.Count;
         foreach (var plate in plateManager.GetAllPlates())
         {
             if (!plate.gameObject.activeSelf) continue;
@@ -112,21 +104,51 @@ public class ItemManager : MonoBehaviour
             }
         }
 
-        foreach (var plate in plateManager.GetAllPlates())
-        {
-            if (!plate.gameObject.activeSelf) continue;
-            plate.RefreshVisuals();
-            plate.UpdateReserveDisplay();
-            plate.RecheckMerge();
-        }
+        // Active 초밥 애니메이션
+        int totalCount = allActiveSushis.Count;
+        int completedCount = 0;
 
-        if (shuffleVFXPrefab != null)
+        for (int i = 0; i < allActiveSushis.Count; i++)
         {
-            Vector3 centerPos = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f));
-            centerPos.z = 0f;
-            var vfx = Instantiate(shuffleVFXPrefab, centerPos, Quaternion.identity);
-            vfx.Play();
-            Destroy(vfx.gameObject, vfx.main.duration + vfx.main.startLifetime.constantMax);
+            var sushi = allActiveSushis[i];
+            var data = SushiPool.Instance.GetData(combinedTypes[i]);
+            if (data == null)
+            {
+                completedCount++;
+                continue;
+            }
+
+            sushi.PlayShuffleAnimation(
+                combinedTypes[i],
+                data.riceSprite,
+                data.toppingSprite,
+                data.sushiType,
+                data.toppingOffsetX,
+                data.toppingOffsetY,
+                data.plateOffsetY,
+                () =>
+                {
+                    completedCount++;
+                    if (completedCount >= totalCount)
+                    {
+                        foreach (var plate in plateManager.GetAllPlates())
+                        {
+                            if (!plate.gameObject.activeSelf) continue;
+                            plate.RefreshVisuals();
+                            plate.UpdateReserveDisplay();
+                            plate.RecheckMerge();
+                        }
+
+                        if (shuffleVFXPrefab != null)
+                        {
+                            Vector3 centerPos = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f));
+                            centerPos.z = 0f;
+                            var vfx = Instantiate(shuffleVFXPrefab, centerPos, Quaternion.identity);
+                            vfx.Play();
+                            Destroy(vfx.gameObject, vfx.main.duration + vfx.main.startLifetime.constantMax);
+                        }
+                    }
+                });
         }
     }
 

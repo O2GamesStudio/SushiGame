@@ -138,7 +138,68 @@ public class Sushi : MonoBehaviour
             lockIconRenderer.sortingOrder = baseOrder + 2;
         }
     }
+    public void PlayShuffleAnimation(int newTypeId, Sprite newRiceSprite, Sprite newToppingSprite,
+    SushiType newSushiType, float newToppingOffsetX, float newToppingOffsetY, float newPlateOffsetY,
+    System.Action onComplete)
+    {
+        bool isIntegrated = SushiType == SushiType.Integrated;
+        Transform animTarget = isIntegrated ? RicePart : ToppingPart;
+        if (animTarget == null)
+        {
+            Initialize(newTypeId, newRiceSprite, newToppingSprite, newSushiType, newToppingOffsetX, newToppingOffsetY, newPlateOffsetY);
+            onComplete?.Invoke();
+            return;
+        }
 
+        Vector3 originalPos = animTarget.localPosition;
+        float jumpHeight = 0.5f;
+        float jumpDuration = 0.2f;
+        float rotateDuration = 0.4f;
+        float dropDuration = 0.25f;
+
+        Sequence seq = DOTween.Sequence();
+
+        // 점프
+        seq.Append(animTarget.DOLocalMoveY(originalPos.y + jumpHeight, jumpDuration).SetEase(Ease.OutQuad));
+
+        // Y축 180도 회전 후 스프라이트 교체
+        seq.Append(animTarget.DORotate(new Vector3(0f, 90f, 0f), rotateDuration * 0.5f, RotateMode.Fast)
+            .SetEase(Ease.InQuad)
+            .OnComplete(() =>
+            {
+                // 180도 시점 - 스프라이트 교체
+                if (riceRenderer != null)
+                    riceRenderer.sprite = newRiceSprite;
+
+                if (!isIntegrated && toppingRenderer != null)
+                {
+                    bool hasTopping = newToppingSprite != null;
+                    toppingRenderer.gameObject.SetActive(hasTopping);
+                    if (hasTopping)
+                        toppingRenderer.sprite = newToppingSprite;
+                }
+            }));
+
+        // 나머지 180도 회전
+        seq.Append(animTarget.DORotate(new Vector3(0f, 0f, 0f), rotateDuration * 0.5f, RotateMode.Fast)
+            .SetEase(Ease.OutQuad));
+
+        // 새 offset 위치로 내려오기
+        Vector3 targetPos = isIntegrated
+            ? new Vector3(originalPos.x, newPlateOffsetY, originalPos.z)
+            : new Vector3(newToppingOffsetX, newToppingOffsetY, originalPos.z);
+
+        seq.Append(animTarget.DOLocalMove(targetPos, dropDuration).SetEase(Ease.OutBounce));
+
+        seq.OnComplete(() =>
+        {
+            typeId = newTypeId;
+            SushiType = newSushiType;
+            PlateOffsetY = newPlateOffsetY;
+            gameObject.name = $"Sushi_{newTypeId}";
+            onComplete?.Invoke();
+        });
+    }
     public void SetCurrentPlate(Plate plate)
     {
         CurrentPlate = plate;
