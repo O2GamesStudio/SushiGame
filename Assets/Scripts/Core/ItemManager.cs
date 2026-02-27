@@ -10,8 +10,7 @@ public class ItemManager : MonoBehaviour
     [SerializeField] private PlateManager plateManager;
     [SerializeField] private Transform collectCenter;
     [SerializeField] private SushiPackagingEffect packagingEffect;
-    [SerializeField] private ParticleSystem shuffleVFX;
-
+    [SerializeField] private ParticleSystem shuffleVFXPrefab;
     private bool isWaitingForTargetSelection = false;
     private System.Action<Sushi> onSushiSelected;
     private bool isProcessingItem = false;
@@ -120,8 +119,15 @@ public class ItemManager : MonoBehaviour
             plate.UpdateReserveDisplay();
             plate.RecheckMerge();
         }
-        shuffleVFX?.Play();
 
+        if (shuffleVFXPrefab != null)
+        {
+            Vector3 centerPos = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f));
+            centerPos.z = 0f;
+            var vfx = Instantiate(shuffleVFXPrefab, centerPos, Quaternion.identity);
+            vfx.Play();
+            Destroy(vfx.gameObject, vfx.main.duration + vfx.main.startLifetime.constantMax);
+        }
     }
 
     private bool ValidateShuffleResult(int activeSushiCount, List<int> combinedTypes)
