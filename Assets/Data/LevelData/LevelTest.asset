@@ -20,14 +20,21 @@ MonoBehaviour:
   timeLimitSeconds: 300
   guaranteedMergeSets: 2
   concentratedTypeCount: 2
+  layerSize1Weight: 25
+  layerSize2Weight: 50
+  layerSize3Weight: 25
+  specialPlateCount: 2
   hiddenReserveCount: 10
   lockedPlateCount: 3
   mergeUnlockCount: 2
   lockedSushiCount: 4
   sushiInitEraseCount: 5
   singleSlotPlateCount: 1
+  sequentialActivation: 0
   mergeEvents:
   - mergeTriggerCount: 3
     eventSushiCount: 2
+    requiredSpecialMergeCount: 1
   - mergeTriggerCount: 7
-    eventSushiCount: 2
+    eventSushiCount: 3
+    requiredSpecialMergeCount: 2

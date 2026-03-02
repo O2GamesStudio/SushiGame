@@ -7,6 +7,9 @@ public class MergeEventUI : MonoBehaviour
     [SerializeField] private UnityEngine.UI.Image timerFillAmount;
     [SerializeField] private EventSushiIcon[] sushiSlots;
 
+    [SerializeField] private Color normalEventColor = Color.white;
+    [SerializeField] private Color specialPlateEventColor = Color.red;
+
     private List<int> slotTypeIds = new List<int>();
 
     private void Awake()
@@ -18,7 +21,7 @@ public class MergeEventUI : MonoBehaviour
         }
     }
 
-    public void ShowEvent(List<int> sushiTypes)
+    public void ShowEvent(List<int> sushiTypes, int specialMergeCount)
     {
         slotTypeIds.Clear();
         eventRoot?.SetActive(true);
@@ -26,6 +29,10 @@ public class MergeEventUI : MonoBehaviour
         for (int i = 0; i < sushiSlots.Length; i++)
         {
             if (sushiSlots[i] == null) continue;
+
+            var bg = sushiSlots[i].GetComponent<UnityEngine.UI.Image>();
+            if (bg != null)
+                bg.color = i < specialMergeCount ? specialPlateEventColor : normalEventColor;
 
             if (i < sushiTypes.Count)
             {
@@ -64,8 +71,11 @@ public class MergeEventUI : MonoBehaviour
 
         foreach (var slot in sushiSlots)
         {
-            if (slot != null)
-                slot.gameObject.SetActive(false);
+            if (slot == null) continue;
+            var bg = slot.GetComponent<UnityEngine.UI.Image>();
+            if (bg != null)
+                bg.color = normalEventColor;
+            slot.gameObject.SetActive(false);
         }
 
         slotTypeIds.Clear();

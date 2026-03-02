@@ -99,13 +99,13 @@ public class GameManager : MonoBehaviour
         gameUI.UpdateTimer(timeRemaining);
         gameUI.UpdateProgress(mergedSetsCount, totalSushiSets);
 
-        MergeEventSystem.Instance?.Initialize(currentLevel.mergeEvents);
+        MergeEventSystem.Instance?.Initialize(currentLevel.mergeEvents, currentLevel.specialPlateCount);
 
         if (doorTransition != null)
             doorTransition.PlayOpenAnimation();
     }
 
-    public void OnSushiMerged(int mergedTypeId = -1)
+    public void OnSushiMerged(int mergedTypeId = -1, Plate plate = null)
     {
         mergedSetsCount++;
         gameUI.UpdateProgress(mergedSetsCount, totalSushiSets);
@@ -113,7 +113,7 @@ public class GameManager : MonoBehaviour
         if (MergeEventSystem.Instance == null) return;
 
         if (MergeEventSystem.Instance.IsEventActive)
-            MergeEventSystem.Instance.OnSushiMergedDuringEvent(mergedTypeId);
+            MergeEventSystem.Instance.OnSushiMergedDuringEvent(mergedTypeId, plate);
         else
             MergeEventSystem.Instance.OnSushiMerged(mergedSetsCount);
     }

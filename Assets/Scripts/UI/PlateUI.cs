@@ -5,6 +5,7 @@ public class PlateUI : MonoBehaviour
 {
     [SerializeField] private Transform nextLayerContainer;
     [SerializeField] private GameObject nextLayerIconPrefab;
+    [SerializeField] private Sprite specialPlateSprite;
 
     [Header("Next Layer Icons")]
     [SerializeField] private float nextLayerIconYOffset = -1.2f;
@@ -47,6 +48,14 @@ public class PlateUI : MonoBehaviour
         UpdatePlateSprite(PlateState.Normal);
     }
 
+    public void SetSpecialPlate(bool isSpecial)
+    {
+        if (plateSpriteRenderer == null) return;
+        if (isSpecial)
+            plateSpriteRenderer.sprite = specialPlateSprite != null ? specialPlateSprite : normalPlateSprite;
+        else
+            UpdatePlateSprite(PlateState.Normal);
+    }
     private void UpdatePlateSprite(PlateState state)
     {
         if (plateSpriteRenderer == null) return;

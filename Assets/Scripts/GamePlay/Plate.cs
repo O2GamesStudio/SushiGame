@@ -39,6 +39,7 @@ public class Plate : MonoBehaviour
     private HashSet<Sushi> animatingSushis = new HashSet<Sushi>();
     private int slotCount = 3;
 
+    public bool IsSpecialPlate { get; private set; }
     public int SlotCount => slotCount;
     public int ActiveCount => activeSushis.Count(s => s != null);
     public int LayerCount => layerQueue.Count;
@@ -82,6 +83,11 @@ public class Plate : MonoBehaviour
 
         plateUI?.SetSlotCount(slotCount);
         UpdateVisuals();
+    }
+    public void SetSpecialPlate(bool isSpecial)
+    {
+        IsSpecialPlate = isSpecial;
+        plateUI?.SetSpecialPlate(isSpecial);
     }
 
     public int GetClosestSlotIncludingCurrent(Vector3 worldPosition, Sushi currentSushi)
@@ -346,7 +352,7 @@ public class Plate : MonoBehaviour
             SushiPool.Instance.Return(sushi);
         }
 
-        GameManager.Instance?.OnSushiMerged(mergedTypeId);
+        GameManager.Instance?.OnSushiMerged(mergedTypeId, this);
 
         if (IsEmpty)
             GameStateChecker.Instance.CheckWinCondition();

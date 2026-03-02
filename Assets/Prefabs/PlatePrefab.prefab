@@ -183,6 +183,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlateUI
   nextLayerContainer: {fileID: 6987539663717556746}
   nextLayerIconPrefab: {fileID: 495512148454012414, guid: 7128e019d5acef24d85b6975f7eb50b4, type: 3}
+  specialPlateSprite: {fileID: 21300000, guid: 59aee7a67aa991e47a98155cfd17edfd, type: 3}
   nextLayerIconYOffset: -1.2
   nextLayerIconSpacing: 0.6
   nextLayerIconScale: 0.5

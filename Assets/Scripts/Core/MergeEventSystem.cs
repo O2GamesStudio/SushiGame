@@ -13,7 +13,9 @@ public class MergeEventSystem : MonoBehaviour
     private MergeEventData[] eventDataList;
     private int currentEventIndex = 0;
     private bool isEventActive = false;
-    private List<int> targetSushiTypes = new List<int>();
+    private List<int> specialTargetTypes = new List<int>();
+    private List<int> normalTargetTypes = new List<int>();
+    private List<Plate> specialPlates = new List<Plate>();
     private float eventTimeRemaining = 0f;
     private float totalEventTime = 0f;
 
@@ -38,12 +40,24 @@ public class MergeEventSystem : MonoBehaviour
         }
     }
 
-    public void Initialize(MergeEventData[] events)
+    public void Initialize(MergeEventData[] events, int specialPlateCount)
     {
         eventDataList = events;
         currentEventIndex = 0;
         isEventActive = false;
+        specialPlates.Clear();
         eventUI?.HideEvent();
+
+        if (specialPlateCount > 0)
+        {
+            var availablePlates = GetAvailableNonLockedPlates();
+            var selected = availablePlates.OrderBy(_ => Random.value).Take(specialPlateCount).ToList();
+            foreach (var plate in selected)
+            {
+                plate.SetSpecialPlate(true);
+                specialPlates.Add(plate);
+            }
+        }
     }
 
     public void OnSushiMerged(int mergedCount)
@@ -56,66 +70,91 @@ public class MergeEventSystem : MonoBehaviour
             StartEvent(nextEvent);
     }
 
-    public void OnSushiMergedDuringEvent(int typeId)
+    public void OnSushiMergedDuringEvent(int typeId, Plate plate)
     {
         if (!isEventActive) return;
 
-        Debug.Log($"[MergeEventSystem] 이벤트 중 머지 - typeId:{typeId} / 현재 타겟:{string.Join(", ", targetSushiTypes)}");
+        bool isSpecialPlate = plate != null && specialPlates.Contains(plate);
 
-        if (!targetSushiTypes.Contains(typeId)) return;
+        Debug.Log($"[Event] 머지 감지 - typeId:{typeId} / isSpecialPlate:{isSpecialPlate} / specialTargets:{string.Join(",", specialTargetTypes)} / normalTargets:{string.Join(",", normalTargetTypes)}");
 
-        targetSushiTypes.Remove(typeId);
-        eventUI?.RemoveSushi(typeId);
+        if (isSpecialPlate)
+        {
+            if (!specialTargetTypes.Contains(typeId))
+            {
+                Debug.Log("[Event] 특수판 - 타겟 아님, 무시");
+                return;
+            }
+            specialTargetTypes.Remove(typeId);
+            eventUI?.RemoveSushi(typeId);
+            Debug.Log($"[Event] 특수판 머지 완료 - 남은 특수 타겟:{string.Join(",", specialTargetTypes)}");
+        }
+        else
+        {
+            if (!normalTargetTypes.Contains(typeId))
+            {
+                Debug.Log("[Event] 일반판 - 타겟 아님, 무시");
+                return;
+            }
+            normalTargetTypes.Remove(typeId);
+            eventUI?.RemoveSushi(typeId);
+            Debug.Log($"[Event] 일반판 머지 완료 - 남은 일반 타겟:{string.Join(",", normalTargetTypes)}");
+        }
 
-        Debug.Log($"[MergeEventSystem] 타겟 제거 후 남은 타겟:{string.Join(", ", targetSushiTypes)}");
-
-        if (targetSushiTypes.Count == 0)
+        if (specialTargetTypes.Count == 0 && normalTargetTypes.Count == 0)
             CompleteEvent();
     }
 
     private void StartEvent(MergeEventData data)
     {
-        var availableTypes = GetAvailableSushiTypes();
-        if (availableTypes.Count == 0) return;
-
-        targetSushiTypes.Clear();
-
-        var shuffled = availableTypes.OrderBy(_ => Random.value).ToList();
-        int count = Mathf.Min(data.eventSushiCount, shuffled.Count);
-
-        for (int i = 0; i < count; i++)
-            targetSushiTypes.Add(shuffled[i]);
-
-        totalEventTime = targetSushiTypes.Count * timePerSushi;
-        eventTimeRemaining = totalEventTime;
         isEventActive = true;
+        specialTargetTypes.Clear();
+        normalTargetTypes.Clear();
 
-        Debug.Log($"[MergeEventSystem] 이벤트 시작 - index:{currentEventIndex} 타입:{string.Join(", ", targetSushiTypes)} 시간:{totalEventTime}");
+        var availableTypes = GetAvailableSushiTypes();
+        var shuffled = availableTypes.OrderBy(_ => Random.value).ToList();
+        int totalCount = Mathf.Min(data.eventSushiCount, shuffled.Count);
 
-        eventUI?.ShowEvent(targetSushiTypes);
+        for (int i = 0; i < totalCount; i++)
+        {
+            if (i < data.requiredSpecialMergeCount)
+                specialTargetTypes.Add(shuffled[i]);
+            else
+                normalTargetTypes.Add(shuffled[i]);
+        }
+
+        totalEventTime = totalCount * timePerSushi;
+        eventTimeRemaining = totalEventTime;
+
+        var allTargets = specialTargetTypes.Concat(normalTargetTypes).ToList();
+        Debug.Log($"[Event] 이벤트 시작 - 특수타겟:{string.Join(",", specialTargetTypes)} / 일반타겟:{string.Join(",", normalTargetTypes)}");
+        eventUI?.ShowEvent(allTargets, data.requiredSpecialMergeCount);
     }
 
     private void CompleteEvent()
     {
-        Debug.Log($"[MergeEventSystem] 이벤트 완료 - index:{currentEventIndex}");
-
+        Debug.Log($"[Event] 이벤트 완료 - index:{currentEventIndex}");
         isEventActive = false;
         currentEventIndex++;
         eventUI?.HideEvent();
     }
 
+    private List<Plate> GetAvailableNonLockedPlates()
+    {
+        return plateManager.GetAllPlates()
+            .Where(p => p.gameObject.activeSelf && !p.IsLocked && p.SlotCount == 3)
+            .ToList();
+    }
+
     private List<int> GetAvailableSushiTypes()
     {
         var types = new HashSet<int>();
-
         foreach (var plate in plateManager.GetAllPlates())
         {
             if (!plate.gameObject.activeSelf || plate.IsLocked) continue;
-
             foreach (var sushi in plate.GetActiveSushis())
                 types.Add(sushi.TypeId);
         }
-
         return types.ToList();
     }
 }

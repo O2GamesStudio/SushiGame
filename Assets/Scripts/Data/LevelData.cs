@@ -21,6 +21,9 @@ public class LevelData : ScriptableObject
     [Tooltip("레이어 초밥 2개 확률")] public int layerSize2Weight = 50;
     [Tooltip("레이어 초밥 3개 확률")] public int layerSize3Weight = 25;
 
+    [Header("특수판")]
+    [Tooltip("특수판 수")] public int specialPlateCount = 0;
+
     [Header("히든 예비 초밥")]
     [Tooltip("숨겨진 예비 초밥 수")] public int hiddenReserveCount = 0;
 
@@ -48,4 +51,5 @@ public class MergeEventData
 {
     [Tooltip("이벤트 발동 머지 횟수")] public int mergeTriggerCount;
     [Tooltip("이벤트 시 추가 초밥 수")] public int eventSushiCount;
+    [Tooltip("특수판에서 머지해야 하는 횟수")] public int requiredSpecialMergeCount = 0;
 }

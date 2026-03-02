@@ -244,7 +244,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MergeEventSystem
   plateManager: {fileID: 1624048182}
   eventUI: {fileID: 1378560319}
-  timePerSushi: 20
+  timePerSushi: 30
 --- !u!1 &39197459
 GameObject:
   m_ObjectHideFlags: 0
@@ -4662,6 +4662,8 @@ MonoBehaviour:
   - {fileID: 751787247}
   - {fileID: 1831895722}
   - {fileID: 1480327969}
+  normalEventColor: {r: 1, g: 1, b: 1, a: 1}
+  specialPlateEventColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!114 &1384954344 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2455267321332537711, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
