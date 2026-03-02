@@ -20,6 +20,7 @@ public class Sushi : MonoBehaviour
     [SerializeField] private Sprite[] lockStageSprites = new Sprite[3];
 
     public int TypeId => typeId;
+
     public SpriteRenderer SpriteRenderer => riceRenderer;
     public Transform RicePart => riceRenderer.transform;
     public Transform ToppingPart => toppingRenderer != null ? toppingRenderer.transform : null;
@@ -138,6 +139,7 @@ public class Sushi : MonoBehaviour
             lockIconRenderer.sortingOrder = baseOrder + 2;
         }
     }
+
     public void PlayShuffleAnimation(int newTypeId, Sprite newRiceSprite, Sprite newToppingSprite,
     SushiType newSushiType, float newToppingOffsetX, float newToppingOffsetY, float newPlateOffsetY,
     System.Action onComplete)

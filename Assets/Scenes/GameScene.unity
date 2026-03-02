@@ -2622,6 +2622,7 @@ MonoBehaviour:
   collectCenter: {fileID: 1527206080}
   packagingEffect: {fileID: 568537833}
   shuffleVFXPrefab: {fileID: 6902025900526932675, guid: e97dc3277f1184f41b8fbc821d4b7208, type: 3}
+  mergeParticleVFXPrefab: {fileID: 8161787575350642961, guid: 173b68f673c67024fbf1c11d0312e546, type: 3}
 --- !u!114 &568537833
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2634,18 +2635,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0050e0d1b3f8bcc48ae081db8da48951, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SushiPackagingEffect
-  containerSprite: {fileID: 21300000, guid: 9cd33348c9bee1047b27b4e1ab54a4e1, type: 3}
-  lidSprite: {fileID: 21300000, guid: 4b86180f8119abe4ab1b5e01e9d42f17, type: 3}
+  containerSprite: {fileID: 21300000, guid: 4c58be94257b0564dbd2d5d9fc21fdb3, type: 3}
+  maskSprite: {fileID: 21300000, guid: 3f0686a9e12103247a4b9504aa3eb9de, type: 3}
+  lidSprite: {fileID: 21300000, guid: 61c06e46937ae7e459257f1db8404df6, type: 3}
   containerOffset: {x: 0, y: 1.3, z: 0}
-  sushiSpacing: 0.6
+  maskOffset: {x: 0, y: -0.3, z: 0}
+  lidOffset: {x: 0, y: 0.1, z: 0}
+  sushiSpacing: 0.4
+  sushiContainerScale: 0.5
   sushiMoveToContainerDuration: 0.3
   lidDropDuration: 0.3
   lidDropDistance: 1.5
   packageDisappearDelay: 0.2
   packageDisappearDuration: 0.3
   containerSortingOrder: 49
-  lidSortingOrder: 51
+  maskSortingOrder: 51
   sushiInContainerSortingOrder: 50
+  lidSortingOrder: 52
 --- !u!1 &591585977
 GameObject:
   m_ObjectHideFlags: 0

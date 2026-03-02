@@ -415,7 +415,7 @@ public class Plate : MonoBehaviour
         var hiddenRenderer = hiddenObj.AddComponent<SpriteRenderer>();
         hiddenRenderer.sprite = hiddenSprite;
         hiddenRenderer.sortingLayerName = sushi.SpriteRenderer.sortingLayerName;
-        hiddenRenderer.sortingOrder = sushi.SpriteRenderer.sortingOrder + 3;
+        hiddenRenderer.sortingOrder = 55;
 
         DOVirtual.DelayedCall(refillDuration, () =>
         {

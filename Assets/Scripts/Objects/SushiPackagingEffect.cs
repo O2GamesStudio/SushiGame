@@ -7,13 +7,17 @@ public class SushiPackagingEffect : MonoBehaviour
 {
     [Header("Packaging Sprites")]
     [SerializeField] private Sprite containerSprite;
+    [SerializeField] private Sprite maskSprite;
     [SerializeField] private Sprite lidSprite;
 
     [Header("Position Settings")]
     [SerializeField] private Vector3 containerOffset = Vector3.zero;
+    [SerializeField] private Vector3 maskOffset = Vector3.zero;
+    [SerializeField] private Vector3 lidOffset = Vector3.zero;
     [SerializeField] private float sushiSpacing = 0.6f;
 
     [Header("Animation Settings")]
+    [SerializeField] private float sushiContainerScale = 0.7f;
     [SerializeField] private float sushiMoveToContainerDuration = 0.3f;
     [SerializeField] private float lidDropDuration = 0.3f;
     [SerializeField] private float lidDropDistance = 1.5f;
@@ -22,39 +26,44 @@ public class SushiPackagingEffect : MonoBehaviour
 
     [Header("Sorting Order")]
     [SerializeField] private int containerSortingOrder = 50;
-    [SerializeField] private int lidSortingOrder = 51;
-    [SerializeField] private int sushiInContainerSortingOrder = 49;
+    [SerializeField] private int maskSortingOrder = 51;
+    [SerializeField] private int sushiInContainerSortingOrder = 52;
+    [SerializeField] private int lidSortingOrder = 54;
 
-    public void PlayPackagingEffect(Vector3 platePosition, List<Sushi> sushis, Action<Vector3> onLidClosed, Action onComplete)
+    public void PlayPackagingEffect(Vector3 platePosition, List<Sushi> sushis, Action<Vector3> onSushisArrived, Action onComplete)
     {
         if (containerSprite == null || lidSprite == null || sushis.Count != 3)
         {
-            onLidClosed?.Invoke(platePosition);
+            onSushisArrived?.Invoke(platePosition);
             onComplete?.Invoke();
             return;
         }
 
         Vector3 containerPosition = platePosition + containerOffset;
         GameObject container = CreateContainer(containerPosition);
+        GameObject mask = CreateMask(containerPosition);
 
         MoveSushisToContainer(sushis, containerPosition, () =>
         {
-            DropLidAndComplete(container, containerPosition, sushis, onLidClosed, onComplete);
+            onSushisArrived?.Invoke(containerPosition);
+            DropLidAndComplete(container, mask, containerPosition, sushis, onComplete);
         });
     }
-    private void DropLidAndComplete(GameObject container, Vector3 position, List<Sushi> sushis, Action<Vector3> onLidClosed, Action onComplete)
+
+    private void DropLidAndComplete(GameObject container, GameObject mask, Vector3 position, List<Sushi> sushis, Action onComplete)
     {
+        foreach (var sushi in sushis)
+            SetSushiSortingOrder(sushi, sushiInContainerSortingOrder);
+
         GameObject lid = CreateLid(position);
 
-        lid.transform.DOMove(position, lidDropDuration)
+        lid.transform.DOMove(position + lidOffset, lidDropDuration)
             .SetEase(Ease.OutBounce)
             .OnComplete(() =>
             {
-                onLidClosed?.Invoke(position);
-
                 DOVirtual.DelayedCall(packageDisappearDelay, () =>
                 {
-                    DisappearPackage(container, lid, sushis, onComplete);
+                    DisappearPackage(container, mask, lid, sushis, onComplete);
                 });
             });
     }
@@ -70,6 +79,19 @@ public class SushiPackagingEffect : MonoBehaviour
         renderer.sortingOrder = containerSortingOrder;
 
         return containerObj;
+    }
+
+    private GameObject CreateMask(Vector3 position)
+    {
+        var maskObj = new GameObject("SushiContainerMask");
+        maskObj.transform.position = position + maskOffset;
+
+        var renderer = maskObj.AddComponent<SpriteRenderer>();
+        renderer.sprite = maskSprite;
+        renderer.sortingLayerName = "Sushi";
+        renderer.sortingOrder = maskSortingOrder;
+
+        return maskObj;
     }
 
     private void MoveSushisToContainer(List<Sushi> sushis, Vector3 containerPosition, Action onComplete)
@@ -96,52 +118,37 @@ public class SushiPackagingEffect : MonoBehaviour
                         onComplete?.Invoke();
                 });
 
-            sushi.transform.DOScale(Vector3.one * 0.7f, sushiMoveToContainerDuration)
+            sushi.transform.DOScale(Vector3.one * sushiContainerScale, sushiMoveToContainerDuration)
                 .SetEase(Ease.InQuad);
         }
     }
+
     private void SetSushiSortingOrder(Sushi sushi, int baseOrder)
     {
         sushi.SetBaseSortingOrder("Sushi", baseOrder);
-    }
-    private void DropLidAndComplete(GameObject container, Vector3 position, List<Sushi> sushis, Action onComplete)
-    {
-        GameObject lid = CreateLid(position);
-
-        lid.transform.DOMove(position, lidDropDuration)
-            .SetEase(Ease.OutBounce)
-            .OnComplete(() =>
-            {
-                DOVirtual.DelayedCall(packageDisappearDelay, () =>
-                {
-                    DisappearPackage(container, lid, sushis, onComplete);
-                });
-            });
     }
 
     private GameObject CreateLid(Vector3 position)
     {
         var lidObj = new GameObject("SushiLid");
-        lidObj.transform.position = position + Vector3.up * lidDropDistance;
+        lidObj.transform.position = position + lidOffset + Vector3.up * lidDropDistance;
 
         var renderer = lidObj.AddComponent<SpriteRenderer>();
         renderer.sprite = lidSprite;
         renderer.sortingLayerName = "Sushi";
-        renderer.sortingOrder = lidSortingOrder + 1;
+        renderer.sortingOrder = lidSortingOrder;
 
         return lidObj;
     }
 
-    private void DisappearPackage(GameObject container, GameObject lid, List<Sushi> sushis, Action onComplete)
+    private void DisappearPackage(GameObject container, GameObject mask, GameObject lid, List<Sushi> sushis, Action onComplete)
     {
-        container.transform.DOScale(Vector3.zero, packageDisappearDuration)
-            .SetEase(Ease.InBack);
-
-        lid.transform.DOScale(Vector3.zero, packageDisappearDuration)
-            .SetEase(Ease.InBack);
+        container.transform.DOScale(Vector3.zero, packageDisappearDuration).SetEase(Ease.InBack);
+        mask.transform.DOScale(Vector3.zero, packageDisappearDuration).SetEase(Ease.InBack);
+        lid.transform.DOScale(Vector3.zero, packageDisappearDuration).SetEase(Ease.InBack);
 
         int completedCount = 0;
-        int totalCount = sushis.Count + 2;
+        int totalCount = sushis.Count + 3;
 
         foreach (var sushi in sushis)
         {
@@ -153,6 +160,7 @@ public class SushiPackagingEffect : MonoBehaviour
                     if (completedCount >= totalCount)
                     {
                         Destroy(container);
+                        Destroy(mask);
                         Destroy(lid);
                         onComplete?.Invoke();
                     }
@@ -161,10 +169,11 @@ public class SushiPackagingEffect : MonoBehaviour
 
         DOVirtual.DelayedCall(packageDisappearDuration, () =>
         {
-            completedCount += 2;
+            completedCount += 3;
             if (completedCount >= totalCount)
             {
                 Destroy(container);
+                Destroy(mask);
                 Destroy(lid);
                 onComplete?.Invoke();
             }

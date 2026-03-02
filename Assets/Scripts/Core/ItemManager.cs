@@ -7,10 +7,12 @@ public class ItemManager : MonoBehaviour
 {
     public static ItemManager Instance { get; private set; }
 
+
     [SerializeField] private PlateManager plateManager;
     [SerializeField] private Transform collectCenter;
     [SerializeField] private SushiPackagingEffect packagingEffect;
     [SerializeField] private ParticleSystem shuffleVFXPrefab;
+    [SerializeField] private ParticleSystem mergeParticleVFXPrefab;
     private bool isWaitingForTargetSelection = false;
     private System.Action<Sushi> onSushiSelected;
     private bool isProcessingItem = false;
@@ -357,8 +359,10 @@ public class ItemManager : MonoBehaviour
         foreach (var (typeId, plate) in reserveTypes)
         {
             var tempSushi = SushiPool.Instance.Get(typeId);
-            tempSushi.transform.position = plate.transform.position + Vector3.down * 0.5f;
+            tempSushi.transform.DOKill();
+            tempSushi.transform.position = plate.transform.position + Vector3.up * 0.5f;
             tempSushi.transform.localScale = Vector3.one;
+            tempSushi.gameObject.SetActive(true);
             tempSushis.Add(tempSushi);
         }
 
