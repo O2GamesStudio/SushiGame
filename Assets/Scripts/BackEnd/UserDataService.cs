@@ -29,8 +29,6 @@ public class UserDataService : MonoBehaviour
 
     public void LoadUserData(string userId, Action<UserData> onSuccess, Action<string> onFailed = null)
     {
-        Debug.Log($"[UserDataService] 유저 데이터 로드 시작: {userId}");
-
         db.Collection(UsersCollection).Document(userId).GetSnapshotAsync().ContinueWithOnMainThread(task =>
         {
             if (task.IsFaulted || task.IsCanceled)
@@ -45,13 +43,21 @@ public class UserDataService : MonoBehaviour
             if (snapshot.Exists)
             {
                 var data = snapshot.ConvertTo<UserData>();
-                Debug.Log($"[UserDataService] 데이터 로드 완료: stage={data.currentStage}");
+
+                bool needsUpdate = false;
+                if (!snapshot.ContainsField("itemRandomRemover")) { data.itemRandomRemover = 1; needsUpdate = true; }
+                if (!snapshot.ContainsField("itemTargetRemover")) { data.itemTargetRemover = 1; needsUpdate = true; }
+                if (!snapshot.ContainsField("itemTimeFreezer")) { data.itemTimeFreezer = 1; needsUpdate = true; }
+                if (!snapshot.ContainsField("itemShuffler")) { data.itemShuffler = 1; needsUpdate = true; }
+
+                if (needsUpdate)
+                    SaveUserData(userId, data);
+
                 onSuccess?.Invoke(data);
             }
             else
             {
                 var newData = new UserData { currentStage = 1 };
-                Debug.Log($"[UserDataService] 신규 유저 데이터 생성");
                 SaveUserData(userId, newData, () => onSuccess?.Invoke(newData));
             }
         });
@@ -96,11 +102,36 @@ public class UserDataService : MonoBehaviour
             onSuccess?.Invoke();
         });
     }
+    public void UpdateItemCount(string userId, string itemKey, int newCount, Action onSuccess = null, Action<string> onFailed = null)
+    {
+        var update = new System.Collections.Generic.Dictionary<string, object>
+    {
+        { itemKey, newCount }
+    };
+
+        db.Collection(UsersCollection).Document(userId).UpdateAsync(update).ContinueWithOnMainThread(task =>
+        {
+            if (task.IsFaulted || task.IsCanceled)
+            {
+                string error = task.Exception?.Message ?? "Unknown error";
+                Debug.LogError($"[UserDataService] 아이템 업데이트 실패: {error}");
+                onFailed?.Invoke(error);
+                return;
+            }
+            onSuccess?.Invoke();
+        });
+    }
+
 }
+
 
 [FirestoreData]
 public class UserData
 {
     [FirestoreProperty] public int currentStage { get; set; } = 1;
     [FirestoreProperty] public long lastPlayedAt { get; set; } = 0;
+    [FirestoreProperty] public int itemRandomRemover { get; set; } = 1;
+    [FirestoreProperty] public int itemTargetRemover { get; set; } = 1;
+    [FirestoreProperty] public int itemTimeFreezer { get; set; } = 1;
+    [FirestoreProperty] public int itemShuffler { get; set; } = 1;
 }

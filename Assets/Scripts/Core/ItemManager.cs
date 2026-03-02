@@ -2,20 +2,32 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
+using TMPro;
 
 public class ItemManager : MonoBehaviour
 {
     public static ItemManager Instance { get; private set; }
-
 
     [SerializeField] private PlateManager plateManager;
     [SerializeField] private Transform collectCenter;
     [SerializeField] private SushiPackagingEffect packagingEffect;
     [SerializeField] private ParticleSystem shuffleVFXPrefab;
     [SerializeField] private ParticleSystem mergeParticleVFXPrefab;
+
+    [Header("Item Count UI")]
+    [SerializeField] private TextMeshProUGUI randomRemoverCountText;
+    [SerializeField] private TextMeshProUGUI targetRemoverCountText;
+    [SerializeField] private TextMeshProUGUI timeFreezerCountText;
+    [SerializeField] private TextMeshProUGUI shufflerCountText;
+
     private bool isWaitingForTargetSelection = false;
     private System.Action<Sushi> onSushiSelected;
     private bool isProcessingItem = false;
+
+    private int randomRemoverCount;
+    private int targetRemoverCount;
+    private int timeFreezerCount;
+    private int shufflerCount;
 
     public bool IsWaitingForTarget => isWaitingForTargetSelection;
 
@@ -24,15 +36,42 @@ public class ItemManager : MonoBehaviour
         Instance = this;
     }
 
+    public void InitializeItemCounts(UserData userData)
+    {
+        randomRemoverCount = userData.itemRandomRemover;
+        targetRemoverCount = userData.itemTargetRemover;
+        timeFreezerCount = userData.itemTimeFreezer;
+        shufflerCount = userData.itemShuffler;
+
+        UpdateAllUI();
+    }
+
+    private void UpdateAllUI()
+    {
+        randomRemoverCountText?.SetText(randomRemoverCount.ToString());
+        targetRemoverCountText?.SetText(targetRemoverCount.ToString());
+        timeFreezerCountText?.SetText(timeFreezerCount.ToString());
+        shufflerCountText?.SetText(shufflerCount.ToString());
+    }
+
+    private void ConsumeItem(ref int count, TextMeshProUGUI text, string firestoreKey)
+    {
+        count--;
+        text?.SetText(count.ToString());
+
+        string userId = FirebaseManager.Instance?.CurrentUser?.UserId;
+        if (!string.IsNullOrEmpty(userId))
+            UserDataService.Instance?.UpdateItemCount(userId, firestoreKey, count);
+    }
+
     public void UseRandomSetRemover()
     {
-        if (isProcessingItem) return;
+        if (isProcessingItem || randomRemoverCount <= 0) return;
 
         var allActiveSushis = GetAllActiveSushis();
         if (allActiveSushis.Count == 0) return;
 
         var typeCountMap = new Dictionary<int, int>();
-
         foreach (var sushi in allActiveSushis)
         {
             if (!typeCountMap.ContainsKey(sushi.TypeId))
@@ -52,23 +91,28 @@ public class ItemManager : MonoBehaviour
         if (validTypes.Count == 0) return;
 
         isProcessingItem = true;
+        ConsumeItem(ref randomRemoverCount, randomRemoverCountText, "itemRandomRemover");
         int targetType = validTypes[Random.Range(0, validTypes.Count)];
         RemoveSushiSet(targetType);
     }
 
     public void UseTimeFreezer()
     {
+        if (timeFreezerCount <= 0) return;
+        ConsumeItem(ref timeFreezerCount, timeFreezerCountText, "itemTimeFreezer");
         GameManager.Instance?.FreezeTimer(10f);
     }
 
     public void UseSushiShuffler()
     {
-        if (isProcessingItem) return;
+        if (isProcessingItem || shufflerCount <= 0) return;
 
         var allActiveSushis = GetAllActiveSushis();
         var allReserveTypes = GetAllReserveTypes();
 
         if (allActiveSushis.Count == 0 && allReserveTypes.Count == 0) return;
+
+        ConsumeItem(ref shufflerCount, shufflerCountText, "itemShuffler");
 
         var combinedTypes = new List<int>();
         combinedTypes.AddRange(allActiveSushis.Select(s => s.TypeId));
@@ -76,7 +120,6 @@ public class ItemManager : MonoBehaviour
 
         bool isValid = false;
         int attempts = 0;
-
         while (!isValid && attempts < 100)
         {
             attempts++;
@@ -88,7 +131,6 @@ public class ItemManager : MonoBehaviour
         if (!isValid)
             ForceFixSameThree(combinedTypes);
 
-        // Reserve 먼저 즉시 업데이트
         int index = allActiveSushis.Count;
         foreach (var plate in plateManager.GetAllPlates())
         {
@@ -106,7 +148,6 @@ public class ItemManager : MonoBehaviour
             }
         }
 
-        // Active 초밥 애니메이션
         int totalCount = allActiveSushis.Count;
         int completedCount = 0;
 
@@ -152,6 +193,68 @@ public class ItemManager : MonoBehaviour
                     }
                 });
         }
+    }
+
+    public void UseTargetSetRemover()
+    {
+        if (isProcessingItem || targetRemoverCount <= 0) return;
+
+        isWaitingForTargetSelection = true;
+        onSushiSelected = (selectedSushi) =>
+        {
+            isWaitingForTargetSelection = false;
+            onSushiSelected = null;
+            isProcessingItem = true;
+            ConsumeItem(ref targetRemoverCount, targetRemoverCountText, "itemTargetRemover");
+            RemoveSushiSet(selectedSushi.TypeId, selectedSushi);
+        };
+    }
+
+    public void OnSushiClicked(Sushi sushi)
+    {
+        if (isWaitingForTargetSelection && onSushiSelected != null)
+            onSushiSelected.Invoke(sushi);
+    }
+
+    private void RemoveSushiSet(int targetType, Sushi prioritySushi = null)
+    {
+        var sushisToRemove = new List<Sushi>();
+        var platesToCheck = new HashSet<Plate>();
+
+        var allActiveSushis = GetAllActiveSushis();
+        var sameSushis = allActiveSushis
+            .Where(s => s.TypeId == targetType && s.CurrentPlate != null)
+            .ToList();
+
+        if (prioritySushi != null && sameSushis.Contains(prioritySushi))
+        {
+            sameSushis.Remove(prioritySushi);
+            sameSushis.Insert(0, prioritySushi);
+        }
+        else
+        {
+            Shuffle(sameSushis);
+        }
+
+        int needed = 3;
+        for (int i = 0; i < sameSushis.Count && needed > 0; i++)
+        {
+            sushisToRemove.Add(sameSushis[i]);
+            platesToCheck.Add(sameSushis[i].CurrentPlate);
+            needed--;
+        }
+
+        List<(int typeId, Plate plate)> reserveRemoved = new List<(int, Plate)>();
+        if (needed > 0)
+            reserveRemoved = RemoveTypesFromReserve(targetType, needed);
+
+        foreach (var sushi in sushisToRemove)
+        {
+            if (sushi.CurrentPlate != null)
+                sushi.CurrentPlate.RemoveSpecificSushi(sushi, true, true);
+        }
+
+        AnimateAndRemoveSushis(sushisToRemove, reserveRemoved, platesToCheck);
     }
 
     private bool ValidateShuffleResult(int activeSushiCount, List<int> combinedTypes)
@@ -238,104 +341,6 @@ public class ItemManager : MonoBehaviour
                 index += layer.SushiTypes.Count;
             }
         }
-    }
-
-    private bool BelongsToSamePlate(Sushi sushi, Plate targetPlate)
-    {
-        return sushi.CurrentPlate == targetPlate;
-    }
-
-    public void UseTargetSetRemover()
-    {
-        if (isProcessingItem) return;
-
-        isWaitingForTargetSelection = true;
-        onSushiSelected = (selectedSushi) =>
-        {
-            isWaitingForTargetSelection = false;
-            onSushiSelected = null;
-            isProcessingItem = true;
-            RemoveSushiSet(selectedSushi.TypeId, selectedSushi);
-        };
-    }
-    private void RemoveSushiSet(int targetType, Sushi prioritySushi = null)
-    {
-        var sushisToRemove = new List<Sushi>();
-        var platesToCheck = new HashSet<Plate>();
-
-        var allActiveSushis = GetAllActiveSushis();
-        var sameSushis = allActiveSushis
-            .Where(s => s.TypeId == targetType && s.CurrentPlate != null)
-            .ToList();
-
-        if (prioritySushi != null && sameSushis.Contains(prioritySushi))
-        {
-            sameSushis.Remove(prioritySushi);
-            sameSushis.Insert(0, prioritySushi);
-        }
-        else
-        {
-            Shuffle(sameSushis);
-        }
-
-        int needed = 3;
-        for (int i = 0; i < sameSushis.Count && needed > 0; i++)
-        {
-            sushisToRemove.Add(sameSushis[i]);
-            platesToCheck.Add(sameSushis[i].CurrentPlate);
-            needed--;
-        }
-
-        List<(int typeId, Plate plate)> reserveRemoved = new List<(int, Plate)>();
-        if (needed > 0)
-            reserveRemoved = RemoveTypesFromReserve(targetType, needed);
-
-        foreach (var sushi in sushisToRemove)
-        {
-            if (sushi.CurrentPlate != null)
-                sushi.CurrentPlate.RemoveSpecificSushi(sushi, true, true);
-        }
-
-        AnimateAndRemoveSushis(sushisToRemove, reserveRemoved, platesToCheck);
-    }
-
-    public void OnSushiClicked(Sushi sushi)
-    {
-        if (isWaitingForTargetSelection && onSushiSelected != null)
-            onSushiSelected.Invoke(sushi);
-    }
-
-    private void RemoveSushiSet(int targetType)
-    {
-        var sushisToRemove = new List<Sushi>();
-        var platesToCheck = new HashSet<Plate>();
-
-        var allActiveSushis = GetAllActiveSushis();
-        var sameSushis = allActiveSushis
-            .Where(s => s.TypeId == targetType && s.CurrentPlate != null)
-            .ToList();
-
-        Shuffle(sameSushis);
-
-        int needed = 3;
-        for (int i = 0; i < sameSushis.Count && needed > 0; i++)
-        {
-            sushisToRemove.Add(sameSushis[i]);
-            platesToCheck.Add(sameSushis[i].CurrentPlate);
-            needed--;
-        }
-
-        List<(int typeId, Plate plate)> reserveRemoved = new List<(int, Plate)>();
-        if (needed > 0)
-            reserveRemoved = RemoveTypesFromReserve(targetType, needed);
-
-        foreach (var sushi in sushisToRemove)
-        {
-            if (sushi.CurrentPlate != null)
-                sushi.CurrentPlate.RemoveSpecificSushi(sushi, true, true);
-        }
-
-        AnimateAndRemoveSushis(sushisToRemove, reserveRemoved, platesToCheck);
     }
 
     private List<(int typeId, Plate plate)> RemoveTypesFromReserve(int targetType, int count)

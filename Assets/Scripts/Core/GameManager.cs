@@ -101,6 +101,10 @@ public class GameManager : MonoBehaviour
 
         MergeEventSystem.Instance?.Initialize(currentLevel.mergeEvents, currentLevel.specialPlateCount);
 
+        var userData = GameDataTransfer.Instance?.CurrentUserData;
+        if (userData != null)
+            ItemManager.Instance?.InitializeItemCounts(userData);
+
         if (doorTransition != null)
             doorTransition.PlayOpenAnimation();
     }
