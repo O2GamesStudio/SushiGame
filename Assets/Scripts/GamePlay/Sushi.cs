@@ -192,7 +192,21 @@ public class Sushi : MonoBehaviour
         // nigiri/gunkan/roll → nigiri/gunkan/roll
         PlayToppingAnimation(newTypeId, newRiceSprite, newToppingSprite, newSushiType, newToppingOffsetX, newToppingOffsetY, newPlateOffsetY, onComplete);
     }
+    public void ShowLockIcon(Sprite sprite)
+    {
+        if (lockIcon == null || lockIconRenderer == null) return;
+        lockIcon.SetActive(true);
+        lockIconRenderer.sprite = sprite;
+    }
+    public void HideDecoratorSprites()
+    {
+        if (lockIcon != null)
+            lockIcon.SetActive(false);
 
+        var hiddenOverlay = transform.Find("HiddenOverlay");
+        if (hiddenOverlay != null)
+            Destroy(hiddenOverlay.gameObject);
+    }
     // Case 3: topping → topping (기존 연출)
     private void PlayToppingAnimation(int newTypeId, Sprite newRiceSprite, Sprite newToppingSprite,
         SushiType newSushiType, float newToppingOffsetX, float newToppingOffsetY, float newPlateOffsetY,

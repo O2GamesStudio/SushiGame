@@ -11,7 +11,13 @@ public class GameUI : MonoBehaviour
     [Header("Progress Display")]
     [SerializeField] private TextMeshProUGUI progressText;
 
-    private Color normalColor = Color.white;
+    private Color normalColor;
+
+    private void Awake()
+    {
+        if (timerText != null)
+            normalColor = timerText.color;
+    }
 
     public void UpdateTimer(float seconds)
     {

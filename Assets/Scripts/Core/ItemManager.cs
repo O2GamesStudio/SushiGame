@@ -255,8 +255,48 @@ public class ItemManager : MonoBehaviour
             isWaitingForTargetSelection = false;
             onSushiSelected = null;
             isProcessingItem = true;
-            RemoveSushiSet(selectedSushi.TypeId);
+            RemoveSushiSet(selectedSushi.TypeId, selectedSushi);
         };
+    }
+    private void RemoveSushiSet(int targetType, Sushi prioritySushi = null)
+    {
+        var sushisToRemove = new List<Sushi>();
+        var platesToCheck = new HashSet<Plate>();
+
+        var allActiveSushis = GetAllActiveSushis();
+        var sameSushis = allActiveSushis
+            .Where(s => s.TypeId == targetType && s.CurrentPlate != null)
+            .ToList();
+
+        if (prioritySushi != null && sameSushis.Contains(prioritySushi))
+        {
+            sameSushis.Remove(prioritySushi);
+            sameSushis.Insert(0, prioritySushi);
+        }
+        else
+        {
+            Shuffle(sameSushis);
+        }
+
+        int needed = 3;
+        for (int i = 0; i < sameSushis.Count && needed > 0; i++)
+        {
+            sushisToRemove.Add(sameSushis[i]);
+            platesToCheck.Add(sameSushis[i].CurrentPlate);
+            needed--;
+        }
+
+        List<(int typeId, Plate plate)> reserveRemoved = new List<(int, Plate)>();
+        if (needed > 0)
+            reserveRemoved = RemoveTypesFromReserve(targetType, needed);
+
+        foreach (var sushi in sushisToRemove)
+        {
+            if (sushi.CurrentPlate != null)
+                sushi.CurrentPlate.RemoveSpecificSushi(sushi, true, true);
+        }
+
+        AnimateAndRemoveSushis(sushisToRemove, reserveRemoved, platesToCheck);
     }
 
     public void OnSushiClicked(Sushi sushi)
@@ -355,14 +395,24 @@ public class ItemManager : MonoBehaviour
         Vector3 centerPos = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f));
         centerPos.z = 0f;
 
+        foreach (var sushi in activeSushis)
+        {
+            sushi.transform.DOKill();
+            sushi.transform.SetParent(null);
+            sushi.gameObject.SetActive(true);
+            sushi.HideDecoratorSprites();
+        }
+
         var tempSushis = new List<Sushi>();
         foreach (var (typeId, plate) in reserveTypes)
         {
             var tempSushi = SushiPool.Instance.Get(typeId);
             tempSushi.transform.DOKill();
+            tempSushi.transform.SetParent(null);
             tempSushi.transform.position = plate.transform.position + Vector3.up * 0.5f;
             tempSushi.transform.localScale = Vector3.one;
             tempSushi.gameObject.SetActive(true);
+            tempSushi.HideDecoratorSprites();
             tempSushis.Add(tempSushi);
         }
 
@@ -371,14 +421,24 @@ public class ItemManager : MonoBehaviour
 
         if (packagingEffect != null && allSushis.Count == 3)
         {
-            packagingEffect.PlayPackagingEffect(centerPos, allSushis, null, () =>
-            {
-                foreach (var sushi in activeSushis)
-                    SushiLockSystem.Instance?.ClearLockedSushi(sushi);
-                foreach (var sushi in allSushis)
-                    SushiPool.Instance.Return(sushi);
-                OnItemAnimationComplete(platesToCheck);
-            });
+            packagingEffect.PlayPackagingEffect(centerPos, allSushis,
+                (containerPosition) =>
+                {
+                    if (mergeParticleVFXPrefab != null)
+                    {
+                        var vfx = Instantiate(mergeParticleVFXPrefab, containerPosition, Quaternion.identity);
+                        vfx.Play();
+                        Destroy(vfx.gameObject, vfx.main.duration + vfx.main.startLifetime.constantMax);
+                    }
+                },
+                () =>
+                {
+                    foreach (var sushi in activeSushis)
+                        SushiLockSystem.Instance?.ClearLockedSushi(sushi);
+                    foreach (var sushi in allSushis)
+                        SushiPool.Instance.Return(sushi);
+                    OnItemAnimationComplete(platesToCheck);
+                });
         }
         else
         {

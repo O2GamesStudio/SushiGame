@@ -186,10 +186,7 @@ MonoBehaviour:
   nextLayerIconYOffset: -1.2
   nextLayerIconSpacing: 0.6
   nextLayerIconScale: 0.5
-  lockIconSprites:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  lockIconSprites: {fileID: 21300000, guid: 9ae32414fed99854788b824b089f4d5b, type: 3}
   hiddenSushiSprite: {fileID: 21300000, guid: cf57071e9a3538a4aac085344b40438d, type: 3}
   reservePlateSprite: {fileID: 21300000, guid: 810bedb4709ca274ebc64c8a06d3288c, type: 3}
   singleSlotReservePlateSprite: {fileID: 21300000, guid: d7f4209edd8066a40b5916a583473eb3, type: 3}

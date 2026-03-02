@@ -10,7 +10,7 @@ public class PlateUI : MonoBehaviour
     [SerializeField] private float nextLayerIconYOffset = -1.2f;
     [SerializeField] private float nextLayerIconSpacing = 0.6f;
     [SerializeField] private float nextLayerIconScale = 0.5f;
-    [SerializeField] private Sprite[] lockIconSprites = new Sprite[3];
+    [SerializeField] private Sprite lockIconSprites;
     [SerializeField] private Sprite hiddenSushiSprite;
 
     [Header("Reserve Plate Visuals")]
@@ -150,8 +150,8 @@ public class PlateUI : MonoBehaviour
                 }
             }
 
-            if (sushiView != null && lockStages[i] > 0)
-                sushiView.SetLockStage(lockStages[i]);
+            if (sushiView != null && lockStages[i] > 0 && lockIconSprites != null)
+                sushiView.ShowLockIcon(lockIconSprites);
 
             nextLayerIcons.Add(icon);
         }
