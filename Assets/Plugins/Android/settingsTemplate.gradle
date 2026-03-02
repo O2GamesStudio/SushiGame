@@ -1,0 +1,27 @@
+pluginManagement {
+    repositories {
+        **ARTIFACTORYREPOSITORY**
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+}
+include ':launcher', ':unityLibrary'
+**INCLUDES**
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        **ARTIFACTORYREPOSITORY**
+        google()
+        mavenCentral()
+        maven {
+            url "${rootDir}/../../../../../../Assets/GeneratedLocalRepo/Firebase/m2repository"
+        }
+        maven {
+            url "${rootDir}/../../../../../../Assets/GeneratedLocalRepo/GooglePlayGames/com.google.play.games/Editor/m2repository"
+        }
+        flatDir {
+            dirs "${project(':unityLibrary').projectDir}/libs"
+        }
+    }
+}

@@ -165,7 +165,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04c275314e1119b45937c78eb849916b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
-  currentLevel: {fileID: 11400000, guid: d3916d81adad23b47acf92374009d217, type: 2}
+  currentLevel: {fileID: 11400000, guid: 2fa661042da61094f99f74b746ca6bb6, type: 2}
   plateManager: {fileID: 1624048182}
   gameUI: {fileID: 1387528949}
   doorTransition: {fileID: 88095765}
@@ -3881,9 +3881,21 @@ PrefabInstance:
       propertyPath: m_Name
       value: SuffleVFX01
       objectReference: {fileID: 0}
+    - target: {fileID: 4427984367373895064, guid: e97dc3277f1184f41b8fbc821d4b7208, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6902025900526932675, guid: e97dc3277f1184f41b8fbc821d4b7208, type: 3}
       propertyPath: ShapeModule.type
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6902025900526932675, guid: e97dc3277f1184f41b8fbc821d4b7208, type: 3}
+      propertyPath: ShapeModule.radius.value
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6902025900526932675, guid: e97dc3277f1184f41b8fbc821d4b7208, type: 3}
+      propertyPath: ShapeModule.radiusThickness
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6902025900526932675, guid: e97dc3277f1184f41b8fbc821d4b7208, type: 3}
       propertyPath: InitialModule.startSpeed.scalar

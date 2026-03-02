@@ -107,6 +107,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Sushi
   typeId: -1
+  riceRenderer: {fileID: 0}
+  toppingRenderer: {fileID: 0}
   dragScale: 1.2
   outlineThickness: 0.05
   lockIcon: {fileID: 3535413439170145410}

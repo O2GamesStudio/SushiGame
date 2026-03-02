@@ -142,55 +142,89 @@ public class Sushi : MonoBehaviour
     SushiType newSushiType, float newToppingOffsetX, float newToppingOffsetY, float newPlateOffsetY,
     System.Action onComplete)
     {
-        bool isIntegrated = SushiType == SushiType.Integrated;
-        Transform animTarget = isIntegrated ? RicePart : ToppingPart;
-        if (animTarget == null)
+        bool currentIsIntegrated = SushiType == SushiType.Integrated;
+        bool nextIsIntegrated = newSushiType == SushiType.Integrated;
+
+        if (currentIsIntegrated || nextIsIntegrated)
+        {
+            // 스프라이트 즉시 변경
+            if (riceRenderer != null) riceRenderer.sprite = newRiceSprite;
+            if (toppingRenderer != null)
+            {
+                bool hasTopping = newToppingSprite != null;
+                toppingRenderer.gameObject.SetActive(hasTopping);
+                if (hasTopping)
+                {
+                    toppingRenderer.sprite = newToppingSprite;
+                    toppingRenderer.transform.localPosition = new Vector3(newToppingOffsetX, newToppingOffsetY, 0f);
+                }
+            }
+
+            // rice 위치 부드럽게 이동
+            if (RicePart != null)
+            {
+                Vector3 currentRicePos = RicePart.localPosition;
+                Vector3 targetRicePos = new Vector3(currentRicePos.x, newPlateOffsetY, currentRicePos.z);
+
+                RicePart.DOLocalMove(targetRicePos, 0.25f).SetEase(Ease.OutQuad)
+                    .OnComplete(() =>
+                    {
+                        typeId = newTypeId;
+                        SushiType = newSushiType;
+                        PlateOffsetY = newPlateOffsetY;
+                        gameObject.name = $"Sushi_{newTypeId}";
+                        onComplete?.Invoke();
+                    });
+            }
+            else
+            {
+                typeId = newTypeId;
+                SushiType = newSushiType;
+                PlateOffsetY = newPlateOffsetY;
+                gameObject.name = $"Sushi_{newTypeId}";
+                onComplete?.Invoke();
+            }
+            return;
+        }
+
+        // nigiri/gunkan/roll → nigiri/gunkan/roll
+        PlayToppingAnimation(newTypeId, newRiceSprite, newToppingSprite, newSushiType, newToppingOffsetX, newToppingOffsetY, newPlateOffsetY, onComplete);
+    }
+
+    // Case 3: topping → topping (기존 연출)
+    private void PlayToppingAnimation(int newTypeId, Sprite newRiceSprite, Sprite newToppingSprite,
+        SushiType newSushiType, float newToppingOffsetX, float newToppingOffsetY, float newPlateOffsetY,
+        System.Action onComplete)
+    {
+        if (ToppingPart == null)
         {
             Initialize(newTypeId, newRiceSprite, newToppingSprite, newSushiType, newToppingOffsetX, newToppingOffsetY, newPlateOffsetY);
             onComplete?.Invoke();
             return;
         }
 
-        Vector3 originalPos = animTarget.localPosition;
+        Vector3 originalPos = ToppingPart.localPosition;
         float jumpHeight = 0.5f;
         float jumpDuration = 0.2f;
         float rotateDuration = 0.4f;
         float dropDuration = 0.25f;
 
         Sequence seq = DOTween.Sequence();
-
-        // 점프
-        seq.Append(animTarget.DOLocalMoveY(originalPos.y + jumpHeight, jumpDuration).SetEase(Ease.OutQuad));
-
-        // Y축 180도 회전 후 스프라이트 교체
-        seq.Append(animTarget.DORotate(new Vector3(0f, 90f, 0f), rotateDuration * 0.5f, RotateMode.Fast)
+        seq.Append(ToppingPart.DOLocalMoveY(originalPos.y + jumpHeight, jumpDuration).SetEase(Ease.OutQuad));
+        seq.Append(ToppingPart.DORotate(new Vector3(0f, 90f, 0f), rotateDuration * 0.5f, RotateMode.Fast)
             .SetEase(Ease.InQuad)
             .OnComplete(() =>
             {
-                // 180도 시점 - 스프라이트 교체
-                if (riceRenderer != null)
-                    riceRenderer.sprite = newRiceSprite;
-
-                if (!isIntegrated && toppingRenderer != null)
+                if (riceRenderer != null) riceRenderer.sprite = newRiceSprite;
+                if (toppingRenderer != null)
                 {
                     bool hasTopping = newToppingSprite != null;
                     toppingRenderer.gameObject.SetActive(hasTopping);
-                    if (hasTopping)
-                        toppingRenderer.sprite = newToppingSprite;
+                    if (hasTopping) toppingRenderer.sprite = newToppingSprite;
                 }
             }));
-
-        // 나머지 180도 회전
-        seq.Append(animTarget.DORotate(new Vector3(0f, 0f, 0f), rotateDuration * 0.5f, RotateMode.Fast)
-            .SetEase(Ease.OutQuad));
-
-        // 새 offset 위치로 내려오기
-        Vector3 targetPos = isIntegrated
-            ? new Vector3(originalPos.x, newPlateOffsetY, originalPos.z)
-            : new Vector3(newToppingOffsetX, newToppingOffsetY, originalPos.z);
-
-        seq.Append(animTarget.DOLocalMove(targetPos, dropDuration).SetEase(Ease.OutBounce));
-
+        seq.Append(ToppingPart.DORotate(Vector3.zero, rotateDuration * 0.5f, RotateMode.Fast).SetEase(Ease.OutQuad));
+        seq.Append(ToppingPart.DOLocalMove(new Vector3(newToppingOffsetX, newToppingOffsetY, originalPos.z), dropDuration).SetEase(Ease.OutBounce));
         seq.OnComplete(() =>
         {
             typeId = newTypeId;
