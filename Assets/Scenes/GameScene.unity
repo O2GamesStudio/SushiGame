@@ -5147,6 +5147,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a5db4d9bd4001649a9dd52b3697c797, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameUI
+  stageText: {fileID: 1870259111}
   timerText: {fileID: 627902402}
   winPanel: {fileID: 1246754860}
   losePanel: {fileID: 741905814}

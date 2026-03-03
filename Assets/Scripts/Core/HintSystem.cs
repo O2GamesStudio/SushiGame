@@ -136,18 +136,25 @@ public class HintSystem : MonoBehaviour
         {
             if (sushi == null) continue;
 
-            if (sushi.RicePart != null)
+            if (sushi.SushiType == SushiType.Integrated)
             {
-                sushi.RicePart.DOKill();
-                sushi.RicePart.localScale = Vector3.one;
+                if (sushi.RicePart != null)
+                {
+                    sushi.RicePart.DOKill();
+                    sushi.RicePart.localPosition = originalToppingPositions.TryGetValue(sushi, out var origPos)
+                        ? origPos
+                        : sushi.RicePart.localPosition;
+                }
             }
-
-            if (sushi.ToppingPart != null)
+            else
             {
-                sushi.ToppingPart.DOKill();
-                sushi.ToppingPart.localPosition = originalToppingPositions.TryGetValue(sushi, out var origPos)
-                    ? origPos
-                    : sushi.ToppingPart.localPosition;
+                if (sushi.ToppingPart != null)
+                {
+                    sushi.ToppingPart.DOKill();
+                    sushi.ToppingPart.localPosition = originalToppingPositions.TryGetValue(sushi, out var origPos)
+                        ? origPos
+                        : sushi.ToppingPart.localPosition;
+                }
             }
         }
 

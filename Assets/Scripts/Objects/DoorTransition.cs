@@ -15,11 +15,15 @@ public class DoorTransition : MonoBehaviour
 
     private float doorWidth = 330f;
     private float moveDistance;
-
-    private Action onComplete;
+    private Vector3 leftDoor1Origin, leftDoor2Origin, rightDoor1Origin, rightDoor2Origin;
 
     private void Awake()
     {
+        leftDoor1Origin = leftDoor1.localPosition;
+        leftDoor2Origin = leftDoor2.localPosition;
+        rightDoor1Origin = rightDoor1.localPosition;
+        rightDoor2Origin = rightDoor2.localPosition;
+
         Canvas canvas = GetComponentInParent<Canvas>();
         if (canvas != null)
         {
@@ -35,19 +39,29 @@ public class DoorTransition : MonoBehaviour
 
     public void PlayOpenAnimation(Action onComplete = null)
     {
-        this.onComplete = onComplete;
+        leftDoor1.DOKill();
+        leftDoor2.DOKill();
+        rightDoor1.DOKill();
+        rightDoor2.DOKill();
 
-        leftDoor1.DOLocalMoveX(leftDoor1.localPosition.x - moveDistance, moveDuration)
-            .SetEase(easeType);
+        leftDoor1.DOLocalMoveX(leftDoor1Origin.x - moveDistance, moveDuration).SetEase(easeType);
+        leftDoor2.DOLocalMoveX(leftDoor2Origin.x - moveDistance, moveDuration).SetEase(easeType);
+        rightDoor1.DOLocalMoveX(rightDoor1Origin.x + moveDistance, moveDuration).SetEase(easeType);
+        rightDoor2.DOLocalMoveX(rightDoor2Origin.x + moveDistance, moveDuration).SetEase(easeType)
+            .OnComplete(() => onComplete?.Invoke());
+    }
 
-        leftDoor2.DOLocalMoveX(leftDoor2.localPosition.x - moveDistance, moveDuration)
-            .SetEase(easeType);
+    public void PlayCloseAnimation(Action onComplete = null)
+    {
+        leftDoor1.DOKill();
+        leftDoor2.DOKill();
+        rightDoor1.DOKill();
+        rightDoor2.DOKill();
 
-        rightDoor1.DOLocalMoveX(rightDoor1.localPosition.x + moveDistance, moveDuration)
-            .SetEase(easeType);
-
-        rightDoor2.DOLocalMoveX(rightDoor2.localPosition.x + moveDistance, moveDuration)
-            .SetEase(easeType)
+        leftDoor1.DOLocalMoveX(leftDoor1Origin.x, moveDuration).SetEase(easeType);
+        leftDoor2.DOLocalMoveX(leftDoor2Origin.x, moveDuration).SetEase(easeType);
+        rightDoor1.DOLocalMoveX(rightDoor1Origin.x, moveDuration).SetEase(easeType);
+        rightDoor2.DOLocalMoveX(rightDoor2Origin.x, moveDuration).SetEase(easeType)
             .OnComplete(() => onComplete?.Invoke());
     }
 }

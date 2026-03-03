@@ -332,11 +332,11 @@ public class Sushi : MonoBehaviour
             transform.DOScale(originalScale * dragScale, 0.2f).SetEase(Ease.OutBack);
 
             if (riceRenderer != null)
-                riceRenderer.sortingOrder = 50;
+                riceRenderer.sortingOrder = 100;
             if (toppingRenderer != null)
-                toppingRenderer.sortingOrder = 51;
+                toppingRenderer.sortingOrder = 101;
             if (lockIconRenderer != null)
-                lockIconRenderer.sortingOrder = 52;
+                lockIconRenderer.sortingOrder = 102;
 
             if (riceMaterialInstance != null)
                 riceMaterialInstance.SetFloat("_OutlineThickness", outlineThickness);

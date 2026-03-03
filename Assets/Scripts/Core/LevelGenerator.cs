@@ -12,6 +12,7 @@ public class LevelGenerator
     private List<List<int>> cachedGuaranteedSushis;
     private HashSet<int> concentratedTypes;
     private HashSet<int> singleSlotPlateIndices;
+    private HashSet<int> guaranteedPlateIndices;
 
     public LevelGenerator(LevelData data)
     {
@@ -20,6 +21,7 @@ public class LevelGenerator
         sushiMergePlateIndices = new HashSet<int>();
         singleSlotPlateIndices = new HashSet<int>();
         concentratedTypes = new HashSet<int>();
+        guaranteedPlateIndices = new HashSet<int>();
         SelectRandomSushiTypes();
         GenerateSushiPool();
     }
@@ -241,6 +243,7 @@ public class LevelGenerator
                     plateData.ActiveTypes = cachedGuaranteedSushis[i];
                     while (plateData.ActiveTypes.Count < targetCount && index < allSushiTypes.Count)
                         plateData.ActiveTypes.Add(allSushiTypes[index++]);
+                    guaranteedPlateIndices.Add(i);
                 }
                 else
                 {
@@ -292,6 +295,7 @@ public class LevelGenerator
                 if (!activeTypeCount.ContainsKey(typeId)) activeTypeCount[typeId] = 0;
                 activeTypeCount[typeId]++;
             }
+            guaranteedPlateIndices.Add(currentPlateIndex);
             currentPlateIndex++;
         }
 
@@ -339,13 +343,9 @@ public class LevelGenerator
                     if (plate.ActiveTypes.Count == 3 && HasSameThree(plate.ActiveTypes))
                     {
                         if (i + 1 < typeSushis.Count)
-                        {
                             (plate.ActiveTypes[2], typeSushis[i + 1]) = (typeSushis[i + 1], plate.ActiveTypes[2]);
-                        }
                         else if (dispersedSushis.Count > 0)
-                        {
                             (plate.ActiveTypes[2], dispersedSushis[0]) = (dispersedSushis[0], plate.ActiveTypes[2]);
-                        }
                     }
                 }
                 else
@@ -583,47 +583,41 @@ public class LevelGenerator
                 }
         }
 
-        var plateSlotMap = new Dictionary<int, List<int>>();
+        var candidateSlots = new List<(int plateIndex, int slotIndex)>();
         for (int i = 0; i < plates.Count; i++)
         {
             if (adPlateIndices.Contains(i) || sushiMergePlateIndices.Contains(i)) continue;
-            plateSlotMap[i] = new List<int>();
+            if (guaranteedPlateIndices.Contains(i)) continue;
+            if (plates[i].ActiveTypes.Count <= 1) continue;
+
             for (int j = 0; j < plates[i].ActiveTypes.Count; j++)
-                plateSlotMap[i].Add(j);
+                candidateSlots.Add((i, j));
         }
 
-        var movedSushis = new List<int>();
-        int remainingEraseCount = levelData.sushiInitEraseCount;
-        var plateIndices = plateSlotMap.Keys.ToList();
-        Shuffle(plateIndices);
+        Shuffle(candidateSlots);
 
-        foreach (var plateIndex in plateIndices)
+        var movedSushis = new List<int>();
+        var removedPerPlate = new Dictionary<int, int>();
+        int remainingEraseCount = levelData.sushiInitEraseCount;
+
+        foreach (var (plateIndex, slotIndex) in candidateSlots)
         {
             if (remainingEraseCount <= 0) break;
 
-            var slots = plateSlotMap[plateIndex];
-            if (slots.Count == 0) continue;
+            if (!removedPerPlate.ContainsKey(plateIndex))
+                removedPerPlate[plateIndex] = 0;
 
-            int maxRemovable = Mathf.Min(slots.Count - 1, 2);
-            if (maxRemovable <= 0) continue;
+            int activeCount = plates[plateIndex].ActiveTypes.Count - removedPerPlate[plateIndex];
+            if (activeCount <= 1) continue;
 
-            int removeCount = Mathf.Min(Random.Range(1, maxRemovable + 1), remainingEraseCount);
-            Shuffle(slots);
+            int sushiType = plates[plateIndex].ActiveTypes[slotIndex];
+            if (sushiType == -1) continue;
 
-            for (int i = 0; i < removeCount; i++)
-            {
-                int slotIndex = slots[i];
-                int sushiType = plates[plateIndex].ActiveTypes[slotIndex];
-
-                if (typeCountMap[sushiType] <= 3) continue;
-                if ((typeCountMap[sushiType] - 1) % 3 != 0)
-                {
-                    movedSushis.Add(sushiType);
-                    plates[plateIndex].ActiveTypes[slotIndex] = -1;
-                    typeCountMap[sushiType]--;
-                    remainingEraseCount--;
-                }
-            }
+            movedSushis.Add(sushiType);
+            plates[plateIndex].ActiveTypes[slotIndex] = -1;
+            typeCountMap[sushiType]--;
+            removedPerPlate[plateIndex]++;
+            remainingEraseCount--;
         }
 
         for (int i = 0; i < plates.Count; i++)
@@ -634,7 +628,6 @@ public class LevelGenerator
 
         DistributeMovedSushisToReserve(plates, movedSushis);
     }
-
     private void DistributeMovedSushisToReserve(List<PlateData> plates, List<int> movedSushis)
     {
         if (movedSushis.Count == 0) return;

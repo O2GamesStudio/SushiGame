@@ -103,7 +103,10 @@ public class GameManager : MonoBehaviour
 
         var userData = GameDataTransfer.Instance?.CurrentUserData;
         if (userData != null)
+        {
             ItemManager.Instance?.InitializeItemCounts(userData);
+            gameUI.UpdateStage(userData.currentStage);
+        }
 
         if (doorTransition != null)
             doorTransition.PlayOpenAnimation();
@@ -139,11 +142,13 @@ public class GameManager : MonoBehaviour
     {
         isTimerFrozen = true;
         gameUI.SetTimerFrozen(true);
+        doorTransition?.PlayCloseAnimation();
 
         yield return new WaitForSeconds(duration);
 
         isTimerFrozen = false;
         gameUI.SetTimerFrozen(false);
+        doorTransition?.PlayOpenAnimation();
         freezeCoroutine = null;
     }
 

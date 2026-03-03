@@ -3,6 +3,8 @@ using TMPro;
 
 public class GameUI : MonoBehaviour
 {
+    [SerializeField] private TextMeshProUGUI stageText;
+
     [SerializeField] private TextMeshProUGUI timerText;
     [SerializeField] private GameObject winPanel;
     [SerializeField] private GameObject losePanel;
@@ -24,6 +26,11 @@ public class GameUI : MonoBehaviour
         int minutes = Mathf.FloorToInt(seconds / 60);
         int secs = Mathf.FloorToInt(seconds % 60);
         timerText.text = $"{minutes:00}:{secs:00}";
+    }
+    public void UpdateStage(int stage)
+    {
+        if (stageText != null)
+            stageText.text = $"{stage}층";
     }
 
     public void SetTimerFrozen(bool isFrozen)

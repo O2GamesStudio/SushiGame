@@ -16,6 +16,9 @@ public class LevelData : ScriptableObject
     [Header("타입 분포")]
     [Tooltip("집중 배치할 타입 수")] public int concentratedTypeCount = 2;
 
+    [Header("초기 빈 슬롯")]
+    [Tooltip("시작 시 제거할 초밥 수")] public int sushiInitEraseCount = 0;
+
     [Header("레이어 크기 확률 (합계 100)")]
     [Tooltip("레이어 초밥 1개 확률")] public int layerSize1Weight = 25;
     [Tooltip("레이어 초밥 2개 확률")] public int layerSize2Weight = 50;
@@ -33,9 +36,6 @@ public class LevelData : ScriptableObject
 
     [Header("잠긴 초밥")]
     [Tooltip("잠긴 초밥 수")] public int lockedSushiCount = 0;
-
-    [Header("초기 빈 슬롯")]
-    [Tooltip("시작 시 제거할 초밥 수")] public int sushiInitEraseCount = 0;
 
     [Header("단일 슬롯 접시")]
     [Tooltip("슬롯이 1개인 접시 수")] public int singleSlotPlateCount = 0;
