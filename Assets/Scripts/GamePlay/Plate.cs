@@ -413,6 +413,8 @@ public class Plate : MonoBehaviour
         var hiddenSprite = plateUI.GetHiddenSushiSprite();
         if (hiddenSprite == null) return;
 
+        sushi.SetRenderersVisible(false); // 올라오는 동안 숨김
+
         var hiddenObj = new GameObject("HiddenOverlay");
         hiddenObj.transform.position = sushi.transform.position;
         hiddenObj.transform.SetParent(sushi.transform);
@@ -426,8 +428,23 @@ public class Plate : MonoBehaviour
         DOVirtual.DelayedCall(refillDuration, () =>
         {
             if (hiddenObj != null)
-                RevealHiddenSushi(hiddenObj);
+                RevealHiddenSushi(hiddenObj, sushi);
         });
+    }
+    private void RevealHiddenSushi(GameObject hiddenObj, Sushi sushi)
+    {
+        sushi.SetRenderersVisible(true); // hidden 사라지는 애니메이션 시작 시점에 표시
+
+        Vector3 startPos = hiddenObj.transform.position;
+        Vector3 targetPos = startPos + new Vector3(1.5f, 1.5f, 0);
+
+        hiddenObj.transform.SetParent(null);
+
+        hiddenObj.transform.DOMove(targetPos, hiddenRevealDuration).SetEase(Ease.OutQuad);
+        hiddenObj.transform.DORotate(new Vector3(0, 0, -90), hiddenRevealDuration, RotateMode.FastBeyond360).SetEase(Ease.OutQuad);
+        hiddenObj.transform.DOScale(Vector3.zero, hiddenRevealDuration)
+            .SetEase(Ease.InBack)
+            .OnComplete(() => { if (hiddenObj != null) Destroy(hiddenObj); });
     }
 
     private void RevealHiddenSushi(GameObject hiddenObj)

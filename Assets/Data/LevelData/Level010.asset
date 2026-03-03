@@ -20,7 +20,7 @@ MonoBehaviour:
   timeLimitSeconds: 300
   guaranteedMergeSets: 2
   concentratedTypeCount: 2
-  sushiInitEraseCount: 5
+  sushiInitEraseCount: 6
   layerSize1Weight: 20
   layerSize2Weight: 50
   layerSize3Weight: 30

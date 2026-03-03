@@ -55,7 +55,7 @@ public class LobbyManager : MonoBehaviour
     {
         Debug.Log($"[LobbyManager] UpdateStageUI 호출: currentStage={currentStage}");
         if (stageText != null)
-            stageText.text = $"{currentStage}층";
+            stageText.text = $"Lv.{currentStage}";
         else
             Debug.LogError("[LobbyManager] stageText가 null입니다!");
     }

@@ -141,25 +141,13 @@ public class PlateUI : MonoBehaviour
             if (sushiView != null && data != null)
                 sushiView.Initialize(types[i], data.riceSprite, data.toppingSprite, data.sushiType, data.toppingOffsetX, data.toppingOffsetY);
 
+            bool isLocked = lockStages[i] > 0;
             bool isHidden = hiddenStates != null && i < hiddenStates.Count && hiddenStates[i];
-            if (isHidden && hiddenSushiSprite != null)
-            {
-                var hiddenObj = new GameObject("HiddenOverlay");
-                hiddenObj.transform.SetParent(icon.transform);
-                hiddenObj.transform.localPosition = Vector3.zero;
-                hiddenObj.transform.localScale = Vector3.one * 1.5f;
 
-                var hiddenRenderer = hiddenObj.AddComponent<SpriteRenderer>();
-                hiddenRenderer.sprite = hiddenSushiSprite;
+            if (isHidden && !isLocked)
+                sushiView?.SetHidden(true, hiddenSushiSprite);
 
-                if (sushiView?.SpriteRenderer != null)
-                {
-                    hiddenRenderer.sortingLayerName = sushiView.SpriteRenderer.sortingLayerName;
-                    hiddenRenderer.sortingOrder = sushiView.SpriteRenderer.sortingOrder + 3;
-                }
-            }
-
-            if (sushiView != null && lockStages[i] > 0 && lockIconSprites != null)
+            if (sushiView != null && isLocked && lockIconSprites != null)
                 sushiView.ShowLockIcon(lockIconSprites);
 
             nextLayerIcons.Add(icon);

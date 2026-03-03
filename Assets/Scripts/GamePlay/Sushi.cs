@@ -26,6 +26,7 @@ public class Sushi : MonoBehaviour
     public Transform ToppingPart => toppingRenderer != null ? toppingRenderer.transform : null;
     public bool IsLocked => lockStage > 0;
     public int LockStage => lockStage;
+    public bool IsHidden => isHidden;
     public Plate CurrentPlate { get; private set; }
     public bool IsDragging { get; private set; }
 
@@ -35,6 +36,9 @@ public class Sushi : MonoBehaviour
     private int lockStage = 0;
     private SpriteRenderer lockIconRenderer;
     private int originalRiceSortingOrder;
+    private bool isHidden = false;
+    private GameObject hiddenOverlay;
+    private SpriteRenderer hiddenOverlayRenderer;
     public float PlateOffsetY { get; private set; }
 
     private void Awake()
@@ -117,6 +121,12 @@ public class Sushi : MonoBehaviour
             lockIconRenderer.sortingLayerName = riceRenderer.sortingLayerName;
             lockIconRenderer.sortingOrder = baseOrder + 2;
         }
+
+        if (hiddenOverlayRenderer != null)
+        {
+            hiddenOverlayRenderer.sortingLayerName = riceRenderer.sortingLayerName;
+            hiddenOverlayRenderer.sortingOrder = baseOrder + 3;
+        }
     }
 
     public void SetBaseSortingOrder(string layerName, int baseOrder)
@@ -138,6 +148,103 @@ public class Sushi : MonoBehaviour
             lockIconRenderer.sortingLayerName = layerName;
             lockIconRenderer.sortingOrder = baseOrder + 2;
         }
+
+        if (hiddenOverlayRenderer != null)
+        {
+            hiddenOverlayRenderer.sortingLayerName = layerName;
+            hiddenOverlayRenderer.sortingOrder = baseOrder + 3;
+        }
+    }
+
+    public void SetHidden(bool hidden, Sprite hiddenSprite = null)
+    {
+        isHidden = hidden;
+
+        if (hidden)
+        {
+            if (riceRenderer != null) riceRenderer.enabled = false;
+            if (toppingRenderer != null) toppingRenderer.enabled = false;
+
+            if (hiddenOverlay == null)
+            {
+                hiddenOverlay = new GameObject("HiddenOverlay");
+                hiddenOverlay.transform.SetParent(transform);
+                hiddenOverlay.transform.localPosition = Vector3.zero;
+                hiddenOverlay.transform.localScale = Vector3.one * 1.5f;
+                hiddenOverlayRenderer = hiddenOverlay.AddComponent<SpriteRenderer>();
+                hiddenOverlayRenderer.sortingLayerName = riceRenderer.sortingLayerName;
+                hiddenOverlayRenderer.sortingOrder = riceRenderer.sortingOrder + 3;
+            }
+
+            if (hiddenSprite != null && hiddenOverlayRenderer != null)
+                hiddenOverlayRenderer.sprite = hiddenSprite;
+
+            hiddenOverlay.SetActive(true);
+        }
+        else
+        {
+            if (hiddenOverlay != null)
+                hiddenOverlay.SetActive(false);
+
+            if (riceRenderer != null) riceRenderer.enabled = true;
+            if (toppingRenderer != null) toppingRenderer.enabled = true;
+        }
+    }
+    public void SetRenderersVisible(bool visible)
+    {
+        if (riceRenderer != null) riceRenderer.enabled = visible;
+        if (toppingRenderer != null) toppingRenderer.enabled = visible;
+    }
+    public void RevealHidden(System.Action onComplete = null)
+    {
+        if (!isHidden || hiddenOverlay == null)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        isHidden = false;
+
+        if (riceRenderer != null) riceRenderer.enabled = true;
+        if (toppingRenderer != null) toppingRenderer.enabled = true;
+
+        var overlayToDestroy = hiddenOverlay;
+        var rendererToFade = hiddenOverlayRenderer;
+        hiddenOverlay = null;
+        hiddenOverlayRenderer = null;
+
+        rendererToFade?.DOFade(0f, 0.3f)
+            .SetEase(Ease.OutQuad)
+            .OnComplete(() =>
+            {
+                if (overlayToDestroy != null)
+                    Destroy(overlayToDestroy);
+                onComplete?.Invoke();
+            });
+    }
+
+    public void ShowLockIcon(Sprite sprite)
+    {
+        if (lockIcon == null || lockIconRenderer == null) return;
+        lockIcon.SetActive(true);
+        lockIconRenderer.sprite = sprite;
+    }
+
+    public void HideDecoratorSprites()
+    {
+        if (lockIcon != null)
+            lockIcon.SetActive(false);
+
+        if (hiddenOverlay != null)
+        {
+            Destroy(hiddenOverlay);
+            hiddenOverlay = null;
+            hiddenOverlayRenderer = null;
+        }
+
+        isHidden = false;
+        if (riceRenderer != null) riceRenderer.enabled = true;
+        if (toppingRenderer != null) toppingRenderer.enabled = true;
     }
 
     public void PlayShuffleAnimation(int newTypeId, Sprite newRiceSprite, Sprite newToppingSprite,
@@ -149,7 +256,6 @@ public class Sushi : MonoBehaviour
 
         if (currentIsIntegrated || nextIsIntegrated)
         {
-            // 스프라이트 즉시 변경
             if (riceRenderer != null) riceRenderer.sprite = newRiceSprite;
             if (toppingRenderer != null)
             {
@@ -162,7 +268,6 @@ public class Sushi : MonoBehaviour
                 }
             }
 
-            // rice 위치 부드럽게 이동
             if (RicePart != null)
             {
                 Vector3 currentRicePos = RicePart.localPosition;
@@ -189,25 +294,9 @@ public class Sushi : MonoBehaviour
             return;
         }
 
-        // nigiri/gunkan/roll → nigiri/gunkan/roll
         PlayToppingAnimation(newTypeId, newRiceSprite, newToppingSprite, newSushiType, newToppingOffsetX, newToppingOffsetY, newPlateOffsetY, onComplete);
     }
-    public void ShowLockIcon(Sprite sprite)
-    {
-        if (lockIcon == null || lockIconRenderer == null) return;
-        lockIcon.SetActive(true);
-        lockIconRenderer.sprite = sprite;
-    }
-    public void HideDecoratorSprites()
-    {
-        if (lockIcon != null)
-            lockIcon.SetActive(false);
 
-        var hiddenOverlay = transform.Find("HiddenOverlay");
-        if (hiddenOverlay != null)
-            Destroy(hiddenOverlay.gameObject);
-    }
-    // Case 3: topping → topping (기존 연출)
     private void PlayToppingAnimation(int newTypeId, Sprite newRiceSprite, Sprite newToppingSprite,
         SushiType newSushiType, float newToppingOffsetX, float newToppingOffsetY, float newPlateOffsetY,
         System.Action onComplete)
@@ -250,6 +339,7 @@ public class Sushi : MonoBehaviour
             onComplete?.Invoke();
         });
     }
+
     public void SetCurrentPlate(Plate plate)
     {
         CurrentPlate = plate;
@@ -302,11 +392,21 @@ public class Sushi : MonoBehaviour
         {
             riceRenderer.transform.localScale = Vector3.one;
             riceRenderer.sortingOrder = originalRiceSortingOrder;
+            riceRenderer.enabled = true;
         }
 
         if (toppingRenderer != null)
         {
             toppingRenderer.transform.localScale = Vector3.one;
+            toppingRenderer.enabled = true;
+        }
+
+        isHidden = false;
+        if (hiddenOverlay != null)
+        {
+            Destroy(hiddenOverlay);
+            hiddenOverlay = null;
+            hiddenOverlayRenderer = null;
         }
 
         CurrentPlate = null;
