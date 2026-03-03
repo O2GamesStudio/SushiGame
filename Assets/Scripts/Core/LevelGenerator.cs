@@ -768,7 +768,49 @@ public class LevelGenerator
             plates[plateIndex].SlotCount = 1;
 
         AssignLockedSushis(plates);
+        ResolveLockedPlateDeadlocks(plates);
     }
+
+    private void ResolveLockedPlateDeadlocks(List<PlateData> plates)
+    {
+        foreach (var plateIndex in sushiMergePlateIndices)
+        {
+            var plate = plates[plateIndex];
+            int requiredType = plate.RequiredSushiTypeId;
+            if (requiredType < 0) continue;
+
+            for (int layerIdx = plate.Layers.Count - 1; layerIdx >= 0; layerIdx--)
+            {
+                var layer = plate.Layers[layerIdx];
+                var indicesToMove = new List<int>();
+
+                for (int sushiIdx = 0; sushiIdx < layer.SushiTypes.Count; sushiIdx++)
+                    if (layer.SushiTypes[sushiIdx] == requiredType)
+                        indicesToMove.Add(sushiIdx);
+
+                if (indicesToMove.Count == 0) continue;
+
+                for (int otherIdx = 0; otherIdx < plates.Count; otherIdx++)
+                {
+                    if (otherIdx == plateIndex || adPlateIndices.Contains(otherIdx)) continue;
+                    if (plates[otherIdx].Layers.Count >= levelData.maxLayersPerPlate) continue;
+
+                    plates[otherIdx].Layers.Add(new Layer(new List<int>(
+                        indicesToMove.Select(_ => requiredType))));
+
+                    foreach (var idx in indicesToMove.OrderByDescending(x => x))
+                        layer.SushiTypes.RemoveAt(idx);
+
+                    if (layer.SushiTypes.Count == 0)
+                        plate.Layers.RemoveAt(layerIdx);
+
+                    Debug.Log($"[ResolveDeadlock] plate:{plateIndex} requiredType:{requiredType} {indicesToMove.Count}개 → plate:{otherIdx}로 이동");
+                    break;
+                }
+            }
+        }
+    }
+
 
     private void AssignLockedSushis(List<PlateData> plates)
     {
