@@ -10,6 +10,8 @@ public class LobbyManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI stageText;
     [SerializeField] private Button startButton;
     [SerializeField] private Button googleLinkButton;
+    [SerializeField] private GameObject addStaminaPanel;
+    [SerializeField] private Button staminaButton;
 
     private int currentStage = 1;
 
@@ -30,7 +32,11 @@ public class LobbyManager : MonoBehaviour
         googleLinkButton.onClick.RemoveAllListeners();
         googleLinkButton.onClick.AddListener(OnGoogleLinkButtonClicked);
 
+        staminaButton?.onClick.RemoveAllListeners();
+        staminaButton?.onClick.AddListener(() => addStaminaPanel?.SetActive(true));
+
         UpdateGoogleLinkButton();
+        UnityAdsManager.Instance?.HideBanner();
 
         string userId = FirebaseManager.Instance?.CurrentUser?.UserId;
         if (string.IsNullOrEmpty(userId)) return;
@@ -58,6 +64,13 @@ public class LobbyManager : MonoBehaviour
 
     private void OnStartButtonClicked()
     {
+        var userData = GameDataTransfer.Instance?.CurrentUserData;
+        if (userData != null && userData.stamina < 1)
+        {
+            addStaminaPanel?.SetActive(true);
+            return;
+        }
+
         var levelData = levelDataBase.Get(currentStage);
         if (levelData == null) return;
 

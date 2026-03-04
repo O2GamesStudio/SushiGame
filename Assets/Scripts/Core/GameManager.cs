@@ -28,7 +28,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI winStaminaText;
     [SerializeField] private TextMeshProUGUI winStaminaChargingText;
     [SerializeField] private TextMeshProUGUI winCoinText;
-
+    [SerializeField] private Button winStaminaButton;
+    [SerializeField] private Button loseStaminaButton;
     [Header("Lose Panel")]
     [SerializeField] private TextMeshProUGUI loseStaminaText;
     [SerializeField] private TextMeshProUGUI loseStaminaChargingText;
@@ -64,6 +65,8 @@ public class GameManager : MonoBehaviour
             currentLevel = transferData;
 
         retryButton?.onClick.AddListener(OnRetryButtonClicked);
+        winStaminaButton?.onClick.AddListener(() => addStaminaPanel?.SetActive(true));
+        loseStaminaButton?.onClick.AddListener(() => addStaminaPanel?.SetActive(true));
         coinButton?.onClick.AddListener(() => ClaimCoinAndNextStage(100));
         coin2xButton?.onClick.AddListener(() => ClaimCoinAndNextStage(200));
 
@@ -137,8 +140,14 @@ public class GameManager : MonoBehaviour
 
         if (doorTransition != null)
             doorTransition.PlayOpenAnimation();
-    }
 
+        UnityAdsManager.Instance?.ShowBanner();
+    }
+    public void RefreshStaminaUI(UserData userData)
+    {
+        if (winStaminaText != null) winStaminaText.text = userData.stamina.ToString();
+        if (loseStaminaText != null) loseStaminaText.text = userData.stamina.ToString();
+    }
     public void OnSushiMerged(int mergedTypeId = -1, Plate plate = null)
     {
         mergedSetsCount++;
@@ -185,6 +194,7 @@ public class GameManager : MonoBehaviour
         if (inputHandler != null) inputHandler.enabled = false;
         gameUI.ShowWin();
         OnStageClear();
+        UnityAdsManager.Instance?.HideBanner();
 
         var userData = GameDataTransfer.Instance?.CurrentUserData;
         if (userData != null)
@@ -201,6 +211,7 @@ public class GameManager : MonoBehaviour
         if (inputHandler != null) inputHandler.enabled = false;
         gameUI.ShowLose();
         gameUI.SetTimerText("영업종료");
+        UnityAdsManager.Instance?.HideBanner();
 
         ConsumeStamina(() =>
         {
