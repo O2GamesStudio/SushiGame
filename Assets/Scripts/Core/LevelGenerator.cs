@@ -594,7 +594,7 @@ public class LevelGenerator
             var candidateSlots = new List<(int plateIndex, int slotIndex)>();
             for (int i = 0; i < plates.Count; i++)
             {
-                if (adPlateIndices.Contains(i) || sushiMergePlateIndices.Contains(i)) continue;
+                if (adPlateIndices.Contains(i) || sushiMergePlateIndices.Contains(i) || singleSlotPlateIndices.Contains(i)) continue;
 
                 int actualCount = plates[i].ActiveTypes.Count(t => t != -1);
                 if (actualCount <= 1) continue;

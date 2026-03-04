@@ -28,25 +28,23 @@ public class LobbyManager : MonoBehaviour
 
         startButton.onClick.RemoveAllListeners();
         startButton.onClick.AddListener(OnStartButtonClicked);
-
         googleLinkButton.onClick.RemoveAllListeners();
         googleLinkButton.onClick.AddListener(OnGoogleLinkButtonClicked);
-
-        staminaButton?.onClick.RemoveAllListeners();
-        staminaButton?.onClick.AddListener(() => addStaminaPanel?.SetActive(true));
-
         UpdateGoogleLinkButton();
         UnityAdsManager.Instance?.HideBanner();
 
-        string userId = FirebaseManager.Instance?.CurrentUser?.UserId;
-        if (string.IsNullOrEmpty(userId)) return;
-
-        UserDataService.Instance?.LoadUserData(userId, userData =>
+        NetworkChecker.Instance?.Check(() =>
         {
-            currentStage = userData.currentStage;
-            GameDataTransfer.Instance.SetUserData(userData);
-            UpdateStageUI();
-            LobbyUIManager.Instance?.UpdateUI(userData);
+            string userId = FirebaseManager.Instance?.CurrentUser?.UserId;
+            if (string.IsNullOrEmpty(userId)) return;
+
+            UserDataService.Instance?.LoadUserData(userId, userData =>
+            {
+                currentStage = userData.currentStage;
+                GameDataTransfer.Instance.SetUserData(userData);
+                UpdateStageUI();
+                LobbyUIManager.Instance?.UpdateUI(userData);
+            });
         });
     }
 

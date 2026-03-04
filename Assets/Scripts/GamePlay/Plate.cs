@@ -387,7 +387,8 @@ public class Plate : MonoBehaviour
 
             sushi.transform.SetParent(sushiSlots[slotTransformIndex]);
 
-            Vector3 targetLocalPos = new Vector3(0f, 0.08f + sushi.PlateOffsetY, -1f);
+            float offsetY = sushi.SushiType == SushiType.Integrated ? sushi.PlateOffsetY * 0.5f : sushi.PlateOffsetY;
+            Vector3 targetLocalPos = new Vector3(0f, 0.08f + offsetY, -1f);
             Vector3 targetWorldPos = sushiSlots[slotTransformIndex].TransformPoint(targetLocalPos);
             Vector3 startPos = targetWorldPos + Vector3.down * refillStartOffsetY;
 

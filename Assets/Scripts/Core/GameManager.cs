@@ -29,11 +29,12 @@ public class GameManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI winStaminaChargingText;
     [SerializeField] private TextMeshProUGUI winCoinText;
     [SerializeField] private Button winStaminaButton;
-    [SerializeField] private Button loseStaminaButton;
+
     [Header("Lose Panel")]
     [SerializeField] private TextMeshProUGUI loseStaminaText;
     [SerializeField] private TextMeshProUGUI loseStaminaChargingText;
     [SerializeField] private TextMeshProUGUI loseCoinText;
+    [SerializeField] private Button loseStaminaButton;
     [SerializeField] private GameObject addStaminaPanel;
 
     private bool isStageClearProcessed = false;
@@ -65,10 +66,10 @@ public class GameManager : MonoBehaviour
             currentLevel = transferData;
 
         retryButton?.onClick.AddListener(OnRetryButtonClicked);
+        coinButton?.onClick.AddListener(() => ClaimCoinAndNextStage(100));
+        coin2xButton?.onClick.AddListener(OnCoin2xButtonClicked);
         winStaminaButton?.onClick.AddListener(() => addStaminaPanel?.SetActive(true));
         loseStaminaButton?.onClick.AddListener(() => addStaminaPanel?.SetActive(true));
-        coinButton?.onClick.AddListener(() => ClaimCoinAndNextStage(100));
-        coin2xButton?.onClick.AddListener(() => ClaimCoinAndNextStage(200));
 
         lobbyButton?.onClick.AddListener(() =>
         {
@@ -143,11 +144,7 @@ public class GameManager : MonoBehaviour
 
         UnityAdsManager.Instance?.ShowBanner();
     }
-    public void RefreshStaminaUI(UserData userData)
-    {
-        if (winStaminaText != null) winStaminaText.text = userData.stamina.ToString();
-        if (loseStaminaText != null) loseStaminaText.text = userData.stamina.ToString();
-    }
+
     public void OnSushiMerged(int mergedTypeId = -1, Plate plate = null)
     {
         mergedSetsCount++;
@@ -193,8 +190,9 @@ public class GameManager : MonoBehaviour
         isGameActive = false;
         if (inputHandler != null) inputHandler.enabled = false;
         gameUI.ShowWin();
-        OnStageClear();
         UnityAdsManager.Instance?.HideBanner();
+
+        NetworkChecker.Instance?.Check(() => OnStageClear());
 
         var userData = GameDataTransfer.Instance?.CurrentUserData;
         if (userData != null)
@@ -205,6 +203,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
+
     public void OnGameLose()
     {
         isGameActive = false;
@@ -213,15 +212,18 @@ public class GameManager : MonoBehaviour
         gameUI.SetTimerText("영업종료");
         UnityAdsManager.Instance?.HideBanner();
 
-        ConsumeStamina(() =>
+        NetworkChecker.Instance?.Check(() =>
         {
-            var userData = GameDataTransfer.Instance?.CurrentUserData;
-            if (userData != null)
+            ConsumeStamina(() =>
             {
-                if (loseStaminaText != null) loseStaminaText.text = userData.stamina.ToString();
-                if (loseCoinText != null) loseCoinText.text = userData.coin.ToString();
-                StartStaminaChargeDisplay(loseStaminaChargingText, userData);
-            }
+                var userData = GameDataTransfer.Instance?.CurrentUserData;
+                if (userData != null)
+                {
+                    if (loseStaminaText != null) loseStaminaText.text = userData.stamina.ToString();
+                    if (loseCoinText != null) loseCoinText.text = userData.coin.ToString();
+                    StartStaminaChargeDisplay(loseStaminaChargingText, userData);
+                }
+            });
         });
     }
 
@@ -276,6 +278,12 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void RefreshStaminaUI(UserData userData)
+    {
+        if (winStaminaText != null) winStaminaText.text = userData.stamina.ToString();
+        if (loseStaminaText != null) loseStaminaText.text = userData.stamina.ToString();
+    }
+
     private void OnRetryButtonClicked()
     {
         var userData = GameDataTransfer.Instance?.CurrentUserData;
@@ -305,6 +313,28 @@ public class GameManager : MonoBehaviour
         {
             LoadNextStage();
         });
+    }
+
+    private void OnCoin2xButtonClicked()
+    {
+        if (UnityAdsManager.Instance == null) return;
+
+        UnityAdsManager.Instance.OnRewardEarned += OnCoin2xAdRewardEarned;
+        UnityAdsManager.Instance.OnAdFailedToShow += OnCoin2xAdFailed;
+        UnityAdsManager.Instance.ShowRewardedAd();
+    }
+
+    private void OnCoin2xAdRewardEarned()
+    {
+        UnityAdsManager.Instance.OnRewardEarned -= OnCoin2xAdRewardEarned;
+        UnityAdsManager.Instance.OnAdFailedToShow -= OnCoin2xAdFailed;
+        ClaimCoinAndNextStage(200);
+    }
+
+    private void OnCoin2xAdFailed()
+    {
+        UnityAdsManager.Instance.OnRewardEarned -= OnCoin2xAdRewardEarned;
+        UnityAdsManager.Instance.OnAdFailedToShow -= OnCoin2xAdFailed;
     }
 
     private void LoadNextStage()
@@ -338,5 +368,12 @@ public class GameManager : MonoBehaviour
         string userId = FirebaseManager.Instance?.CurrentUser?.UserId;
         if (!string.IsNullOrEmpty(userId))
             UserDataService.Instance?.UpdateStage(userId, nextStage);
+    }
+
+    private void OnDestroy()
+    {
+        if (UnityAdsManager.Instance == null) return;
+        UnityAdsManager.Instance.OnRewardEarned -= OnCoin2xAdRewardEarned;
+        UnityAdsManager.Instance.OnAdFailedToShow -= OnCoin2xAdFailed;
     }
 }

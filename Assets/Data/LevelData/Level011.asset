@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ac28b7e86f3e40438c0623e790f6dee, type: 3}
+  m_Name: Level011
+  m_EditorClassIdentifier: Assembly-CSharp::LevelData
+  plateCount: 9
+  sushiTypeCount: 18
+  totalSushiSetCount: 25
+  minLayersPerPlate: 2
+  maxLayersPerPlate: 5
+  timeLimitSeconds: 240
+  guaranteedMergeSets: 2
+  concentratedTypeCount: 4
+  sushiInitEraseCount: 10
+  layerSize1Weight: 20
+  layerSize2Weight: 50
+  layerSize3Weight: 30
+  specialPlateCount: 0
+  hiddenReserveCount: 0
+  lockedPlateCount: 2
+  mergeUnlockCount: 1
+  lockedSushiCount: 0
+  singleSlotPlateCount: 0
+  sequentialActivation: 0
+  mergeEvents: []

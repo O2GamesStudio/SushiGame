@@ -130,13 +130,17 @@ public class PlateUI : MonoBehaviour
         for (int i = 0; i < types.Count; i++)
         {
             var icon = Instantiate(nextLayerIconPrefab, nextLayerContainer);
-
-            float xPos = slotCount == 1 ? 0f : (slotIndices[i] - 1) * nextLayerIconSpacing;
-            icon.transform.localPosition = new Vector3(xPos, nextLayerIconYOffset, 0f);
             icon.transform.localScale = Vector3.one * nextLayerIconScale;
 
             var sushiView = icon.GetComponent<Sushi>();
             var data = SushiPool.Instance.GetData(types[i]);
+
+            float offsetY = 0f;
+            if (data != null)
+                offsetY = data.sushiType == SushiType.Integrated ? data.plateOffsetY * 0.5f : data.plateOffsetY + 0.05f;
+
+            float xPos = slotCount == 1 ? 0f : (slotIndices[i] - 1) * nextLayerIconSpacing;
+            icon.transform.localPosition = new Vector3(xPos, nextLayerIconYOffset + offsetY, 0f);
 
             if (sushiView != null && data != null)
                 sushiView.Initialize(types[i], data.riceSprite, data.toppingSprite, data.sushiType, data.toppingOffsetX, data.toppingOffsetY);

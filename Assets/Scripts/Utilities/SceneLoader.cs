@@ -16,9 +16,21 @@ public static class SceneLoader
 
     private static void LoadWithCondition(string sceneName, Func<bool> condition = null, LoadingUI loadingUI = null)
     {
-        var go = new GameObject("SceneLoaderRunner");
-        var runner = go.AddComponent<SceneLoaderRunner>();
-        runner.Load(sceneName, loadingUI, MinLoadingDuration, condition);
+        if (NetworkChecker.Instance != null)
+        {
+            NetworkChecker.Instance.Check(() =>
+            {
+                var go = new GameObject("SceneLoaderRunner");
+                var runner = go.AddComponent<SceneLoaderRunner>();
+                runner.Load(sceneName, loadingUI, MinLoadingDuration, condition);
+            });
+        }
+        else
+        {
+            var go = new GameObject("SceneLoaderRunner");
+            var runner = go.AddComponent<SceneLoaderRunner>();
+            runner.Load(sceneName, loadingUI, MinLoadingDuration, condition);
+        }
     }
 }
 

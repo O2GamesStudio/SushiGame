@@ -11,6 +11,7 @@ public class UnityAdsManager : MonoBehaviour
     {
         get
         {
+            if (isQuitting) return null;
             if (instance == null)
             {
                 GameObject go = new GameObject("UnityAdsManager");
@@ -41,6 +42,7 @@ public class UnityAdsManager : MonoBehaviour
     public event Action OnAdClosed;
     public event Action OnAdFailedToLoad;
     public event Action OnAdFailedToShow;
+    private static bool isQuitting = false;
 
     private void Awake()
     {
@@ -373,6 +375,10 @@ public class UnityAdsManager : MonoBehaviour
 
     #endregion
 
+    private void OnApplicationQuit()
+    {
+        isQuitting = true;
+    }
     private void OnDestroy()
     {
         if (bannerRetryCoroutine != null)
