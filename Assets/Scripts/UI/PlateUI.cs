@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using DG.Tweening;
 
 public class PlateUI : MonoBehaviour
 {
@@ -23,12 +24,12 @@ public class PlateUI : MonoBehaviour
     [Header("Lock Visuals")]
     [SerializeField] private SpriteRenderer plateSpriteRenderer;
     [SerializeField] private Sprite normalPlateSprite;
-    [SerializeField] private Sprite lockedPlateSprite;
     [SerializeField] private Sprite singleSlotNormalPlateSprite;
-    [SerializeField] private Sprite singleSlotLockedPlateSprite;
-    [SerializeField] private GameObject requiredSushiIcon;
+    [SerializeField] private GameObject lockLid;
+    [SerializeField] private SpriteRenderer lockLidRenderer;
     [SerializeField] private SpriteRenderer requiredSushiRiceRenderer;
     [SerializeField] private SpriteRenderer requiredSushiToppingRenderer;
+    [SerializeField] private Collider2D sushiResetCollider;
     [SerializeField] private GameObject adIcon;
 
     private List<GameObject> nextLayerIcons = new List<GameObject>();
@@ -45,76 +46,96 @@ public class PlateUI : MonoBehaviour
     public void SetSlotCount(int count)
     {
         slotCount = count;
-        UpdatePlateSprite(PlateState.Normal);
+        UpdatePlateSprite();
     }
 
     public void SetSpecialPlate(bool isSpecial)
     {
         if (plateSpriteRenderer == null) return;
-        if (isSpecial)
-            plateSpriteRenderer.sprite = specialPlateSprite != null ? specialPlateSprite : normalPlateSprite;
-        else
-            UpdatePlateSprite(PlateState.Normal);
+        plateSpriteRenderer.sprite = isSpecial ? specialPlateSprite ?? normalPlateSprite : normalPlateSprite;
     }
-    private void UpdatePlateSprite(PlateState state)
+
+    private void UpdatePlateSprite()
     {
         if (plateSpriteRenderer == null) return;
-
-        if (slotCount == 1)
-            plateSpriteRenderer.sprite = state != PlateState.Normal ? singleSlotLockedPlateSprite : singleSlotNormalPlateSprite;
-        else
-            plateSpriteRenderer.sprite = state != PlateState.Normal ? lockedPlateSprite : normalPlateSprite;
+        plateSpriteRenderer.sprite = slotCount == 1 ? singleSlotNormalPlateSprite : normalPlateSprite;
     }
 
     public void UpdateLockState(PlateState state, int requiredSushiTypeId)
     {
-        UpdatePlateSprite(state);
-
         if (state == PlateState.LockedSushi && requiredSushiTypeId >= 0)
         {
-            if (requiredSushiIcon != null)
+            if (lockLid != null) lockLid.SetActive(true);
+            if (sushiResetCollider != null) sushiResetCollider.enabled = false;
+            if (adIcon != null) adIcon.SetActive(false);
+
+            var data = SushiPool.Instance.GetData(requiredSushiTypeId);
+            if (data != null)
             {
-                requiredSushiIcon.SetActive(true);
-
-                var data = SushiPool.Instance.GetData(requiredSushiTypeId);
-                if (data != null)
+                if (requiredSushiRiceRenderer != null)
                 {
-                    if (requiredSushiRiceRenderer != null)
-                    {
-                        requiredSushiRiceRenderer.sprite = data.riceSprite;
-                        requiredSushiRiceRenderer.transform.localPosition = new Vector3(0f, data.plateOffsetY, 0f);
-                    }
+                    requiredSushiRiceRenderer.sprite = data.riceSprite;
+                    requiredSushiRiceRenderer.gameObject.SetActive(true);
+                    requiredSushiRiceRenderer.transform.localPosition = new Vector3(0f, data.plateOffsetY, 0f);
 
-                    if (requiredSushiToppingRenderer != null)
-                    {
-                        requiredSushiToppingRenderer.sprite = data.toppingSprite;
-                        requiredSushiToppingRenderer.gameObject.SetActive(data.toppingSprite != null);
-                        requiredSushiToppingRenderer.transform.localPosition = new Vector3(data.toppingOffsetX, data.toppingOffsetY + data.plateOffsetY, 0f);
-                    }
+                    var col = requiredSushiRiceRenderer.GetComponent<Collider2D>();
+                    if (col != null) col.enabled = false;
+                }
+
+                if (requiredSushiToppingRenderer != null)
+                {
+                    requiredSushiToppingRenderer.sprite = data.toppingSprite;
+                    requiredSushiToppingRenderer.gameObject.SetActive(data.toppingSprite != null);
+                    requiredSushiToppingRenderer.transform.localPosition = new Vector3(data.toppingOffsetX, data.toppingOffsetY + data.plateOffsetY, 0f);
+
+                    var col = requiredSushiToppingRenderer.GetComponent<Collider2D>();
+                    if (col != null) col.enabled = false;
                 }
             }
-
-            if (adIcon != null)
-                adIcon.SetActive(false);
         }
         else if (state == PlateState.LockedAd)
         {
-            if (adIcon != null)
-                adIcon.SetActive(true);
-
-            if (requiredSushiIcon != null)
-                requiredSushiIcon.SetActive(false);
-
-            ClearNextLayerDisplay();
+            if (lockLid != null) lockLid.SetActive(true);
+            if (sushiResetCollider != null) sushiResetCollider.enabled = false;
+            if (adIcon != null) adIcon.SetActive(true);
+            if (requiredSushiRiceRenderer != null) requiredSushiRiceRenderer.gameObject.SetActive(false);
+            if (requiredSushiToppingRenderer != null) requiredSushiToppingRenderer.gameObject.SetActive(false);
         }
         else
         {
-            if (requiredSushiIcon != null)
-                requiredSushiIcon.SetActive(false);
-
-            if (adIcon != null)
-                adIcon.SetActive(false);
+            if (lockLid != null) lockLid.SetActive(false);
+            if (sushiResetCollider != null) sushiResetCollider.enabled = true;
+            if (adIcon != null) adIcon.SetActive(false);
+            if (requiredSushiRiceRenderer != null) requiredSushiRiceRenderer.gameObject.SetActive(false);
+            if (requiredSushiToppingRenderer != null) requiredSushiToppingRenderer.gameObject.SetActive(false);
         }
+    }
+
+    public void PlayUnlockAnimation(System.Action onComplete = null)
+    {
+        HideLockLid(onComplete);
+    }
+
+    private void HideLockLid(System.Action onComplete = null)
+    {
+        if (lockLid == null || !lockLid.activeSelf)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        lockLid.transform.DOScale(Vector3.zero, 0.3f)
+            .SetEase(Ease.InBack)
+            .OnComplete(() =>
+            {
+                lockLid.SetActive(false);
+                lockLid.transform.localScale = Vector3.one;
+                if (sushiResetCollider != null) sushiResetCollider.enabled = true;
+                if (requiredSushiRiceRenderer != null) requiredSushiRiceRenderer.gameObject.SetActive(false);
+                if (requiredSushiToppingRenderer != null) requiredSushiToppingRenderer.gameObject.SetActive(false);
+                if (adIcon != null) adIcon.SetActive(false);
+                onComplete?.Invoke();
+            });
     }
 
     public void UpdateNextLayerDisplay(Layer nextLayer)
