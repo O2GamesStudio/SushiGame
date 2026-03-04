@@ -37,7 +37,11 @@ public class GameUI : MonoBehaviour
     {
         timerText.color = isFrozen ? frozenColor : normalColor;
     }
-
+    public void SetTimerText(string text)
+    {
+        if (timerText != null)
+            timerText.text = text;
+    }
     public void ShowGame()
     {
         winPanel.SetActive(false);

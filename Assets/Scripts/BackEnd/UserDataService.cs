@@ -1,5 +1,5 @@
 using System;
-using System.Threading.Tasks;
+using System.Collections.Generic;
 using Firebase.Firestore;
 using Firebase.Extensions;
 using UnityEngine;
@@ -13,11 +13,7 @@ public class UserDataService : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance != null)
-        {
-            Destroy(gameObject);
-            return;
-        }
+        if (Instance != null) { Destroy(gameObject); return; }
         Instance = this;
         DontDestroyOnLoad(gameObject);
     }
@@ -33,9 +29,7 @@ public class UserDataService : MonoBehaviour
         {
             if (task.IsFaulted || task.IsCanceled)
             {
-                string error = task.Exception?.Message ?? "Unknown error";
-                Debug.LogError($"[UserDataService] 데이터 로드 실패: {error}");
-                onFailed?.Invoke(error);
+                onFailed?.Invoke(task.Exception?.Message ?? "Unknown error");
                 return;
             }
 
@@ -49,6 +43,9 @@ public class UserDataService : MonoBehaviour
                 if (!snapshot.ContainsField("itemTargetRemover")) { data.itemTargetRemover = 1; needsUpdate = true; }
                 if (!snapshot.ContainsField("itemTimeFreezer")) { data.itemTimeFreezer = 1; needsUpdate = true; }
                 if (!snapshot.ContainsField("itemShuffler")) { data.itemShuffler = 1; needsUpdate = true; }
+                if (!snapshot.ContainsField("stamina")) { data.stamina = 5; needsUpdate = true; }
+                if (!snapshot.ContainsField("coin")) { data.coin = 0; needsUpdate = true; }
+                if (!snapshot.ContainsField("staminaLastChargeTime")) { data.staminaLastChargeTime = 0; needsUpdate = true; }
 
                 if (needsUpdate)
                     SaveUserData(userId, data);
@@ -69,61 +66,81 @@ public class UserDataService : MonoBehaviour
         {
             if (task.IsFaulted || task.IsCanceled)
             {
-                string error = task.Exception?.Message ?? "Unknown error";
-                Debug.LogError($"[UserDataService] 데이터 저장 실패: {error}");
-                onFailed?.Invoke(error);
+                onFailed?.Invoke(task.Exception?.Message ?? "Unknown error");
                 return;
             }
-
             onSuccess?.Invoke();
         });
     }
 
     public void UpdateStage(string userId, int stage, Action onSuccess = null, Action<string> onFailed = null)
     {
-        Debug.Log($"[UserDataService] 스테이지 업데이트 시작: {stage}");
-
-        var update = new System.Collections.Generic.Dictionary<string, object>
-    {
-        { "currentStage", stage }
-    };
+        var update = new Dictionary<string, object> { { "currentStage", stage } };
 
         db.Collection(UsersCollection).Document(userId).UpdateAsync(update).ContinueWithOnMainThread(task =>
         {
             if (task.IsFaulted || task.IsCanceled)
             {
-                string error = task.Exception?.Message ?? "Unknown error";
-                Debug.LogError($"[UserDataService] 스테이지 업데이트 실패: {error}");
-                onFailed?.Invoke(error);
+                onFailed?.Invoke(task.Exception?.Message ?? "Unknown error");
                 return;
             }
-
-            Debug.Log($"[UserDataService] 스테이지 업데이트 완료: {stage}");
             onSuccess?.Invoke();
         });
     }
+
     public void UpdateItemCount(string userId, string itemKey, int newCount, Action onSuccess = null, Action<string> onFailed = null)
     {
-        var update = new System.Collections.Generic.Dictionary<string, object>
-    {
-        { itemKey, newCount }
-    };
+        var update = new Dictionary<string, object> { { itemKey, newCount } };
 
         db.Collection(UsersCollection).Document(userId).UpdateAsync(update).ContinueWithOnMainThread(task =>
         {
             if (task.IsFaulted || task.IsCanceled)
             {
-                string error = task.Exception?.Message ?? "Unknown error";
-                Debug.LogError($"[UserDataService] 아이템 업데이트 실패: {error}");
-                onFailed?.Invoke(error);
+                onFailed?.Invoke(task.Exception?.Message ?? "Unknown error");
                 return;
             }
             onSuccess?.Invoke();
         });
     }
 
-}
+    public void UpdateCurrency(string userId, int stamina, int coin, Action onSuccess = null, Action<string> onFailed = null)
+    {
+        var update = new Dictionary<string, object>
+        {
+            { "stamina", stamina },
+            { "coin", coin }
+        };
 
+        db.Collection(UsersCollection).Document(userId).UpdateAsync(update).ContinueWithOnMainThread(task =>
+        {
+            if (task.IsFaulted || task.IsCanceled)
+            {
+                onFailed?.Invoke(task.Exception?.Message ?? "Unknown error");
+                return;
+            }
+            onSuccess?.Invoke();
+        });
+    }
+
+    public void UpdateStaminaData(string userId, int stamina, long lastChargeTime, Action onSuccess = null, Action<string> onFailed = null)
+    {
+        var update = new Dictionary<string, object>
+        {
+            { "stamina", stamina },
+            { "staminaLastChargeTime", lastChargeTime }
+        };
+
+        db.Collection(UsersCollection).Document(userId).UpdateAsync(update).ContinueWithOnMainThread(task =>
+        {
+            if (task.IsFaulted || task.IsCanceled)
+            {
+                onFailed?.Invoke(task.Exception?.Message ?? "Unknown error");
+                return;
+            }
+            onSuccess?.Invoke();
+        });
+    }
+}
 
 [FirestoreData]
 public class UserData
@@ -134,4 +151,7 @@ public class UserData
     [FirestoreProperty] public int itemTargetRemover { get; set; } = 1;
     [FirestoreProperty] public int itemTimeFreezer { get; set; } = 1;
     [FirestoreProperty] public int itemShuffler { get; set; } = 1;
+    [FirestoreProperty] public int stamina { get; set; } = 5;
+    [FirestoreProperty] public int coin { get; set; } = 0;
+    [FirestoreProperty] public long staminaLastChargeTime { get; set; } = 0;
 }

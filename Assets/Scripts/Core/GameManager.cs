@@ -1,17 +1,39 @@
+using System;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using System.Collections;
+using TMPro;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
+    [Header("Core")]
     [SerializeField] private LevelData currentLevel;
+    [SerializeField] private LevelDataBase levelDataBase;
     [SerializeField] private PlateManager plateManager;
+    [SerializeField] private InputHandler inputHandler;
     [SerializeField] private GameUI gameUI;
     [SerializeField] private DoorTransition doorTransition;
-    [SerializeField] private UnityEngine.UI.Button lobbyButton;
-    [SerializeField] private UnityEngine.UI.Button restartButton;
+
+    [Header("Buttons")]
+    [SerializeField] private Button lobbyButton;
+    [SerializeField] private Button loseLobbyButton;
+    [SerializeField] private Button retryButton;
+    [SerializeField] private Button coinButton;
+    [SerializeField] private Button coin2xButton;
+
+    [Header("Win Panel")]
+    [SerializeField] private TextMeshProUGUI winStaminaText;
+    [SerializeField] private TextMeshProUGUI winStaminaChargingText;
+    [SerializeField] private TextMeshProUGUI winCoinText;
+
+    [Header("Lose Panel")]
+    [SerializeField] private TextMeshProUGUI loseStaminaText;
+    [SerializeField] private TextMeshProUGUI loseStaminaChargingText;
+    [SerializeField] private TextMeshProUGUI loseCoinText;
+    [SerializeField] private GameObject addStaminaPanel;
 
     private bool isStageClearProcessed = false;
     private int totalSushiSets;
@@ -26,6 +48,7 @@ public class GameManager : MonoBehaviour
     private bool isTimerFrozen;
     private bool isTimerStarted;
     private Coroutine freezeCoroutine;
+    private Coroutine staminaChargeCoroutine;
 
     public bool IsTimerStarted => isTimerStarted;
 
@@ -40,7 +63,9 @@ public class GameManager : MonoBehaviour
         if (transferData != null)
             currentLevel = transferData;
 
-        restartButton?.onClick.AddListener(() => SceneLoader.ReloadGame());
+        retryButton?.onClick.AddListener(OnRetryButtonClicked);
+        coinButton?.onClick.AddListener(() => ClaimCoinAndNextStage(100));
+        coin2xButton?.onClick.AddListener(() => ClaimCoinAndNextStage(200));
 
         lobbyButton?.onClick.AddListener(() =>
         {
@@ -61,6 +86,8 @@ public class GameManager : MonoBehaviour
                 SceneLoader.LoadLobby();
             }
         });
+
+        loseLobbyButton?.onClick.AddListener(() => SceneLoader.LoadLobby());
 
         StartGame();
     }
@@ -87,7 +114,7 @@ public class GameManager : MonoBehaviour
         plateManager.Initialize(plateDataList, currentLevel.sequentialActivation);
         GameStateChecker.Instance.Initialize(plateManager);
 
-        totalSushiSets = currentLevel.totalSushiCount / 3;
+        totalSushiSets = currentLevel.totalSushiSetCount;
         mergedSetsCount = 0;
 
         timeRemaining = currentLevel.timeLimitSeconds;
@@ -155,14 +182,134 @@ public class GameManager : MonoBehaviour
     public void OnGameWin()
     {
         isGameActive = false;
+        if (inputHandler != null) inputHandler.enabled = false;
         gameUI.ShowWin();
         OnStageClear();
+
+        var userData = GameDataTransfer.Instance?.CurrentUserData;
+        if (userData != null)
+        {
+            if (winStaminaText != null) winStaminaText.text = userData.stamina.ToString();
+            if (winCoinText != null) winCoinText.text = userData.coin.ToString();
+            StartStaminaChargeDisplay(winStaminaChargingText, userData);
+        }
     }
 
     public void OnGameLose()
     {
         isGameActive = false;
+        if (inputHandler != null) inputHandler.enabled = false;
         gameUI.ShowLose();
+        gameUI.SetTimerText("영업종료");
+
+        ConsumeStamina(() =>
+        {
+            var userData = GameDataTransfer.Instance?.CurrentUserData;
+            if (userData != null)
+            {
+                if (loseStaminaText != null) loseStaminaText.text = userData.stamina.ToString();
+                if (loseCoinText != null) loseCoinText.text = userData.coin.ToString();
+                StartStaminaChargeDisplay(loseStaminaChargingText, userData);
+            }
+        });
+    }
+
+    private void ConsumeStamina(Action onComplete = null)
+    {
+        var userData = GameDataTransfer.Instance?.CurrentUserData;
+        if (userData == null) { onComplete?.Invoke(); return; }
+
+        string userId = FirebaseManager.Instance?.CurrentUser?.UserId;
+        if (string.IsNullOrEmpty(userId)) { onComplete?.Invoke(); return; }
+
+        bool wasFullBefore = userData.stamina >= StaminaChargeCalculator.MaxStamina;
+
+        userData.stamina = Mathf.Max(0, userData.stamina - 1);
+
+        if (wasFullBefore)
+            userData.staminaLastChargeTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+        GameDataTransfer.Instance.SetUserData(userData);
+        UserDataService.Instance?.UpdateStaminaData(userId, userData.stamina, userData.staminaLastChargeTime, onComplete);
+    }
+
+    private void StartStaminaChargeDisplay(TextMeshProUGUI chargingText, UserData userData)
+    {
+        if (chargingText == null) return;
+
+        if (userData.stamina >= StaminaChargeCalculator.MaxStamina)
+        {
+            chargingText.gameObject.SetActive(false);
+            return;
+        }
+
+        var (_, _, remainingSeconds) = StaminaChargeCalculator.Calculate(userData.stamina, userData.staminaLastChargeTime);
+        chargingText.gameObject.SetActive(true);
+
+        if (staminaChargeCoroutine != null)
+            StopCoroutine(staminaChargeCoroutine);
+        staminaChargeCoroutine = StartCoroutine(StaminaChargeCoroutine(chargingText, remainingSeconds));
+    }
+
+    private IEnumerator StaminaChargeCoroutine(TextMeshProUGUI chargingText, float remainingSeconds)
+    {
+        float timeLeft = remainingSeconds;
+
+        while (timeLeft > 0)
+        {
+            timeLeft -= Time.deltaTime;
+            int s = Mathf.Max(0, Mathf.CeilToInt(timeLeft));
+            if (chargingText != null)
+                chargingText.text = $"{s / 60}m {s % 60}s";
+            yield return null;
+        }
+    }
+
+    private void OnRetryButtonClicked()
+    {
+        var userData = GameDataTransfer.Instance?.CurrentUserData;
+        if (userData == null) return;
+
+        if (userData.stamina < 1)
+        {
+            addStaminaPanel?.SetActive(true);
+            return;
+        }
+
+        SceneLoader.LoadGameAsync(LoadingUI.Instance);
+    }
+
+    private void ClaimCoinAndNextStage(int coinAmount)
+    {
+        var userData = GameDataTransfer.Instance?.CurrentUserData;
+        if (userData == null) return;
+
+        string userId = FirebaseManager.Instance?.CurrentUser?.UserId;
+        if (string.IsNullOrEmpty(userId)) return;
+
+        userData.coin += coinAmount;
+        GameDataTransfer.Instance.SetUserData(userData);
+
+        UserDataService.Instance?.UpdateCurrency(userId, userData.stamina, userData.coin, () =>
+        {
+            LoadNextStage();
+        });
+    }
+
+    private void LoadNextStage()
+    {
+        var userData = GameDataTransfer.Instance?.CurrentUserData;
+        if (userData == null) return;
+
+        var nextLevelData = levelDataBase.Get(userData.currentStage);
+        if (nextLevelData == null)
+        {
+            SceneLoader.LoadLobby();
+            return;
+        }
+
+        GameDataTransfer.Instance.SetLevelData(nextLevelData);
+        SceneLoader.LoadGameAsync(LoadingUI.Instance);
     }
 
     private void OnStageClear()

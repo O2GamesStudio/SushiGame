@@ -62,7 +62,7 @@ public class LevelGenerator
     {
         allSushiTypes = new List<int>();
 
-        int totalSushiCount = (levelData.totalSushiCount / 3) * 3;
+        int totalSushiCount = levelData.totalSushiSetCount * 3;
         int basePerType = (totalSushiCount / levelData.sushiTypeCount / 3) * 3;
 
         foreach (var typeId in selectedSushiTypes)
@@ -81,7 +81,6 @@ public class LevelGenerator
             typeIndex = (typeIndex + 1) % selectedSushiTypes.Count;
         }
 
-        Debug.Log($"[LevelGenerator] 총 초밥 개수: {allSushiTypes.Count}");
         Shuffle(allSushiTypes);
     }
 

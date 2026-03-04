@@ -7,7 +7,7 @@ public class LevelData : ScriptableObject
     [Header("기본 설정")]
     [Tooltip("접시 개수")] public int plateCount = 9;
     [Tooltip("초밥 종류 수")] public int sushiTypeCount = 4;
-    [Tooltip("총 초밥 개수")] public int totalSushiCount = 36;
+    [Tooltip("총 초밥 세트 수")] public int totalSushiSetCount = 12;
     [Tooltip("접시당 최소 레이어")] public int minLayersPerPlate = 1;
     [Tooltip("접시당 최대 레이어")] public int maxLayersPerPlate = 3;
     [Tooltip("제한 시간 (초)")] public float timeLimitSeconds = 300f;

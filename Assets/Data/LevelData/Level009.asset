@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LevelData
   plateCount: 10
   sushiTypeCount: 17
-  totalSushiCount: 63
+  totalSushiSetCount: 21
   minLayersPerPlate: 2
   maxLayersPerPlate: 5
-  timeLimitSeconds: 300
+  timeLimitSeconds: 240
   guaranteedMergeSets: 2
   concentratedTypeCount: 2
   sushiInitEraseCount: 6
