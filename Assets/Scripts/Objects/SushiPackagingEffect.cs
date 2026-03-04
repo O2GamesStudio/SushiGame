@@ -102,7 +102,8 @@ public class SushiPackagingEffect : MonoBehaviour
         {
             var sushi = sushis[i];
             float xOffset = (i - 1) * sushiSpacing;
-            Vector3 targetPosition = containerPosition + new Vector3(xOffset, sushi.PlateOffsetY, 0f);
+            float yOffset = sushi.SushiType == SushiType.Integrated ? sushi.PlateOffsetY * 0.5f : sushi.PlateOffsetY;
+            Vector3 targetPosition = containerPosition + new Vector3(xOffset, yOffset, 0f);
 
             sushi.transform.SetParent(null);
             SetSushiSortingOrder(sushi, sushiInContainerSortingOrder);
