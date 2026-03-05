@@ -70,7 +70,7 @@ public class LobbyUIManager : MonoBehaviour
 
     private IEnumerator ChargeCoroutine(UserData userData, float remainingSeconds)
     {
-        float timeLeft = remainingSeconds;
+        float timeLeft = StaminaChargeCalculator.ChargeIntervalSeconds;
 
         while (userData.stamina < StaminaChargeCalculator.MaxStamina)
         {

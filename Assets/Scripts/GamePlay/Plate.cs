@@ -448,24 +448,6 @@ public class Plate : MonoBehaviour
             .OnComplete(() => { if (hiddenObj != null) Destroy(hiddenObj); });
     }
 
-    private void RevealHiddenSushi(GameObject hiddenObj)
-    {
-        Vector3 startPos = hiddenObj.transform.position;
-        Vector3 targetPos = startPos + new Vector3(1.5f, 1.5f, 0);
-
-        hiddenObj.transform.SetParent(null);
-
-        hiddenObj.transform.DOMove(targetPos, hiddenRevealDuration).SetEase(Ease.OutQuad);
-        hiddenObj.transform.DORotate(new Vector3(0, 0, -90), hiddenRevealDuration, RotateMode.FastBeyond360).SetEase(Ease.OutQuad);
-        hiddenObj.transform.DOScale(Vector3.zero, hiddenRevealDuration)
-            .SetEase(Ease.InBack)
-            .OnComplete(() =>
-            {
-                if (hiddenObj != null)
-                    Destroy(hiddenObj);
-            });
-    }
-
     private void UpdateVisuals()
     {
         for (int i = 0; i < slotCount; i++)

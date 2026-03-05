@@ -4,7 +4,8 @@ using UnityEngine;
 public static class StaminaChargeCalculator
 {
     public const int MaxStamina = 5;
-    private const long ChargeIntervalMs = 5 * 60 * 1000L;
+    public const long ChargeIntervalMs = 5 * 60 * 1000L;  // private → public
+    public const float ChargeIntervalSeconds = ChargeIntervalMs / 1000f;  // 추가
 
     public static (int newStamina, long newLastChargeTime, float remainingSeconds) Calculate(
         int currentStamina, long lastChargeTime)

@@ -26,8 +26,8 @@
   <Project Path="Unity.VisualScripting.Flow.Editor.csproj" />
   <Project Path="Unity.2D.SpriteShape.Editor.csproj" />
   <Project Path="Unity.VisualStudio.Editor.csproj" />
-  <Project Path="Unity.InputSystem.csproj" />
   <Project Path="Unity.LevelPlay.Editor.csproj" />
+  <Project Path="Unity.InputSystem.csproj" />
   <Project Path="PPv2URPConverters.csproj" />
   <Project Path="Unity.2D.Animation.Editor.csproj" />
   <Project Path="LeanCommon.csproj" />
@@ -72,8 +72,8 @@
   <Project Path="CFXR.WelcomeScreen.csproj" />
   <Project Path="Unity.Services.Core.Environments.Internal.csproj" />
   <Project Path="Unity.InputSystem.ForUI.csproj" />
-  <Project Path="CFXRDemo.csproj" />
   <Project Path="Unity.Services.Core.Scheduler.csproj" />
+  <Project Path="CFXRDemo.csproj" />
   <Project Path="CFXREditor.csproj" />
   <Project Path="Unity.Collections.CodeGen.csproj" />
   <Project Path="Unity.Services.Core.Telemetry.csproj" />
