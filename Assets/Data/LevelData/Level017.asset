@@ -31,4 +31,7 @@ MonoBehaviour:
   lockedSushiCount: 0
   singleSlotPlateCount: 0
   sequentialActivation: 0
-  mergeEvents: []
+  mergeEvents:
+  - mergeTriggerCount: 5
+    eventSushiCount: 2
+    requiredSpecialMergeCount: 0

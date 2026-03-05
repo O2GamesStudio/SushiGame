@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using DG.Tweening;
+using Lean.Pool;
 
 public class PlateUI : MonoBehaviour
 {
@@ -32,10 +33,17 @@ public class PlateUI : MonoBehaviour
     [SerializeField] private Collider2D sushiResetCollider;
     [SerializeField] private GameObject adIcon;
 
+    [SerializeField] private GameObject reservePlatePrefab;
+    private Vector3 lockLidOriginalLocalPosition;
     private List<GameObject> nextLayerIcons = new List<GameObject>();
     private List<SpriteRenderer> reservePlateRenderers = new List<SpriteRenderer>();
     private int slotCount = 3;
 
+    private void Awake()
+    {
+        if (lockLid != null)
+            lockLidOriginalLocalPosition = lockLid.transform.localPosition;
+    }
     private void OnDestroy()
     {
         ClearReservePlates();
@@ -65,7 +73,11 @@ public class PlateUI : MonoBehaviour
     {
         if (state == PlateState.LockedSushi && requiredSushiTypeId >= 0)
         {
-            if (lockLid != null) lockLid.SetActive(true);
+            if (lockLid != null)
+            {
+                lockLidOriginalLocalPosition = lockLid.transform.localPosition;
+                lockLid.SetActive(true);
+            }
             if (sushiResetCollider != null) sushiResetCollider.enabled = false;
             if (adIcon != null) adIcon.SetActive(false);
 
@@ -76,7 +88,8 @@ public class PlateUI : MonoBehaviour
                 {
                     requiredSushiRiceRenderer.sprite = data.riceSprite;
                     requiredSushiRiceRenderer.gameObject.SetActive(true);
-                    requiredSushiRiceRenderer.transform.localPosition = new Vector3(0f, data.plateOffsetY, 0f);
+                    requiredSushiRiceRenderer.transform.localPosition = new Vector3(1.1f, data.plateOffsetY + 0.15f, 0f);
+                    requiredSushiRiceRenderer.transform.localScale = Vector3.one * 0.8f;
 
                     var col = requiredSushiRiceRenderer.GetComponent<Collider2D>();
                     if (col != null) col.enabled = false;
@@ -86,7 +99,8 @@ public class PlateUI : MonoBehaviour
                 {
                     requiredSushiToppingRenderer.sprite = data.toppingSprite;
                     requiredSushiToppingRenderer.gameObject.SetActive(data.toppingSprite != null);
-                    requiredSushiToppingRenderer.transform.localPosition = new Vector3(data.toppingOffsetX, data.toppingOffsetY + data.plateOffsetY, 0f);
+                    requiredSushiToppingRenderer.transform.localPosition = new Vector3(1.1f + data.toppingOffsetX, data.toppingOffsetY + data.plateOffsetY + 0.15f, 0f);
+                    requiredSushiToppingRenderer.transform.localScale = Vector3.one * 0.8f;
 
                     var col = requiredSushiToppingRenderer.GetComponent<Collider2D>();
                     if (col != null) col.enabled = false;
@@ -95,7 +109,11 @@ public class PlateUI : MonoBehaviour
         }
         else if (state == PlateState.LockedAd)
         {
-            if (lockLid != null) lockLid.SetActive(true);
+            if (lockLid != null)
+            {
+                lockLidOriginalLocalPosition = lockLid.transform.localPosition;
+                lockLid.SetActive(true);
+            }
             if (sushiResetCollider != null) sushiResetCollider.enabled = false;
             if (adIcon != null) adIcon.SetActive(true);
             if (requiredSushiRiceRenderer != null) requiredSushiRiceRenderer.gameObject.SetActive(false);
@@ -124,18 +142,21 @@ public class PlateUI : MonoBehaviour
             return;
         }
 
-        lockLid.transform.DOScale(Vector3.zero, 0.3f)
-            .SetEase(Ease.InBack)
-            .OnComplete(() =>
-            {
-                lockLid.SetActive(false);
-                lockLid.transform.localScale = Vector3.one;
-                if (sushiResetCollider != null) sushiResetCollider.enabled = true;
-                if (requiredSushiRiceRenderer != null) requiredSushiRiceRenderer.gameObject.SetActive(false);
-                if (requiredSushiToppingRenderer != null) requiredSushiToppingRenderer.gameObject.SetActive(false);
-                if (adIcon != null) adIcon.SetActive(false);
-                onComplete?.Invoke();
-            });
+        var seq = DOTween.Sequence();
+        seq.Append(lockLid.transform.DOLocalMoveY(lockLid.transform.localPosition.y + 1.5f, 0.5f)
+            .SetEase(Ease.OutCubic));
+        seq.OnComplete(() =>
+        {
+            lockLid.SetActive(false);
+            lockLid.transform.localScale = Vector3.one;
+            lockLid.transform.localPosition = new Vector3(
+                lockLid.transform.localPosition.x, 0f, lockLid.transform.localPosition.z);
+            if (sushiResetCollider != null) sushiResetCollider.enabled = true;
+            if (requiredSushiRiceRenderer != null) requiredSushiRiceRenderer.gameObject.SetActive(false);
+            if (requiredSushiToppingRenderer != null) requiredSushiToppingRenderer.gameObject.SetActive(false);
+            if (adIcon != null) adIcon.SetActive(false);
+            onComplete?.Invoke();
+        });
     }
 
     public void UpdateNextLayerDisplay(Layer nextLayer)
@@ -192,18 +213,14 @@ public class PlateUI : MonoBehaviour
     public void UpdateReservePlates(int layerCount)
     {
         Sprite targetSprite = slotCount == 1 ? singleSlotReservePlateSprite : reservePlateSprite;
-        if (targetSprite == null) return;
+        if (targetSprite == null || reservePlatePrefab == null) return;
 
         while (reservePlateRenderers.Count < layerCount)
         {
-            var plateObj = new GameObject($"ReservePlate_{reservePlateRenderers.Count}");
-            plateObj.transform.SetParent(transform);
-
-            var renderer = plateObj.AddComponent<SpriteRenderer>();
-            renderer.sprite = targetSprite;
+            var plateObj = LeanPool.Spawn(reservePlatePrefab, transform);
+            var renderer = plateObj.GetComponent<SpriteRenderer>();
             renderer.sortingLayerName = "Plate";
             renderer.sortingOrder = -1 - reservePlateRenderers.Count;
-
             reservePlateRenderers.Add(renderer);
         }
 
@@ -211,18 +228,16 @@ public class PlateUI : MonoBehaviour
         {
             int lastIndex = reservePlateRenderers.Count - 1;
             if (reservePlateRenderers[lastIndex] != null)
-                Destroy(reservePlateRenderers[lastIndex].gameObject);
+                LeanPool.Despawn(reservePlateRenderers[lastIndex].gameObject);
             reservePlateRenderers.RemoveAt(lastIndex);
         }
 
         for (int i = 0; i < reservePlateRenderers.Count; i++)
         {
-            if (reservePlateRenderers[i] != null)
-            {
-                reservePlateRenderers[i].sprite = targetSprite;
-                Vector3 position = transform.position + reservePlateStartOffset + Vector3.down * (i * reservePlateSpacing);
-                reservePlateRenderers[i].transform.position = position;
-            }
+            if (reservePlateRenderers[i] == null) continue;
+            reservePlateRenderers[i].sprite = targetSprite;
+            reservePlateRenderers[i].transform.position =
+                transform.position + reservePlateStartOffset + Vector3.down * (i * reservePlateSpacing);
         }
     }
 
@@ -231,7 +246,7 @@ public class PlateUI : MonoBehaviour
         foreach (var renderer in reservePlateRenderers)
         {
             if (renderer != null && renderer.gameObject != null)
-                Destroy(renderer.gameObject);
+                LeanPool.Despawn(renderer.gameObject);
         }
         reservePlateRenderers.Clear();
     }

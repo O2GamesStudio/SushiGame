@@ -70,7 +70,7 @@ public class LobbyUIManager : MonoBehaviour
 
     private IEnumerator ChargeCoroutine(UserData userData, float remainingSeconds)
     {
-        float timeLeft = StaminaChargeCalculator.ChargeIntervalSeconds;
+        float timeLeft = remainingSeconds; // 현재 남은 시간으로 시작
 
         while (userData.stamina < StaminaChargeCalculator.MaxStamina)
         {
@@ -95,7 +95,7 @@ public class LobbyUIManager : MonoBehaviour
                 yield break;
             }
 
-            timeLeft = 20f * 60f;
+            timeLeft = StaminaChargeCalculator.ChargeIntervalSeconds;
         }
     }
 

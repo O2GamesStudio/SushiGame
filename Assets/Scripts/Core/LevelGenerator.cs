@@ -103,6 +103,7 @@ public class LevelGenerator
             ApplyHiddenReserves(plates);
 
         FixTypeMultiples(plates);
+        EnforceMinLayers(plates);
         ValidatePlates(plates);
 
         return plates;
@@ -444,7 +445,7 @@ public class LevelGenerator
                         if (j == i || adPlateIndices.Contains(j)) continue;
                         var donor = plates[j];
 
-                        if (donor.Layers.Count > 0)
+                        if (CanDonateLayer(j, plates))
                         {
                             var layerToMove = donor.Layers[donor.Layers.Count - 1];
                             donor.Layers.RemoveAt(donor.Layers.Count - 1);
@@ -472,6 +473,39 @@ public class LevelGenerator
                     plate.ActiveTypes.Add(pendingLayerSushis[0]);
                     pendingLayerSushis.RemoveAt(0);
                 }
+            }
+        }
+    }
+    private bool CanDonateLayer(int plateIndex, List<PlateData> plates)
+    {
+        if (adPlateIndices.Contains(plateIndex) || sushiMergePlateIndices.Contains(plateIndex)) return false;
+        return plates[plateIndex].Layers.Count > levelData.minLayersPerPlate;
+    }
+
+    private void EnforceMinLayers(List<PlateData> plates)
+    {
+        if (levelData.minLayersPerPlate <= 0) return;
+
+        for (int i = 0; i < plates.Count; i++)
+        {
+            if (adPlateIndices.Contains(i) || sushiMergePlateIndices.Contains(i)) continue;
+
+            while (plates[i].Layers.Count < levelData.minLayersPerPlate)
+            {
+                bool donated = false;
+                for (int j = 0; j < plates.Count; j++)
+                {
+                    if (j == i || adPlateIndices.Contains(j)) continue;
+                    if (plates[j].Layers.Count > levelData.minLayersPerPlate)
+                    {
+                        var layer = plates[j].Layers[plates[j].Layers.Count - 1];
+                        plates[j].Layers.RemoveAt(plates[j].Layers.Count - 1);
+                        plates[i].Layers.Add(layer);
+                        donated = true;
+                        break;
+                    }
+                }
+                if (!donated) break;
             }
         }
     }

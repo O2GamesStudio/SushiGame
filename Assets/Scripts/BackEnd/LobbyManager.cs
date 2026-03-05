@@ -33,6 +33,15 @@ public class LobbyManager : MonoBehaviour
         UpdateGoogleLinkButton();
         UnityAdsManager.Instance?.HideBanner();
 
+        // 캐싱된 데이터로 먼저 UI 업데이트
+        var cachedUserData = GameDataTransfer.Instance?.CurrentUserData;
+        if (cachedUserData != null)
+        {
+            currentStage = cachedUserData.currentStage;
+            UpdateStageUI();
+            LobbyUIManager.Instance?.UpdateUI(cachedUserData);
+        }
+
         NetworkChecker.Instance?.Check(() =>
         {
             string userId = FirebaseManager.Instance?.CurrentUser?.UserId;
