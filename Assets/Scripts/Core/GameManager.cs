@@ -37,6 +37,12 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Button loseStaminaButton;
     [SerializeField] private GameObject addStaminaPanel;
 
+    [Header("Add Time Panel")]
+    [SerializeField] private GameObject addTimePanel;
+    [SerializeField] private Button addTimeAdButton;
+    [SerializeField] private Button addTimeCancelButton;
+
+    private bool addTimePanelUsed = false;
     private bool isStageClearProcessed = false;
     private int totalSushiSets;
     private int mergedSetsCount;
@@ -70,6 +76,8 @@ public class GameManager : MonoBehaviour
         coin2xButton?.onClick.AddListener(OnCoin2xButtonClicked);
         winStaminaButton?.onClick.AddListener(() => addStaminaPanel?.SetActive(true));
         loseStaminaButton?.onClick.AddListener(() => addStaminaPanel?.SetActive(true));
+        addTimeAdButton?.onClick.AddListener(OnAddTimeAdButtonClicked);
+        addTimeCancelButton?.onClick.AddListener(OnAddTimeCancelButtonClicked);
 
         lobbyButton?.onClick.AddListener(() =>
         {
@@ -81,6 +89,7 @@ public class GameManager : MonoBehaviour
                 {
                     userData.coin += 100;
                     GameDataTransfer.Instance.SetUserData(userData);
+                    UserDataService.Instance?.UpdateCurrency(userId, userData.stamina, userData.coin);
                 }
 
                 bool isUpdateComplete = false;
@@ -91,9 +100,6 @@ public class GameManager : MonoBehaviour
                     (error) => isUpdateComplete = true
                 );
 
-                if (userData != null)
-                    UserDataService.Instance?.UpdateCurrency(userId, userData.stamina, userData.coin);
-
                 SceneLoader.LoadLobby(() => isUpdateComplete);
             }
             else
@@ -101,7 +107,9 @@ public class GameManager : MonoBehaviour
                 SceneLoader.LoadLobby();
             }
         });
+
         loseLobbyButton?.onClick.AddListener(() => SceneLoader.LoadLobby());
+
         StartGame();
     }
 
@@ -218,8 +226,22 @@ public class GameManager : MonoBehaviour
         }
     }
 
-
     public void OnGameLose()
+    {
+        if (!addTimePanelUsed)
+        {
+            isGameActive = false;
+            if (inputHandler != null) inputHandler.enabled = false;
+            addTimePanelUsed = true;
+            gameUI.SetTimerText("영업종료");
+            addTimePanel?.SetActive(true);
+            return;
+        }
+
+        ShowLoseResult();
+    }
+
+    private void ShowLoseResult()
     {
         isGameActive = false;
         if (inputHandler != null) inputHandler.enabled = false;
@@ -240,6 +262,49 @@ public class GameManager : MonoBehaviour
                 }
             });
         });
+    }
+
+    private void OnAddTimeAdButtonClicked()
+    {
+        if (UnityAdsManager.Instance == null)
+        {
+            addTimePanel?.SetActive(false);
+            ResumeGameAfterAddTime();
+            return;
+        }
+
+        UnityAdsManager.Instance.OnRewardEarned += OnAddTimeAdRewardEarned;
+        UnityAdsManager.Instance.OnAdFailedToShow += OnAddTimeAdFailed;
+        UnityAdsManager.Instance.ShowRewardedAd();
+    }
+
+    private void OnAddTimeAdRewardEarned()
+    {
+        UnityAdsManager.Instance.OnRewardEarned -= OnAddTimeAdRewardEarned;
+        UnityAdsManager.Instance.OnAdFailedToShow -= OnAddTimeAdFailed;
+        addTimePanel?.SetActive(false);
+        ResumeGameAfterAddTime();
+    }
+
+    private void OnAddTimeAdFailed()
+    {
+        UnityAdsManager.Instance.OnRewardEarned -= OnAddTimeAdRewardEarned;
+        UnityAdsManager.Instance.OnAdFailedToShow -= OnAddTimeAdFailed;
+    }
+
+    private void ResumeGameAfterAddTime()
+    {
+        timeRemaining = 30f;
+        isGameActive = true;
+        isTimerStarted = true;
+        if (inputHandler != null) inputHandler.enabled = true;
+        gameUI.SetTimerFrozen(false);
+    }
+
+    private void OnAddTimeCancelButtonClicked()
+    {
+        addTimePanel?.SetActive(false);
+        ShowLoseResult();
     }
 
     private void ConsumeStamina(Action onComplete = null)
@@ -390,5 +455,7 @@ public class GameManager : MonoBehaviour
         if (UnityAdsManager.Instance == null) return;
         UnityAdsManager.Instance.OnRewardEarned -= OnCoin2xAdRewardEarned;
         UnityAdsManager.Instance.OnAdFailedToShow -= OnCoin2xAdFailed;
+        UnityAdsManager.Instance.OnRewardEarned -= OnAddTimeAdRewardEarned;
+        UnityAdsManager.Instance.OnAdFailedToShow -= OnAddTimeAdFailed;
     }
 }
