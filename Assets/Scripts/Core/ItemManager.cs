@@ -194,7 +194,14 @@ public class ItemManager : MonoBehaviour
                 });
         }
     }
-
+    public ParticleSystem SpawnShuffleVFXAt(Vector3 position)
+    {
+        if (shuffleVFXPrefab == null) return null;
+        var vfx = Instantiate(shuffleVFXPrefab, position, Quaternion.identity);
+        vfx.Play();
+        Destroy(vfx.gameObject, vfx.main.duration + vfx.main.startLifetime.constantMax);
+        return vfx;
+    }
     public void UseTargetSetRemover()
     {
         if (isProcessingItem || targetRemoverCount <= 0) return;

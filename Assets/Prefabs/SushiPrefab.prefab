@@ -118,6 +118,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: b3e0d1ca85028244cba8cb9ad44f03b2, type: 3}
   - {fileID: 21300000, guid: 17698031da2412c41bf28bfa181b33e5, type: 3}
   - {fileID: 21300000, guid: 9ae32414fed99854788b824b089f4d5b, type: 3}
+  typeChangeVFXPrefab: {fileID: 7432085657569359504, guid: 37146338765469d449f0ccd84e66f22a, type: 3}
 --- !u!60 &2827719654476203618
 PolygonCollider2D:
   m_ObjectHideFlags: 0

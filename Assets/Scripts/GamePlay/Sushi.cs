@@ -19,8 +19,10 @@ public class Sushi : MonoBehaviour
     [SerializeField] private GameObject lockIcon;
     [SerializeField] private Sprite[] lockStageSprites = new Sprite[3];
 
-    public int TypeId => typeId;
+    [Header("Type Change VFX")]
+    [SerializeField] private ParticleSystem typeChangeVFXPrefab;
 
+    public int TypeId => typeId;
     public SpriteRenderer SpriteRenderer => riceRenderer;
     public Transform RicePart => riceRenderer.transform;
     public Transform ToppingPart => toppingRenderer != null ? toppingRenderer.transform : null;
@@ -29,6 +31,7 @@ public class Sushi : MonoBehaviour
     public bool IsHidden => isHidden;
     public Plate CurrentPlate { get; private set; }
     public bool IsDragging { get; private set; }
+    public float PlateOffsetY { get; private set; }
 
     private Vector3 originalScale;
     private Material riceMaterialInstance;
@@ -39,7 +42,6 @@ public class Sushi : MonoBehaviour
     private bool isHidden = false;
     private GameObject hiddenOverlay;
     private SpriteRenderer hiddenOverlayRenderer;
-    public float PlateOffsetY { get; private set; }
 
     private void Awake()
     {
@@ -81,19 +83,23 @@ public class Sushi : MonoBehaviour
     }
 
     public void Initialize(int id, Sprite riceSprite, Sprite toppingSprite,
-    SushiType sushiType = SushiType.Nigiri, float toppingOffsetX = 0f,
-    float toppingOffsetY = 0f, float plateOffsetY = 0f)
+        SushiType sushiType = SushiType.Nigiri, float toppingOffsetX = 0f,
+        float toppingOffsetY = 0f, float plateOffsetY = 0f)
     {
         typeId = id;
         SushiType = sushiType;
         PlateOffsetY = plateOffsetY;
 
         if (riceRenderer != null)
+        {
             riceRenderer.sprite = riceSprite;
+            riceRenderer.transform.localPosition = Vector3.zero;
+        }
 
         if (toppingRenderer != null)
         {
             toppingRenderer.sprite = toppingSprite;
+            toppingRenderer.gameObject.SetActive(sushiType != SushiType.Integrated && toppingSprite != null);
             toppingRenderer.transform.localPosition = new Vector3(toppingOffsetX, toppingOffsetY, 0f);
         }
 
@@ -190,11 +196,13 @@ public class Sushi : MonoBehaviour
             if (toppingRenderer != null) toppingRenderer.enabled = true;
         }
     }
+
     public void SetRenderersVisible(bool visible)
     {
         if (riceRenderer != null) riceRenderer.enabled = visible;
         if (toppingRenderer != null) toppingRenderer.enabled = visible;
     }
+
     public void RevealHidden(System.Action onComplete = null)
     {
         if (!isHidden || hiddenOverlay == null)
@@ -248,53 +256,102 @@ public class Sushi : MonoBehaviour
     }
 
     public void PlayShuffleAnimation(int newTypeId, Sprite newRiceSprite, Sprite newToppingSprite,
-    SushiType newSushiType, float newToppingOffsetX, float newToppingOffsetY, float newPlateOffsetY,
-    System.Action onComplete)
+        SushiType newSushiType, float newToppingOffsetX, float newToppingOffsetY, float newPlateOffsetY,
+        System.Action onComplete)
     {
         bool currentIsIntegrated = SushiType == SushiType.Integrated;
         bool nextIsIntegrated = newSushiType == SushiType.Integrated;
 
-        if (currentIsIntegrated || nextIsIntegrated)
+        if (!currentIsIntegrated && nextIsIntegrated)
+            PlayNormalToIntegratedAnimation(newTypeId, newRiceSprite, newSushiType, newPlateOffsetY, onComplete);
+        else if (currentIsIntegrated && !nextIsIntegrated)
+            PlayIntegratedToNormalAnimation(newTypeId, newRiceSprite, newToppingSprite, newSushiType, newToppingOffsetX, newToppingOffsetY, newPlateOffsetY, onComplete);
+        else if (currentIsIntegrated)
+            PlayIntegratedToIntegratedAnimation(newTypeId, newRiceSprite, newSushiType, newPlateOffsetY, onComplete);
+        else
+            PlayToppingAnimation(newTypeId, newRiceSprite, newToppingSprite, newSushiType, newToppingOffsetX, newToppingOffsetY, newPlateOffsetY, onComplete);
+    }
+
+    private void PlayNormalToIntegratedAnimation(int newTypeId, Sprite newRiceSprite,
+    SushiType newSushiType, float newPlateOffsetY, System.Action onComplete)
+    {
+        ApplyIntegratedState(newTypeId, newRiceSprite, newSushiType, newPlateOffsetY);
+        SpawnTypeChangeVFX();
+        onComplete?.Invoke();
+    }
+
+    private void PlayIntegratedToNormalAnimation(int newTypeId, Sprite newRiceSprite, Sprite newToppingSprite,
+        SushiType newSushiType, float newToppingOffsetX, float newToppingOffsetY, float newPlateOffsetY,
+        System.Action onComplete)
+    {
+        ApplyNormalState(newTypeId, newRiceSprite, newToppingSprite, newSushiType, newToppingOffsetX, newToppingOffsetY, newPlateOffsetY);
+        SpawnTypeChangeVFX();
+        onComplete?.Invoke();
+    }
+
+    private void SpawnTypeChangeVFX()
+    {
+        if (typeChangeVFXPrefab == null) return;
+        var vfx = Instantiate(typeChangeVFXPrefab, transform.position, Quaternion.identity);
+        vfx.Play();
+        Destroy(vfx.gameObject, vfx.main.duration + vfx.main.startLifetime.constantMax);
+    }
+    private void PlayIntegratedToIntegratedAnimation(int newTypeId, Sprite newRiceSprite,
+        SushiType newSushiType, float newPlateOffsetY, System.Action onComplete)
+    {
+        if (RicePart == null)
         {
-            if (riceRenderer != null) riceRenderer.sprite = newRiceSprite;
-            if (toppingRenderer != null)
-            {
-                bool hasTopping = newToppingSprite != null;
-                toppingRenderer.gameObject.SetActive(hasTopping);
-                if (hasTopping)
-                {
-                    toppingRenderer.sprite = newToppingSprite;
-                    toppingRenderer.transform.localPosition = new Vector3(newToppingOffsetX, newToppingOffsetY, 0f);
-                }
-            }
-
-            if (RicePart != null)
-            {
-                Vector3 currentRicePos = RicePart.localPosition;
-                Vector3 targetRicePos = new Vector3(currentRicePos.x, newPlateOffsetY, currentRicePos.z);
-
-                RicePart.DOLocalMove(targetRicePos, 0.25f).SetEase(Ease.OutQuad)
-                    .OnComplete(() =>
-                    {
-                        typeId = newTypeId;
-                        SushiType = newSushiType;
-                        PlateOffsetY = newPlateOffsetY;
-                        gameObject.name = $"Sushi_{newTypeId}";
-                        onComplete?.Invoke();
-                    });
-            }
-            else
-            {
-                typeId = newTypeId;
-                SushiType = newSushiType;
-                PlateOffsetY = newPlateOffsetY;
-                gameObject.name = $"Sushi_{newTypeId}";
-                onComplete?.Invoke();
-            }
+            ApplyIntegratedState(newTypeId, newRiceSprite, newSushiType, newPlateOffsetY);
+            onComplete?.Invoke();
             return;
         }
 
-        PlayToppingAnimation(newTypeId, newRiceSprite, newToppingSprite, newSushiType, newToppingOffsetX, newToppingOffsetY, newPlateOffsetY, onComplete);
+        Sequence seq = DOTween.Sequence();
+        seq.Append(RicePart.DORotate(new Vector3(0f, 90f, 0f), 0.2f, RotateMode.Fast)
+            .SetEase(Ease.InQuad)
+            .OnComplete(() =>
+            {
+                if (riceRenderer != null) riceRenderer.sprite = newRiceSprite;
+            }));
+        seq.Append(RicePart.DORotate(Vector3.zero, 0.2f, RotateMode.Fast).SetEase(Ease.OutQuad));
+
+        seq.OnComplete(() =>
+        {
+            ApplyIntegratedState(newTypeId, newRiceSprite, newSushiType, newPlateOffsetY);
+            onComplete?.Invoke();
+        });
+    }
+
+    private void ApplyIntegratedState(int newTypeId, Sprite newRiceSprite, SushiType newSushiType, float newPlateOffsetY)
+    {
+        typeId = newTypeId;
+        SushiType = newSushiType;
+        PlateOffsetY = newPlateOffsetY;
+        gameObject.name = $"Sushi_{newTypeId}";
+        if (riceRenderer != null) riceRenderer.sprite = newRiceSprite;
+        if (toppingRenderer != null) toppingRenderer.gameObject.SetActive(false);
+        if (RicePart != null)
+            RicePart.localPosition = new Vector3(RicePart.localPosition.x, 0f, RicePart.localPosition.z);
+        transform.localPosition = new Vector3(transform.localPosition.x, 0.08f + newPlateOffsetY, transform.localPosition.z);
+    }
+
+    private void ApplyNormalState(int newTypeId, Sprite newRiceSprite, Sprite newToppingSprite,
+        SushiType newSushiType, float newToppingOffsetX, float newToppingOffsetY, float newPlateOffsetY)
+    {
+        typeId = newTypeId;
+        SushiType = newSushiType;
+        PlateOffsetY = newPlateOffsetY;
+        gameObject.name = $"Sushi_{newTypeId}";
+        if (riceRenderer != null) riceRenderer.sprite = newRiceSprite;
+        if (toppingRenderer != null)
+        {
+            toppingRenderer.sprite = newToppingSprite;
+            toppingRenderer.gameObject.SetActive(newToppingSprite != null);
+            toppingRenderer.transform.localPosition = new Vector3(newToppingOffsetX, newToppingOffsetY, 0f);
+        }
+        if (RicePart != null)
+            RicePart.localPosition = new Vector3(RicePart.localPosition.x, 0f, RicePart.localPosition.z);
+        transform.localPosition = new Vector3(transform.localPosition.x, 0.08f + newPlateOffsetY, transform.localPosition.z);
     }
 
     private void PlayToppingAnimation(int newTypeId, Sprite newRiceSprite, Sprite newToppingSprite,
@@ -309,14 +366,10 @@ public class Sushi : MonoBehaviour
         }
 
         Vector3 originalPos = ToppingPart.localPosition;
-        float jumpHeight = 0.5f;
-        float jumpDuration = 0.2f;
-        float rotateDuration = 0.4f;
-        float dropDuration = 0.25f;
 
         Sequence seq = DOTween.Sequence();
-        seq.Append(ToppingPart.DOLocalMoveY(originalPos.y + jumpHeight, jumpDuration).SetEase(Ease.OutQuad));
-        seq.Append(ToppingPart.DORotate(new Vector3(0f, 90f, 0f), rotateDuration * 0.5f, RotateMode.Fast)
+        seq.Append(ToppingPart.DOLocalMoveY(originalPos.y + 0.5f, 0.2f).SetEase(Ease.OutQuad));
+        seq.Append(ToppingPart.DORotate(new Vector3(0f, 90f, 0f), 0.2f, RotateMode.Fast)
             .SetEase(Ease.InQuad)
             .OnComplete(() =>
             {
@@ -328,8 +381,8 @@ public class Sushi : MonoBehaviour
                     if (hasTopping) toppingRenderer.sprite = newToppingSprite;
                 }
             }));
-        seq.Append(ToppingPart.DORotate(Vector3.zero, rotateDuration * 0.5f, RotateMode.Fast).SetEase(Ease.OutQuad));
-        seq.Append(ToppingPart.DOLocalMove(new Vector3(newToppingOffsetX, newToppingOffsetY, originalPos.z), dropDuration).SetEase(Ease.OutBounce));
+        seq.Append(ToppingPart.DORotate(Vector3.zero, 0.2f, RotateMode.Fast).SetEase(Ease.OutQuad));
+        seq.Append(ToppingPart.DOLocalMove(new Vector3(newToppingOffsetX, newToppingOffsetY, originalPos.z), 0.25f).SetEase(Ease.OutBounce));
         seq.OnComplete(() =>
         {
             typeId = newTypeId;
@@ -390,6 +443,7 @@ public class Sushi : MonoBehaviour
 
         if (riceRenderer != null)
         {
+            riceRenderer.transform.localPosition = Vector3.zero;
             riceRenderer.transform.localScale = Vector3.one;
             riceRenderer.sortingOrder = originalRiceSortingOrder;
             riceRenderer.enabled = true;
@@ -399,6 +453,7 @@ public class Sushi : MonoBehaviour
         {
             toppingRenderer.transform.localScale = Vector3.one;
             toppingRenderer.enabled = true;
+            toppingRenderer.gameObject.SetActive(true);
         }
 
         isHidden = false;

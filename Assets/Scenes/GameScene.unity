@@ -180,10 +180,10 @@ MonoBehaviour:
   winStaminaChargingText: {fileID: 928199316}
   winCoinText: {fileID: 392003203}
   winStaminaButton: {fileID: 928199317}
-  loseStaminaButton: {fileID: 1358189391}
   loseStaminaText: {fileID: 1358189389}
   loseStaminaChargingText: {fileID: 1358189390}
   loseCoinText: {fileID: 1882446829}
+  loseStaminaButton: {fileID: 1358189391}
   addStaminaPanel: {fileID: 1542902335}
 --- !u!4 &11404575
 Transform:

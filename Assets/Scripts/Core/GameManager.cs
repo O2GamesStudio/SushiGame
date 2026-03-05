@@ -76,6 +76,13 @@ public class GameManager : MonoBehaviour
             string userId = FirebaseManager.Instance?.CurrentUser?.UserId;
             if (!string.IsNullOrEmpty(userId) && isStageClearProcessed)
             {
+                var userData = GameDataTransfer.Instance?.CurrentUserData;
+                if (userData != null)
+                {
+                    userData.coin += 100;
+                    GameDataTransfer.Instance.SetUserData(userData);
+                }
+
                 bool isUpdateComplete = false;
                 UserDataService.Instance?.UpdateStage(
                     userId,
@@ -83,6 +90,10 @@ public class GameManager : MonoBehaviour
                     () => isUpdateComplete = true,
                     (error) => isUpdateComplete = true
                 );
+
+                if (userData != null)
+                    UserDataService.Instance?.UpdateCurrency(userId, userData.stamina, userData.coin);
+
                 SceneLoader.LoadLobby(() => isUpdateComplete);
             }
             else
@@ -90,9 +101,7 @@ public class GameManager : MonoBehaviour
                 SceneLoader.LoadLobby();
             }
         });
-
         loseLobbyButton?.onClick.AddListener(() => SceneLoader.LoadLobby());
-
         StartGame();
     }
 
@@ -187,6 +196,12 @@ public class GameManager : MonoBehaviour
 
     public void OnGameWin()
     {
+        if (MergeEventSystem.Instance != null && MergeEventSystem.Instance.IsEventActive)
+        {
+            OnGameLose();
+            return;
+        }
+
         isGameActive = false;
         if (inputHandler != null) inputHandler.enabled = false;
         gameUI.ShowWin();
