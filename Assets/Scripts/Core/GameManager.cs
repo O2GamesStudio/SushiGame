@@ -42,6 +42,11 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Button addTimeAdButton;
     [SerializeField] private Button addTimeCancelButton;
 
+    [Header("Event Skip Panel")]
+    [SerializeField] private GameObject eventSkipAdPanel;
+    [SerializeField] private Button eventSkipAdButton;
+    [SerializeField] private Button eventSkipLoseButton;
+
     private bool addTimePanelUsed = false;
     private bool isStageClearProcessed = false;
     private int totalSushiSets;
@@ -78,6 +83,8 @@ public class GameManager : MonoBehaviour
         loseStaminaButton?.onClick.AddListener(() => addStaminaPanel?.SetActive(true));
         addTimeAdButton?.onClick.AddListener(OnAddTimeAdButtonClicked);
         addTimeCancelButton?.onClick.AddListener(OnAddTimeCancelButtonClicked);
+        eventSkipAdButton?.onClick.AddListener(OnEventSkipAdButtonClicked);
+        eventSkipLoseButton?.onClick.AddListener(OnEventSkipLoseButtonClicked);
 
         lobbyButton?.onClick.AddListener(() =>
         {
@@ -206,7 +213,7 @@ public class GameManager : MonoBehaviour
     {
         if (MergeEventSystem.Instance != null && MergeEventSystem.Instance.IsEventActive)
         {
-            OnGameLose();
+            OnGameLose(true);
             return;
         }
 
@@ -226,12 +233,19 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void OnGameLose()
+    public void OnGameLose(bool isEventFail = false)
     {
+        isGameActive = false;
+        if (inputHandler != null) inputHandler.enabled = false;
+
+        if (isEventFail)
+        {
+            eventSkipAdPanel?.SetActive(true);
+            return;
+        }
+
         if (!addTimePanelUsed)
         {
-            isGameActive = false;
-            if (inputHandler != null) inputHandler.enabled = false;
             addTimePanelUsed = true;
             gameUI.SetTimerText("영업종료");
             addTimePanel?.SetActive(true);
@@ -240,7 +254,41 @@ public class GameManager : MonoBehaviour
 
         ShowLoseResult();
     }
+    private void OnEventSkipAdButtonClicked()
+    {
+        if (UnityAdsManager.Instance == null)
+        {
+            eventSkipAdPanel?.SetActive(false);
+            OnEventSkipAdRewardEarned();
+            return;
+        }
 
+        UnityAdsManager.Instance.OnRewardEarned += OnEventSkipAdRewardEarned;
+        UnityAdsManager.Instance.OnAdFailedToShow += OnEventSkipAdFailed;
+        UnityAdsManager.Instance.ShowRewardedAd();
+    }
+
+    private void OnEventSkipAdRewardEarned()
+    {
+        UnityAdsManager.Instance.OnRewardEarned -= OnEventSkipAdRewardEarned;
+        UnityAdsManager.Instance.OnAdFailedToShow -= OnEventSkipAdFailed;
+        eventSkipAdPanel?.SetActive(false);
+        MergeEventSystem.Instance?.ForceCompleteEvent();
+        isGameActive = true;
+        if (inputHandler != null) inputHandler.enabled = true;
+    }
+
+    private void OnEventSkipAdFailed()
+    {
+        UnityAdsManager.Instance.OnRewardEarned -= OnEventSkipAdRewardEarned;
+        UnityAdsManager.Instance.OnAdFailedToShow -= OnEventSkipAdFailed;
+    }
+
+    private void OnEventSkipLoseButtonClicked()
+    {
+        eventSkipAdPanel?.SetActive(false);
+        ShowLoseResult();
+    }
     private void ShowLoseResult()
     {
         isGameActive = false;
@@ -457,5 +505,7 @@ public class GameManager : MonoBehaviour
         UnityAdsManager.Instance.OnAdFailedToShow -= OnCoin2xAdFailed;
         UnityAdsManager.Instance.OnRewardEarned -= OnAddTimeAdRewardEarned;
         UnityAdsManager.Instance.OnAdFailedToShow -= OnAddTimeAdFailed;
+        UnityAdsManager.Instance.OnRewardEarned -= OnEventSkipAdRewardEarned;
+        UnityAdsManager.Instance.OnAdFailedToShow -= OnEventSkipAdFailed;
     }
 }

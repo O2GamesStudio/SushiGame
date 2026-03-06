@@ -36,8 +36,14 @@ public class MergeEventSystem : MonoBehaviour
         if (eventTimeRemaining <= 0f)
         {
             isEventActive = false;
-            GameManager.Instance?.OnGameLose();
+            GameManager.Instance?.OnGameLose(true);
         }
+    }
+    public void ForceCompleteEvent()
+    {
+        isEventActive = false;
+        currentEventIndex++;
+        eventUI?.HideEvent();
     }
 
     public void Initialize(MergeEventData[] events, int specialPlateCount)
