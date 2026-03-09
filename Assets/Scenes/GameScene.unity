@@ -532,7 +532,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &88095764
 RectTransform:
   m_ObjectHideFlags: 0
@@ -6992,6 +6992,10 @@ MonoBehaviour:
   losePanel: {fileID: 741905814}
   frozenColor: {r: 0, g: 1, b: 1, a: 1}
   progressText: {fileID: 1678803347}
+  timerBgImage: {fileID: 0}
+  warningThreshold: 30
+  warningTextColor: {r: 1, g: 0, b: 0, a: 1}
+  warningBgColor: {r: 1, g: 0, b: 0, a: 0.4}
 --- !u!114 &1419415412 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2455267321332537711, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}
