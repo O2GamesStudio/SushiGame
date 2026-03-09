@@ -12,6 +12,8 @@ public class LobbyManager : MonoBehaviour
     [SerializeField] private Button googleLinkButton;
     [SerializeField] private GameObject addStaminaPanel;
     [SerializeField] private Button staminaButton;
+    [SerializeField] private Button resumeButton;
+
 
     private int currentStage = 1;
 
@@ -32,6 +34,8 @@ public class LobbyManager : MonoBehaviour
         googleLinkButton.onClick.AddListener(OnGoogleLinkButtonClicked);
         UpdateGoogleLinkButton();
         UnityAdsManager.Instance?.HideBanner();
+
+        UpdateResumeButton();
 
         // 캐싱된 데이터로 먼저 UI 업데이트
         var cachedUserData = GameDataTransfer.Instance?.CurrentUserData;
@@ -56,7 +60,28 @@ public class LobbyManager : MonoBehaviour
             });
         });
     }
+    private void UpdateResumeButton()
+    {
+        if (resumeButton == null) return;
 
+        bool hasSave = GameSaveService.Instance?.HasSaveData() ?? false;
+        resumeButton.gameObject.SetActive(hasSave);
+        resumeButton.onClick.RemoveAllListeners();
+        resumeButton.onClick.AddListener(OnResumeButtonClicked);
+    }
+
+    private void OnResumeButtonClicked()
+    {
+        var saveData = GameSaveService.Instance?.LoadLocal();
+        if (saveData == null) { resumeButton.gameObject.SetActive(false); return; }
+
+        var levelData = levelDataBase.Get(saveData.stageIndex);
+        if (levelData == null) { GameSaveService.Instance?.ClearLocal(); return; }
+
+        GameDataTransfer.Instance.SetLevelData(levelData);
+        GameDataTransfer.Instance.SetSaveData(saveData);
+        SceneLoader.LoadGameAsync(LoadingUI.Instance);
+    }
     private void UpdateStageUI()
     {
         if (stageText != null)

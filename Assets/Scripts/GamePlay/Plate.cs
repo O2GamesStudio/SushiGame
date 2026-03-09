@@ -406,6 +406,27 @@ public class Plate : MonoBehaviour
                 .SetEase(Ease.OutBack);
         }
     }
+
+    public List<int> GetActiveTypes()
+    {
+        var result = new List<int>();
+        for (int i = 0; i < slotCount; i++)
+            if (activeSushis[i] != null)
+                result.Add(activeSushis[i].TypeId);
+        return result;
+    }
+
+    public List<int> GetActiveLockStages()
+    {
+        var result = new List<int>();
+        for (int i = 0; i < slotCount; i++)
+            result.Add(activeSushis[i] != null ? activeSushis[i].LockStage : 0);
+        return result;
+    }
+
+    public PlateState CurrentState => plateState;
+    public List<Layer> GetLayers() => new List<Layer>(layerQueue);
+
     private void CreateHiddenOverlay(Sushi sushi, Vector3 targetPos)
     {
         var hiddenSprite = plateUI.GetHiddenSushiSprite();

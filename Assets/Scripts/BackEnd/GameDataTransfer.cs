@@ -3,6 +3,7 @@ using UnityEngine;
 public class GameDataTransfer : MonoBehaviour
 {
     public static GameDataTransfer Instance { get; private set; }
+    public GameSaveData CurrentSaveData { get; private set; }
 
     public LevelData CurrentLevelData { get; private set; }
     public UserData CurrentUserData { get; private set; }
@@ -18,6 +19,8 @@ public class GameDataTransfer : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
+    public void SetSaveData(GameSaveData data) => CurrentSaveData = data;
+    public void ClearSaveData() => CurrentSaveData = null;
     public void SetLevelData(LevelData data) => CurrentLevelData = data;
     public void SetUserData(UserData data) => CurrentUserData = data;
 }

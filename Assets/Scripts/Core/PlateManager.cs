@@ -6,45 +6,44 @@ public class PlateManager : MonoBehaviour
     [SerializeField] private List<Plate> plates;
     [SerializeField] private GameObject railPrefab;
     [SerializeField] private GameObject railSlotPrefab;
+    private int savedRailRowIndex = 0;
 
     private RailCtrl railCtrl;
+    private List<int> plateIndexMapping = new List<int>();
 
     public RailCtrl Rail => railCtrl;
 
     public void Initialize(List<PlateData> plateDataList, bool sequentialActivation = false, RailData railData = null)
     {
+        plateIndexMapping.Clear();
+
         for (int i = 0; i < plates.Count; i++)
             plates[i].gameObject.SetActive(false);
 
-        HashSet<int> railPlateIndices = new HashSet<int>();
+        var railPlateIndices = new HashSet<int>();
         if (railData != null)
         {
             int rowStart = railData.RowIndex * 3;
             railPlateIndices.Add(rowStart);
             railPlateIndices.Add(rowStart + 1);
             railPlateIndices.Add(rowStart + 2);
-
             SpawnRail(railData, rowStart);
         }
 
-        List<int> plateIndices = new List<int>();
+        var plateIndices = new List<int>();
 
         if (sequentialActivation)
         {
             for (int i = 0; i < plates.Count; i++)
-            {
                 if (!railPlateIndices.Contains(i))
                     plateIndices.Add(i);
-            }
         }
         else
         {
-            List<int> available = new List<int>();
+            var available = new List<int>();
             for (int i = 0; i < plates.Count; i++)
-            {
                 if (!railPlateIndices.Contains(i))
                     available.Add(i);
-            }
 
             for (int i = available.Count - 1; i > 0; i--)
             {
@@ -68,6 +67,8 @@ public class PlateManager : MonoBehaviour
                 data.SlotCount
             );
 
+            plateIndexMapping.Add(plateIndex);
+
             if (data.State != PlateState.Normal)
             {
                 PlateUnlockSystem.Instance?.RegisterLockedPlate(
@@ -79,10 +80,124 @@ public class PlateManager : MonoBehaviour
         }
     }
 
+    public void RestoreFromSaveData(GameSaveData saveData, LevelData levelData)
+    {
+        plateIndexMapping.Clear();
+
+        for (int i = 0; i < plates.Count; i++)
+            plates[i].gameObject.SetActive(false);
+
+        foreach (var ps in saveData.plateStates)
+        {
+            if (ps.plateIndex < 0 || ps.plateIndex >= plates.Count) continue;
+
+            var layers = new List<Layer>();
+            foreach (var ls in ps.layers)
+            {
+                var layer = new Layer(ls.sushiTypes);
+                for (int i = 0; i < ls.lockStages.Count; i++)
+                    layer.SetLockStage(i, ls.lockStages[i]);
+                for (int i = 0; i < ls.hiddenStates.Count; i++)
+                    layer.SetHiddenState(i, ls.hiddenStates[i]);
+                layers.Add(layer);
+            }
+
+            // -1 제거
+            var validActiveTypes = ps.activeTypes.FindAll(t => t != -1);
+
+            plates[ps.plateIndex].gameObject.SetActive(true);
+            plates[ps.plateIndex].Initialize(
+                validActiveTypes,
+                layers,
+                ps.activeLockStages,
+                ps.slotCount
+            );
+
+            plateIndexMapping.Add(ps.plateIndex);
+
+            var state = (PlateState)ps.state;
+            if (state != PlateState.Normal)
+            {
+                PlateUnlockSystem.Instance?.RegisterLockedPlate(
+                    plates[ps.plateIndex],
+                    state,
+                    ps.requiredSushiTypeId
+                );
+            }
+        }
+
+        if (saveData.railState != null && levelData.isRail)
+        {
+            int rowIndex = saveData.railState.rowIndex;
+            int rowStart = rowIndex * 3;
+            var railData = new RailData
+            {
+                RowIndex = rowIndex,
+                SushiTypeIds = saveData.railState.sushiTypeIds,
+                RailPlateSprite = levelData.railPlateSprite
+            };
+            SpawnRail(railData, rowStart);
+        }
+    }
+
+    public GameSaveData GetSaveData(int stageIndex, float timeRemaining, int mergedSetsCount)
+    {
+        var saveData = new GameSaveData
+        {
+            stageIndex = stageIndex,
+            timeRemaining = timeRemaining,
+            mergedSetsCount = mergedSetsCount
+        };
+
+        for (int i = 0; i < plateIndexMapping.Count; i++)
+        {
+            int plateIndex = plateIndexMapping[i];
+            var plate = plates[plateIndex];
+            if (!plate.gameObject.activeSelf) continue;
+
+            var ps = new PlateSaveData
+            {
+                plateIndex = plateIndex,
+                activeTypes = plate.GetActiveTypes(),
+                activeLockStages = plate.GetActiveLockStages(),
+                slotCount = plate.SlotCount,
+                state = (int)plate.CurrentState,
+                requiredSushiTypeId = plate.RequiredSushiTypeId
+            };
+
+            foreach (var layer in plate.GetLayers())
+            {
+                ps.layers.Add(new LayerSaveData
+                {
+                    sushiTypes = layer.GetAllTypes(),
+                    lockStages = layer.GetLockStages(),
+                    hiddenStates = layer.GetHiddenStates()
+                });
+            }
+
+            saveData.plateStates.Add(ps);
+        }
+
+        if (railCtrl != null)
+        {
+            var railSave = new RailSaveData();
+            railSave.rowIndex = savedRailRowIndex;
+            foreach (var slot in railCtrl.Slots)
+            {
+                if (slot.OccupiedSushi != null)
+                    railSave.sushiTypeIds.Add(slot.OccupiedSushi.TypeId);
+            }
+            saveData.railState = railSave;
+        }
+
+        return saveData;
+    }
+
     private void SpawnRail(RailData railData, int rowStart)
     {
         if (railPrefab == null || railSlotPrefab == null) return;
 
+        savedRailRowIndex = railData.RowIndex;
         Vector3 centerPos = plates[rowStart + 1].transform.position;
         var railObj = Instantiate(railPrefab, centerPos, Quaternion.identity);
         railCtrl = railObj.GetComponent<RailCtrl>();

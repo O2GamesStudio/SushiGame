@@ -4,6 +4,7 @@ using System;
 [CreateAssetMenu(fileName = "LevelData", menuName = "SushiMerge/LevelData")]
 public class LevelData : ScriptableObject
 {
+    public int levelIndex;
     [Header("기본 설정")]
     [Tooltip("접시 개수")] public int plateCount = 9;
     [Tooltip("초밥 종류 수")] public int sushiTypeCount = 4;

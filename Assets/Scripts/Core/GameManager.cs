@@ -126,6 +126,13 @@ public class GameManager : MonoBehaviour
 
     private void StartGame()
     {
+        var saveData = GameDataTransfer.Instance?.CurrentSaveData;
+        if (saveData != null)
+        {
+            ResumeGame(saveData);
+            return;
+        }
+
         var levelGenerator = new LevelGenerator(currentLevel);
         var plateDataList = levelGenerator.GeneratePlates();
         var railData = levelGenerator.GetRailData();
@@ -135,7 +142,6 @@ public class GameManager : MonoBehaviour
 
         totalSushiSets = currentLevel.totalSushiSetCount;
         mergedSetsCount = 0;
-
         timeRemaining = currentLevel.timeLimitSeconds;
         isGameActive = true;
         isTimerFrozen = false;
@@ -156,6 +162,43 @@ public class GameManager : MonoBehaviour
 
         doorTransition?.PlayOpenAnimation();
         UnityAdsManager.Instance?.ShowBanner();
+    }
+    private void ResumeGame(GameSaveData saveData)
+    {
+        plateManager.RestoreFromSaveData(saveData, currentLevel);
+        GameStateChecker.Instance.Initialize(plateManager);
+
+        totalSushiSets = currentLevel.totalSushiSetCount;
+        mergedSetsCount = saveData.mergedSetsCount;
+        timeRemaining = saveData.timeRemaining;
+        isGameActive = true;
+        isTimerFrozen = false;
+        isTimerStarted = false;
+
+        GameDataTransfer.Instance.ClearSaveData();
+
+        gameUI.ShowGame();
+        gameUI.UpdateTimer(timeRemaining);
+        gameUI.UpdateProgress(mergedSetsCount, totalSushiSets);
+
+        var userData = GameDataTransfer.Instance?.CurrentUserData;
+        if (userData != null)
+        {
+            ItemManager.Instance?.InitializeItemCounts(userData);
+            gameUI.UpdateStage(userData.currentStage);
+        }
+
+        doorTransition?.PlayOpenAnimation();
+        UnityAdsManager.Instance?.ShowBanner();
+    }
+    private void OnApplicationPause(bool pauseStatus)
+    {
+        if (!pauseStatus || !isGameActive) return;
+
+        int stageIndex = GameDataTransfer.Instance?.CurrentUserData?.currentStage ?? 0;
+        var saveData = plateManager.GetSaveData(stageIndex, timeRemaining, mergedSetsCount);
+        GameSaveService.Instance?.SaveLocal(saveData);
+        GameSaveService.Instance?.SaveToFirestore(saveData);
     }
 
     #endregion
@@ -198,6 +241,10 @@ public class GameManager : MonoBehaviour
         mergedSetsCount++;
         gameUI.UpdateProgress(mergedSetsCount, totalSushiSets);
 
+        int stageIndex = GameDataTransfer.Instance?.CurrentUserData?.currentStage ?? 0;
+        var saveData = plateManager.GetSaveData(stageIndex, timeRemaining, mergedSetsCount);
+        GameSaveService.Instance?.OnMerged(saveData);
+
         if (MergeEventSystem.Instance == null) return;
 
         if (MergeEventSystem.Instance.IsEventActive)
@@ -217,6 +264,9 @@ public class GameManager : MonoBehaviour
             OnGameLose(true);
             return;
         }
+
+        GameSaveService.Instance?.ClearLocal();
+        GameSaveService.Instance?.ClearFirestore();
 
         isGameActive = false;
         if (inputHandler != null) inputHandler.enabled = false;
@@ -258,6 +308,9 @@ public class GameManager : MonoBehaviour
 
     private void ShowLoseResult()
     {
+        GameSaveService.Instance?.ClearLocal();
+        GameSaveService.Instance?.ClearFirestore();
+
         isGameActive = false;
         if (inputHandler != null) inputHandler.enabled = false;
         gameUI.ShowLose();
