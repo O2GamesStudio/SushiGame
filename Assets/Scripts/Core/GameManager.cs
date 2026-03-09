@@ -47,23 +47,35 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Button eventSkipAdButton;
     [SerializeField] private Button eventSkipLoseButton;
 
-    private bool addTimePanelUsed = false;
+    #region State
+
     private bool isStageClearProcessed = false;
+    private bool addTimePanelUsed = false;
     private int totalSushiSets;
     private int mergedSetsCount;
 
     public int TotalSets => totalSushiSets;
     public int MergedSets => mergedSetsCount;
 
-    private LevelGenerator levelGenerator;
+    #endregion
+
+    #region Timer State
+
     private float timeRemaining;
     private bool isGameActive;
     private bool isTimerFrozen;
     private bool isTimerStarted;
     private Coroutine freezeCoroutine;
-    private Coroutine staminaChargeCoroutine;
 
     public bool IsTimerStarted => isTimerStarted;
+
+    #endregion
+
+    #region Stamina State
+
+    private Coroutine staminaChargeCoroutine;
+
+    #endregion
 
     private void Awake()
     {
@@ -76,47 +88,7 @@ public class GameManager : MonoBehaviour
         if (transferData != null)
             currentLevel = transferData;
 
-        retryButton?.onClick.AddListener(OnRetryButtonClicked);
-        coinButton?.onClick.AddListener(() => ClaimCoinAndNextStage(100));
-        coin2xButton?.onClick.AddListener(OnCoin2xButtonClicked);
-        winStaminaButton?.onClick.AddListener(() => addStaminaPanel?.SetActive(true));
-        loseStaminaButton?.onClick.AddListener(() => addStaminaPanel?.SetActive(true));
-        addTimeAdButton?.onClick.AddListener(OnAddTimeAdButtonClicked);
-        addTimeCancelButton?.onClick.AddListener(OnAddTimeCancelButtonClicked);
-        eventSkipAdButton?.onClick.AddListener(OnEventSkipAdButtonClicked);
-        eventSkipLoseButton?.onClick.AddListener(OnEventSkipLoseButtonClicked);
-
-        lobbyButton?.onClick.AddListener(() =>
-        {
-            string userId = FirebaseManager.Instance?.CurrentUser?.UserId;
-            if (!string.IsNullOrEmpty(userId) && isStageClearProcessed)
-            {
-                var userData = GameDataTransfer.Instance?.CurrentUserData;
-                if (userData != null)
-                {
-                    userData.coin += 100;
-                    GameDataTransfer.Instance.SetUserData(userData);
-                    UserDataService.Instance?.UpdateCurrency(userId, userData.stamina, userData.coin);
-                }
-
-                bool isUpdateComplete = false;
-                UserDataService.Instance?.UpdateStage(
-                    userId,
-                    GameDataTransfer.Instance.CurrentUserData.currentStage,
-                    () => isUpdateComplete = true,
-                    (error) => isUpdateComplete = true
-                );
-
-                SceneLoader.LoadLobby(() => isUpdateComplete);
-            }
-            else
-            {
-                SceneLoader.LoadLobby();
-            }
-        });
-
-        loseLobbyButton?.onClick.AddListener(() => SceneLoader.LoadLobby());
-
+        BindButtons();
         StartGame();
     }
 
@@ -134,9 +106,27 @@ public class GameManager : MonoBehaviour
             OnGameLose();
     }
 
+    #region Init
+
+    private void BindButtons()
+    {
+        retryButton?.onClick.AddListener(OnRetryButtonClicked);
+        coinButton?.onClick.AddListener(() => ClaimCoinAndNextStage(100));
+        coin2xButton?.onClick.AddListener(OnCoin2xButtonClicked);
+        winStaminaButton?.onClick.AddListener(() => addStaminaPanel?.SetActive(true));
+        loseStaminaButton?.onClick.AddListener(() => addStaminaPanel?.SetActive(true));
+        addTimeAdButton?.onClick.AddListener(OnAddTimeAdButtonClicked);
+        addTimeCancelButton?.onClick.AddListener(OnAddTimeCancelButtonClicked);
+        eventSkipAdButton?.onClick.AddListener(OnEventSkipAdButtonClicked);
+        eventSkipLoseButton?.onClick.AddListener(OnEventSkipLoseButtonClicked);
+
+        lobbyButton?.onClick.AddListener(OnLobbyButtonClicked);
+        loseLobbyButton?.onClick.AddListener(() => SceneLoader.LoadLobby());
+    }
+
     private void StartGame()
     {
-        levelGenerator = new LevelGenerator(currentLevel);
+        var levelGenerator = new LevelGenerator(currentLevel);
         var plateDataList = levelGenerator.GeneratePlates();
 
         plateManager.Initialize(plateDataList, currentLevel.sequentialActivation);
@@ -163,24 +153,13 @@ public class GameManager : MonoBehaviour
             gameUI.UpdateStage(userData.currentStage);
         }
 
-        if (doorTransition != null)
-            doorTransition.PlayOpenAnimation();
-
+        doorTransition?.PlayOpenAnimation();
         UnityAdsManager.Instance?.ShowBanner();
     }
 
-    public void OnSushiMerged(int mergedTypeId = -1, Plate plate = null)
-    {
-        mergedSetsCount++;
-        gameUI.UpdateProgress(mergedSetsCount, totalSushiSets);
+    #endregion
 
-        if (MergeEventSystem.Instance == null) return;
-
-        if (MergeEventSystem.Instance.IsEventActive)
-            MergeEventSystem.Instance.OnSushiMergedDuringEvent(mergedTypeId, plate);
-        else
-            MergeEventSystem.Instance.OnSushiMerged(mergedSetsCount);
-    }
+    #region Timer
 
     public void StartTimer()
     {
@@ -208,6 +187,27 @@ public class GameManager : MonoBehaviour
         doorTransition?.PlayOpenAnimation();
         freezeCoroutine = null;
     }
+
+    #endregion
+
+    #region Merge
+
+    public void OnSushiMerged(int mergedTypeId = -1, Plate plate = null)
+    {
+        mergedSetsCount++;
+        gameUI.UpdateProgress(mergedSetsCount, totalSushiSets);
+
+        if (MergeEventSystem.Instance == null) return;
+
+        if (MergeEventSystem.Instance.IsEventActive)
+            MergeEventSystem.Instance.OnSushiMergedDuringEvent(mergedTypeId, plate);
+        else
+            MergeEventSystem.Instance.OnSushiMerged(mergedSetsCount);
+    }
+
+    #endregion
+
+    #region Win / Lose Flow
 
     public void OnGameWin()
     {
@@ -254,41 +254,7 @@ public class GameManager : MonoBehaviour
 
         ShowLoseResult();
     }
-    private void OnEventSkipAdButtonClicked()
-    {
-        if (UnityAdsManager.Instance == null)
-        {
-            eventSkipAdPanel?.SetActive(false);
-            OnEventSkipAdRewardEarned();
-            return;
-        }
 
-        UnityAdsManager.Instance.OnRewardEarned += OnEventSkipAdRewardEarned;
-        UnityAdsManager.Instance.OnAdFailedToShow += OnEventSkipAdFailed;
-        UnityAdsManager.Instance.ShowRewardedAd();
-    }
-
-    private void OnEventSkipAdRewardEarned()
-    {
-        UnityAdsManager.Instance.OnRewardEarned -= OnEventSkipAdRewardEarned;
-        UnityAdsManager.Instance.OnAdFailedToShow -= OnEventSkipAdFailed;
-        eventSkipAdPanel?.SetActive(false);
-        MergeEventSystem.Instance?.ForceCompleteEvent();
-        isGameActive = true;
-        if (inputHandler != null) inputHandler.enabled = true;
-    }
-
-    private void OnEventSkipAdFailed()
-    {
-        UnityAdsManager.Instance.OnRewardEarned -= OnEventSkipAdRewardEarned;
-        UnityAdsManager.Instance.OnAdFailedToShow -= OnEventSkipAdFailed;
-    }
-
-    private void OnEventSkipLoseButtonClicked()
-    {
-        eventSkipAdPanel?.SetActive(false);
-        ShowLoseResult();
-    }
     private void ShowLoseResult()
     {
         isGameActive = false;
@@ -310,6 +276,132 @@ public class GameManager : MonoBehaviour
                 }
             });
         });
+    }
+
+    private void OnRetryButtonClicked()
+    {
+        var userData = GameDataTransfer.Instance?.CurrentUserData;
+        if (userData == null) return;
+
+        if (userData.stamina < 1)
+        {
+            addStaminaPanel?.SetActive(true);
+            return;
+        }
+
+        SceneLoader.LoadGameAsync(LoadingUI.Instance);
+    }
+
+    private void OnLobbyButtonClicked()
+    {
+        string userId = FirebaseManager.Instance?.CurrentUser?.UserId;
+        if (!string.IsNullOrEmpty(userId) && isStageClearProcessed)
+        {
+            var userData = GameDataTransfer.Instance?.CurrentUserData;
+            if (userData != null)
+            {
+                userData.coin += 100;
+                GameDataTransfer.Instance.SetUserData(userData);
+                UserDataService.Instance?.UpdateCurrency(userId, userData.stamina, userData.coin);
+            }
+
+            bool isUpdateComplete = false;
+            UserDataService.Instance?.UpdateStage(
+                userId,
+                GameDataTransfer.Instance.CurrentUserData.currentStage,
+                () => isUpdateComplete = true,
+                (error) => isUpdateComplete = true
+            );
+
+            SceneLoader.LoadLobby(() => isUpdateComplete);
+        }
+        else
+        {
+            SceneLoader.LoadLobby();
+        }
+    }
+
+    #endregion
+
+    #region Stage Clear
+
+    private void OnStageClear()
+    {
+        if (isStageClearProcessed) return;
+        isStageClearProcessed = true;
+
+        var userData = GameDataTransfer.Instance?.CurrentUserData;
+        if (userData == null) return;
+
+        int nextStage = userData.currentStage + 1;
+        userData.currentStage = nextStage;
+        GameDataTransfer.Instance.SetUserData(userData);
+
+        string userId = FirebaseManager.Instance?.CurrentUser?.UserId;
+        if (!string.IsNullOrEmpty(userId))
+            UserDataService.Instance?.UpdateStage(userId, nextStage);
+    }
+
+    private void LoadNextStage()
+    {
+        var userData = GameDataTransfer.Instance?.CurrentUserData;
+        if (userData == null) return;
+
+        var nextLevelData = levelDataBase.Get(userData.currentStage);
+        if (nextLevelData == null)
+        {
+            SceneLoader.LoadLobby();
+            return;
+        }
+
+        GameDataTransfer.Instance.SetLevelData(nextLevelData);
+        SceneLoader.LoadGameAsync(LoadingUI.Instance);
+    }
+
+    #endregion
+
+    #region Coin / Reward
+
+    private void ClaimCoinAndNextStage(int coinAmount)
+    {
+        var userData = GameDataTransfer.Instance?.CurrentUserData;
+        if (userData == null) return;
+
+        string userId = FirebaseManager.Instance?.CurrentUser?.UserId;
+        if (string.IsNullOrEmpty(userId)) return;
+
+        userData.coin += coinAmount;
+        GameDataTransfer.Instance.SetUserData(userData);
+
+        UserDataService.Instance?.UpdateCurrency(userId, userData.stamina, userData.coin, () =>
+        {
+            LoadNextStage();
+        });
+    }
+
+    #endregion
+
+    #region Ad Handling
+
+    private void OnCoin2xButtonClicked()
+    {
+        if (UnityAdsManager.Instance == null) return;
+        UnityAdsManager.Instance.OnRewardEarned += OnCoin2xAdRewardEarned;
+        UnityAdsManager.Instance.OnAdFailedToShow += OnCoin2xAdFailed;
+        UnityAdsManager.Instance.ShowRewardedAd();
+    }
+
+    private void OnCoin2xAdRewardEarned()
+    {
+        UnityAdsManager.Instance.OnRewardEarned -= OnCoin2xAdRewardEarned;
+        UnityAdsManager.Instance.OnAdFailedToShow -= OnCoin2xAdFailed;
+        ClaimCoinAndNextStage(200);
+    }
+
+    private void OnCoin2xAdFailed()
+    {
+        UnityAdsManager.Instance.OnRewardEarned -= OnCoin2xAdRewardEarned;
+        UnityAdsManager.Instance.OnAdFailedToShow -= OnCoin2xAdFailed;
     }
 
     private void OnAddTimeAdButtonClicked()
@@ -354,6 +446,46 @@ public class GameManager : MonoBehaviour
         addTimePanel?.SetActive(false);
         ShowLoseResult();
     }
+
+    private void OnEventSkipAdButtonClicked()
+    {
+        if (UnityAdsManager.Instance == null)
+        {
+            eventSkipAdPanel?.SetActive(false);
+            OnEventSkipAdRewardEarned();
+            return;
+        }
+
+        UnityAdsManager.Instance.OnRewardEarned += OnEventSkipAdRewardEarned;
+        UnityAdsManager.Instance.OnAdFailedToShow += OnEventSkipAdFailed;
+        UnityAdsManager.Instance.ShowRewardedAd();
+    }
+
+    private void OnEventSkipAdRewardEarned()
+    {
+        UnityAdsManager.Instance.OnRewardEarned -= OnEventSkipAdRewardEarned;
+        UnityAdsManager.Instance.OnAdFailedToShow -= OnEventSkipAdFailed;
+        eventSkipAdPanel?.SetActive(false);
+        MergeEventSystem.Instance?.ForceCompleteEvent();
+        isGameActive = true;
+        if (inputHandler != null) inputHandler.enabled = true;
+    }
+
+    private void OnEventSkipAdFailed()
+    {
+        UnityAdsManager.Instance.OnRewardEarned -= OnEventSkipAdRewardEarned;
+        UnityAdsManager.Instance.OnAdFailedToShow -= OnEventSkipAdFailed;
+    }
+
+    private void OnEventSkipLoseButtonClicked()
+    {
+        eventSkipAdPanel?.SetActive(false);
+        ShowLoseResult();
+    }
+
+    #endregion
+
+    #region Stamina
 
     private void ConsumeStamina(Action onComplete = null)
     {
@@ -412,91 +544,9 @@ public class GameManager : MonoBehaviour
         if (loseStaminaText != null) loseStaminaText.text = userData.stamina.ToString();
     }
 
-    private void OnRetryButtonClicked()
-    {
-        var userData = GameDataTransfer.Instance?.CurrentUserData;
-        if (userData == null) return;
+    #endregion
 
-        if (userData.stamina < 1)
-        {
-            addStaminaPanel?.SetActive(true);
-            return;
-        }
-
-        SceneLoader.LoadGameAsync(LoadingUI.Instance);
-    }
-
-    private void ClaimCoinAndNextStage(int coinAmount)
-    {
-        var userData = GameDataTransfer.Instance?.CurrentUserData;
-        if (userData == null) return;
-
-        string userId = FirebaseManager.Instance?.CurrentUser?.UserId;
-        if (string.IsNullOrEmpty(userId)) return;
-
-        userData.coin += coinAmount;
-        GameDataTransfer.Instance.SetUserData(userData);
-
-        UserDataService.Instance?.UpdateCurrency(userId, userData.stamina, userData.coin, () =>
-        {
-            LoadNextStage();
-        });
-    }
-
-    private void OnCoin2xButtonClicked()
-    {
-        if (UnityAdsManager.Instance == null) return;
-
-        UnityAdsManager.Instance.OnRewardEarned += OnCoin2xAdRewardEarned;
-        UnityAdsManager.Instance.OnAdFailedToShow += OnCoin2xAdFailed;
-        UnityAdsManager.Instance.ShowRewardedAd();
-    }
-
-    private void OnCoin2xAdRewardEarned()
-    {
-        UnityAdsManager.Instance.OnRewardEarned -= OnCoin2xAdRewardEarned;
-        UnityAdsManager.Instance.OnAdFailedToShow -= OnCoin2xAdFailed;
-        ClaimCoinAndNextStage(200);
-    }
-
-    private void OnCoin2xAdFailed()
-    {
-        UnityAdsManager.Instance.OnRewardEarned -= OnCoin2xAdRewardEarned;
-        UnityAdsManager.Instance.OnAdFailedToShow -= OnCoin2xAdFailed;
-    }
-
-    private void LoadNextStage()
-    {
-        var userData = GameDataTransfer.Instance?.CurrentUserData;
-        if (userData == null) return;
-
-        var nextLevelData = levelDataBase.Get(userData.currentStage);
-        if (nextLevelData == null)
-        {
-            SceneLoader.LoadLobby();
-            return;
-        }
-
-        GameDataTransfer.Instance.SetLevelData(nextLevelData);
-        SceneLoader.LoadGameAsync(LoadingUI.Instance);
-    }
-
-    private void OnStageClear()
-    {
-        if (isStageClearProcessed) return;
-        isStageClearProcessed = true;
-
-        var userData = GameDataTransfer.Instance?.CurrentUserData;
-        if (userData == null) return;
-
-        int nextStage = userData.currentStage + 1;
-        userData.currentStage = nextStage;
-        GameDataTransfer.Instance.SetUserData(userData);
-
-        string userId = FirebaseManager.Instance?.CurrentUser?.UserId;
-        if (!string.IsNullOrEmpty(userId))
-            UserDataService.Instance?.UpdateStage(userId, nextStage);
-    }
+    #region Lifecycle
 
     private void OnDestroy()
     {
@@ -508,4 +558,6 @@ public class GameManager : MonoBehaviour
         UnityAdsManager.Instance.OnRewardEarned -= OnEventSkipAdRewardEarned;
         UnityAdsManager.Instance.OnAdFailedToShow -= OnEventSkipAdFailed;
     }
+
+    #endregion
 }

@@ -5,9 +5,18 @@ public class EventSushiIcon : MonoBehaviour
 {
     [SerializeField] private Image riceImage;
     [SerializeField] private Image toppingImage;
+    [SerializeField] private GameObject checkImage;
+    [SerializeField] private Image bgImage;
+
+    private void Awake()
+    {
+        checkImage?.SetActive(false);
+    }
 
     public void SetData(SushiData data)
     {
+        checkImage?.SetActive(false);
+
         if (riceImage != null)
         {
             riceImage.sprite = data.riceSprite;
@@ -29,5 +38,16 @@ public class EventSushiIcon : MonoBehaviour
                 );
             }
         }
+    }
+
+    public void SetBgColor(Color color)
+    {
+        if (bgImage != null)
+            bgImage.color = color;
+    }
+
+    public void SetChecked()
+    {
+        checkImage?.SetActive(true);
     }
 }

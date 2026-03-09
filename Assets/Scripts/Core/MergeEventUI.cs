@@ -1,19 +1,31 @@
 using UnityEngine;
+using UnityEngine.UI;
 using System.Collections.Generic;
+using DG.Tweening;
 
 public class MergeEventUI : MonoBehaviour
 {
     [SerializeField] private GameObject eventRoot;
-    [SerializeField] private UnityEngine.UI.Image timerFillAmount;
+    [SerializeField] private Image timerFillAmount;
     [SerializeField] private EventSushiIcon[] sushiSlots;
 
     [SerializeField] private Color normalEventColor = Color.white;
     [SerializeField] private Color specialPlateEventColor = Color.red;
 
+    [Header("Animation")]
+    [SerializeField] private float slideInOffsetX = -1400f;
+    [SerializeField] private float slideOutOffsetX = 1400f;
+    [SerializeField] private float slideInDuration = 0.4f;
+    [SerializeField] private float slideOutDuration = 0.35f;
+    [SerializeField] private Vector2 centerPosition;
+
     private List<int> slotTypeIds = new List<int>();
+    private RectTransform rectTransform;
 
     private void Awake()
     {
+        rectTransform = eventRoot?.GetComponent<RectTransform>();
+
         foreach (var slot in sushiSlots)
         {
             if (slot != null)
@@ -30,9 +42,7 @@ public class MergeEventUI : MonoBehaviour
         {
             if (sushiSlots[i] == null) continue;
 
-            var bg = sushiSlots[i].GetComponent<UnityEngine.UI.Image>();
-            if (bg != null)
-                bg.color = i < specialMergeCount ? specialPlateEventColor : normalEventColor;
+            sushiSlots[i].SetBgColor(i < specialMergeCount ? specialPlateEventColor : normalEventColor);
 
             if (i < sushiTypes.Count)
             {
@@ -48,6 +58,13 @@ public class MergeEventUI : MonoBehaviour
                 sushiSlots[i].gameObject.SetActive(false);
             }
         }
+
+        if (rectTransform != null)
+        {
+            rectTransform.anchoredPosition = centerPosition + new Vector2(slideInOffsetX, 0f);
+            rectTransform.DOAnchorPos(centerPosition, slideInDuration)
+                .SetEase(Ease.OutCubic);
+        }
     }
 
     public void RemoveSushi(int typeId)
@@ -55,7 +72,7 @@ public class MergeEventUI : MonoBehaviour
         int index = slotTypeIds.IndexOf(typeId);
         if (index < 0 || index >= sushiSlots.Length) return;
 
-        sushiSlots[index].gameObject.SetActive(false);
+        sushiSlots[index].SetChecked();
         slotTypeIds[index] = -1;
     }
 
@@ -67,17 +84,32 @@ public class MergeEventUI : MonoBehaviour
 
     public void HideEvent()
     {
-        eventRoot?.SetActive(false);
+        if (rectTransform != null)
+        {
+            rectTransform.DOAnchorPos(centerPosition + new Vector2(slideOutOffsetX, 0f), slideOutDuration)
+                .SetEase(Ease.InCubic)
+                .OnComplete(() =>
+                {
+                    eventRoot?.SetActive(false);
+                    rectTransform.anchoredPosition = centerPosition;
+                    ResetSlots();
+                });
+        }
+        else
+        {
+            eventRoot?.SetActive(false);
+            ResetSlots();
+        }
+    }
 
+    private void ResetSlots()
+    {
         foreach (var slot in sushiSlots)
         {
             if (slot == null) continue;
-            var bg = slot.GetComponent<UnityEngine.UI.Image>();
-            if (bg != null)
-                bg.color = normalEventColor;
+            slot.SetBgColor(normalEventColor);
             slot.gameObject.SetActive(false);
         }
-
         slotTypeIds.Clear();
     }
 }
