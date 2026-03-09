@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 9ae32414fed99854788b824b089f4d5b
+guid: 8f61f8a3cdebc45429e70bc142491939
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -856085545168688419
-    second: ice_0
+      213: -8645708095308935641
+    second: conveyorbelt3_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ice_0
+      name: conveyorbelt3_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 140
-        height: 132
+        width: 1080
+        height: 194
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: ddaafde7bb29e14f0800000000000000
-      internalID: -856085545168688419
+      spriteID: 72e44635b46440880800000000000000
+      internalID: -8645708095308935641
       vertices: []
       indices: 
       edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      ice_0: -856085545168688419
+      conveyorbelt3_0: -8645708095308935641
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

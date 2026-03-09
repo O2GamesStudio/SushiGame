@@ -107,9 +107,14 @@ MonoBehaviour:
   outlineThickness: 0.05
   lockIcon: {fileID: 7945673686944705405}
   lockStageSprites:
-  - {fileID: 21300000, guid: 9ae32414fed99854788b824b089f4d5b, type: 3}
-  - {fileID: 21300000, guid: 17698031da2412c41bf28bfa181b33e5, type: 3}
-  - {fileID: 21300000, guid: b3e0d1ca85028244cba8cb9ad44f03b2, type: 3}
+  - {fileID: 21300000, guid: 3511e704b9b562c40bc81c0933f7039f, type: 3}
+  - {fileID: 21300000, guid: f8d347bcb5c0ed54f9f3ae765a1ab3ab, type: 3}
+  - {fileID: 21300000, guid: 67e7654dda528994694f958a701c144a, type: 3}
+  lockStageSpritesIntegrated:
+  - {fileID: 21300000, guid: 43fbcadaaeab1074dbd3144707af6cc2, type: 3}
+  - {fileID: 21300000, guid: 316a829102e5cd346af2bbfd6e3b7be2, type: 3}
+  - {fileID: 21300000, guid: 2bccdf2aa8ec8c74d86ab2a7d42d3135, type: 3}
+  typeChangeVFXPrefab: {fileID: 0}
 --- !u!1 &2269771562888492193
 GameObject:
   m_ObjectHideFlags: 0
@@ -373,7 +378,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 4
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 9ae32414fed99854788b824b089f4d5b, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 3511e704b9b562c40bc81c0933f7039f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0

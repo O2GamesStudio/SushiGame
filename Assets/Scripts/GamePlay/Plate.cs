@@ -74,10 +74,8 @@ public class Plate : MonoBehaviour
             sushi.SetCurrentPlate(this);
 
             if (activeLockStages != null && index < activeLockStages.Count && activeLockStages[index] > 0)
-            {
-                sushi.SetLockStage(activeLockStages[index]);
-                SushiLockSystem.Instance?.RegisterLockedSushi(sushi);
-            }
+                SushiLockSystem.Instance?.RegisterLockedSushi(sushi, activeLockStages[index]);
+
             index++;
         }
 
@@ -383,10 +381,7 @@ public class Plate : MonoBehaviour
             sushi.SetCurrentPlate(this);
 
             if (lockStages[i] > 0)
-            {
-                sushi.SetLockStage(lockStages[i]);
-                SushiLockSystem.Instance?.RegisterLockedSushi(sushi);
-            }
+                SushiLockSystem.Instance?.RegisterLockedSushi(sushi, lockStages[i]);
 
             sushi.transform.SetParent(sushiSlots[slotTransformIndex]);
 

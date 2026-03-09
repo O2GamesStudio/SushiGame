@@ -1,5 +1,6 @@
 using UnityEngine;
 using DG.Tweening;
+using Lean.Pool;
 
 [RequireComponent(typeof(PolygonCollider2D))]
 public class Sushi : MonoBehaviour
@@ -18,9 +19,13 @@ public class Sushi : MonoBehaviour
     [Header("Lock Visual")]
     [SerializeField] private GameObject lockIcon;
     [SerializeField] private Sprite[] lockStageSprites = new Sprite[3];
+    [SerializeField] private Sprite[] lockStageSpritesIntegrated = new Sprite[3];
 
     [Header("Type Change VFX")]
     [SerializeField] private ParticleSystem typeChangeVFXPrefab;
+
+    [Header("Lock VFX")]
+    [SerializeField] private ParticleSystem iceBreakVFXPrefab;
 
     public int TypeId => typeId;
     public SpriteRenderer SpriteRenderer => riceRenderer;
@@ -410,7 +415,18 @@ public class Sushi : MonoBehaviour
         {
             lockStage--;
             UpdateLockVisual();
+
+            if (lockStage == 0)
+                SpawnIceBreakVFX();
         }
+    }
+    private void SpawnIceBreakVFX()
+    {
+        if (iceBreakVFXPrefab == null) return;
+
+        var vfx = LeanPool.Spawn(iceBreakVFXPrefab, transform.position, Quaternion.identity);
+        vfx.Play();
+        LeanPool.Despawn(vfx, vfx.main.duration + vfx.main.startLifetime.constantMax);
     }
 
     private void UpdateLockVisual()
@@ -424,8 +440,9 @@ public class Sushi : MonoBehaviour
             lockIconRenderer.sortingOrder = riceRenderer.sortingOrder + 2;
 
             int spriteIndex = lockStage - 1;
-            if (spriteIndex >= 0 && spriteIndex < lockStageSprites.Length)
-                lockIconRenderer.sprite = lockStageSprites[spriteIndex];
+            var sprites = SushiType == SushiType.Integrated ? lockStageSpritesIntegrated : lockStageSprites;
+            if (spriteIndex >= 0 && spriteIndex < sprites.Length)
+                lockIconRenderer.sprite = sprites[spriteIndex];
         }
         else
         {

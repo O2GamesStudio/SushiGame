@@ -115,10 +115,15 @@ MonoBehaviour:
   outlineThickness: 0.05
   lockIcon: {fileID: 3535413439170145410}
   lockStageSprites:
-  - {fileID: 21300000, guid: b3e0d1ca85028244cba8cb9ad44f03b2, type: 3}
-  - {fileID: 21300000, guid: 17698031da2412c41bf28bfa181b33e5, type: 3}
-  - {fileID: 21300000, guid: 9ae32414fed99854788b824b089f4d5b, type: 3}
+  - {fileID: 21300000, guid: 67e7654dda528994694f958a701c144a, type: 3}
+  - {fileID: 21300000, guid: f8d347bcb5c0ed54f9f3ae765a1ab3ab, type: 3}
+  - {fileID: 21300000, guid: 3511e704b9b562c40bc81c0933f7039f, type: 3}
+  lockStageSpritesIntegrated:
+  - {fileID: 21300000, guid: 2bccdf2aa8ec8c74d86ab2a7d42d3135, type: 3}
+  - {fileID: 21300000, guid: 316a829102e5cd346af2bbfd6e3b7be2, type: 3}
+  - {fileID: 21300000, guid: 43fbcadaaeab1074dbd3144707af6cc2, type: 3}
   typeChangeVFXPrefab: {fileID: 7432085657569359504, guid: 37146338765469d449f0ccd84e66f22a, type: 3}
+  iceBreakVFXPrefab: {fileID: 972522182708027422, guid: 5297bccf81a7e9643aac8b847ceca636, type: 3}
 --- !u!60 &2827719654476203618
 PolygonCollider2D:
   m_ObjectHideFlags: 0
@@ -303,7 +308,7 @@ Transform:
   m_GameObject: {fileID: 3535413439170145410}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.06, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -358,12 +363,12 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 4
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 9ae32414fed99854788b824b089f4d5b, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 3511e704b9b562c40bc81c0933f7039f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1.4, y: 1.32}
+  m_Size: {x: 1.41, y: 1.55}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1

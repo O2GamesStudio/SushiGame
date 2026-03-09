@@ -179,7 +179,7 @@ public class PlateUI : MonoBehaviour
 
             float offsetY = 0f;
             if (data != null)
-                offsetY = data.sushiType == SushiType.Integrated ? data.plateOffsetY * 0.5f : data.plateOffsetY + 0.05f;
+                offsetY = data.sushiType == SushiType.Integrated ? data.plateOffsetY * 0.5f + 0.05f : data.plateOffsetY + 0.05f;
 
             float xPos = slotCount == 1 ? 0f : (slotIndices[i] - 1) * nextLayerIconSpacing;
             icon.transform.localPosition = new Vector3(xPos, nextLayerIconYOffset + offsetY, 0f);
