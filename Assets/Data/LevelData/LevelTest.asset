@@ -31,6 +31,9 @@ MonoBehaviour:
   lockedSushiCount: 7
   singleSlotPlateCount: 1
   sequentialActivation: 0
+  isRail: 1
+  railSushiCount: 21
+  railPlateSprite: {fileID: 21300000, guid: 0e41cd2f6ff915142a77fd87a44a6d5b, type: 3}
   mergeEvents:
   - mergeTriggerCount: 3
     eventSushiCount: 2

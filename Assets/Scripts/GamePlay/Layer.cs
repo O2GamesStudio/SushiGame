@@ -34,6 +34,9 @@ public class Layer
 
         for (int i = 0; i < Count; i++)
         {
+            if (availableSlots.Count == 0)
+                availableSlots = Enumerable.Range(0, 3).ToList();
+
             int randomIndex = Random.Range(0, availableSlots.Count);
             int slotIndex = availableSlots[randomIndex];
             availableSlots.RemoveAt(randomIndex);

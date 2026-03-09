@@ -128,8 +128,9 @@ public class GameManager : MonoBehaviour
     {
         var levelGenerator = new LevelGenerator(currentLevel);
         var plateDataList = levelGenerator.GeneratePlates();
+        var railData = levelGenerator.GetRailData();
 
-        plateManager.Initialize(plateDataList, currentLevel.sequentialActivation);
+        plateManager.Initialize(plateDataList, currentLevel.sequentialActivation, railData);
         GameStateChecker.Instance.Initialize(plateManager);
 
         totalSushiSets = currentLevel.totalSushiSetCount;

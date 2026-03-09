@@ -12,6 +12,7 @@ public class InputHandler : MonoBehaviour
     private Plate selectedPlate;
     private Sushi draggedSushi;
     private Vector3 originalPosition;
+    private RailSlot originRailSlot;
 
     private void Update()
     {
@@ -40,6 +41,22 @@ public class InputHandler : MonoBehaviour
             }
 
             if (sushi.IsLocked) return;
+
+            var rail = plateManager.Rail;
+            if (rail != null)
+            {
+                var railSlot = rail.GetSlotContainingSushi(sushi);
+                if (railSlot != null)
+                {
+                    originRailSlot = railSlot;
+                    railSlot.ClearSushi();
+                    draggedSushi = sushi;
+                    originalPosition = sushi.transform.position;
+                    sushi.transform.SetParent(null);
+                    draggedSushi.SetDragState(true);
+                    return;
+                }
+            }
 
             selectedPlate = GetPlateContainingSushi(sushi);
             if (selectedPlate != null && !selectedPlate.IsLocked)
@@ -73,9 +90,17 @@ public class InputHandler : MonoBehaviour
         var sushi = draggedSushi;
         var fromPlate = selectedPlate;
         var returnPos = originalPosition;
+        var fromRailSlot = originRailSlot;
 
         draggedSushi = null;
         selectedPlate = null;
+        originRailSlot = null;
+
+        if (fromRailSlot != null)
+        {
+            HandleRailDrop(sushi, targetPlate, dropPosition, fromRailSlot, returnPos);
+            return;
+        }
 
         if (targetPlate != null)
         {
@@ -109,6 +134,20 @@ public class InputHandler : MonoBehaviour
         else
         {
             ReturnToPosition(sushi, returnPos);
+        }
+    }
+
+    private void HandleRailDrop(Sushi sushi, Plate targetPlate, Vector3 dropPosition, RailSlot fromSlot, Vector3 returnPos)
+    {
+        if (targetPlate != null && !targetPlate.IsLocked && !targetPlate.IsFull)
+        {
+            sushi.SetDragState(false);
+            int preferredSlot = targetPlate.GetClosestEmptySlot(dropPosition);
+            targetPlate.AddSushi(sushi, preferredSlot);
+        }
+        else
+        {
+            plateManager.Rail?.ReturnSushiToSlot(sushi, fromSlot);
         }
     }
 

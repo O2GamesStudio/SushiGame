@@ -51,6 +51,8 @@ public class UnityAdsManager : MonoBehaviour
             instance = this;
             DontDestroyOnLoad(gameObject);
 
+            if (adsConfig == null) return;
+
 #if UNITY_ANDROID
             rewardedAdUnitId = adsConfig.androidRewardedAdUnitId;
             bannerAdUnitId = adsConfig.androidBannerAdUnitId;
