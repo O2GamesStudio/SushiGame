@@ -58,15 +58,14 @@ public class RailCtrl : MonoBehaviour
     {
         if (railPatternPrefab == null) return;
 
-        float spacing = slotSpacing * 0.8f;
         float screenWidth = rightBoundX - leftBoundX;
-        int count = Mathf.CeilToInt(screenWidth / spacing) + 2;
-        totalPatternWidth = count * spacing;
+        int count = Mathf.CeilToInt(screenWidth / patternSpacing) + 2;
+        totalPatternWidth = count * patternSpacing;
 
         for (int i = 0; i < count; i++)
         {
             var patternObj = Instantiate(railPatternPrefab, transform);
-            patternObj.transform.localPosition = new Vector3(rightBoundX - i * spacing, 0f, 0f);
+            patternObj.transform.localPosition = new Vector3(rightBoundX - i * patternSpacing, 0f, 0f);
             patterns.Add(patternObj.transform);
         }
     }

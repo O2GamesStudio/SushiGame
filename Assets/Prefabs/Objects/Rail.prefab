@@ -325,4 +325,4 @@ MonoBehaviour:
   slotSpacing: 1.5
   mainCamera: {fileID: 0}
   railPatternPrefab: {fileID: 5413765692867671541, guid: 2b0813045220de442a7819125f061c5d, type: 3}
-  patternSpacing: 1.5
+  patternSpacing: 1.2

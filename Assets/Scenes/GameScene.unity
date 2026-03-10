@@ -532,7 +532,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &88095764
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2035,8 +2035,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -250}
-  m_SizeDelta: {x: 0, y: -500}
+  m_AnchoredPosition: {x: 0, y: -231}
+  m_SizeDelta: {x: 0, y: -498}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &350699251
 MonoBehaviour:
@@ -2397,7 +2397,7 @@ Transform:
   m_GameObject: {fileID: 423205659}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.3, z: 0}
+  m_LocalPosition: {x: 0, y: -0.5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -6885,7 +6885,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 0, y: -414.09998}
+  m_AnchoredPosition: {x: -1164, y: -395}
   m_SizeDelta: {x: 500, y: 250}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1378560318
@@ -6916,11 +6916,11 @@ MonoBehaviour:
   - {fileID: 1480327969}
   normalEventColor: {r: 1, g: 1, b: 1, a: 1}
   specialPlateEventColor: {r: 1, g: 0, b: 0, a: 1}
-  slideInOffsetX: -1400
-  slideOutOffsetX: 1400
+  slideInOffsetX: -1600
+  slideOutOffsetX: 1600
   slideInDuration: 0.4
   slideOutDuration: 0.35
-  centerPosition: {x: 0, y: -414}
+  centerPosition: {x: 0, y: -395}
 --- !u!114 &1384954344 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 2455267321332537711, guid: 8f61f4f1b91954a45826618ed611ff8d, type: 3}

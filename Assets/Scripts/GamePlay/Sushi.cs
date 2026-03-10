@@ -2,7 +2,7 @@ using UnityEngine;
 using DG.Tweening;
 using Lean.Pool;
 
-[RequireComponent(typeof(PolygonCollider2D))]
+[RequireComponent(typeof(CircleCollider2D))]
 public class Sushi : MonoBehaviour
 {
     [SerializeField] private int typeId = -1;

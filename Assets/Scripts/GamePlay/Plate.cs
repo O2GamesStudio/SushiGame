@@ -124,16 +124,16 @@ public class Plate : MonoBehaviour
         plateState = newState;
         requiredSushiTypeId = sushiTypeId;
         plateUI?.UpdateLockState(plateState, sushiTypeId);
-        UpdateSushiVisibility();
+        UpdateVisuals();
     }
 
     public void Unlock()
     {
         plateState = PlateState.Normal;
+        UpdateSushiVisibility();
         plateUI?.PlayUnlockAnimation(() =>
         {
             plateUI?.UpdateLockState(plateState, -1);
-            UpdateSushiVisibility();
             UpdateVisuals();
         });
     }

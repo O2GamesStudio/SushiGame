@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -12,7 +13,9 @@ public class LobbyManager : MonoBehaviour
     [SerializeField] private Button googleLinkButton;
     [SerializeField] private GameObject addStaminaPanel;
     [SerializeField] private Button staminaButton;
+    [SerializeField] private GameObject retryPanel;
     [SerializeField] private Button resumeButton;
+    [SerializeField] private Button resumeCloseButton;
 
 
     private int currentStage = 1;
@@ -62,12 +65,42 @@ public class LobbyManager : MonoBehaviour
     }
     private void UpdateResumeButton()
     {
-        if (resumeButton == null) return;
-
         bool hasSave = GameSaveService.Instance?.HasSaveData() ?? false;
-        resumeButton.gameObject.SetActive(hasSave);
-        resumeButton.onClick.RemoveAllListeners();
-        resumeButton.onClick.AddListener(OnResumeButtonClicked);
+        retryPanel?.SetActive(hasSave);
+
+        if (resumeButton != null)
+        {
+            resumeButton.onClick.RemoveAllListeners();
+            resumeButton.onClick.AddListener(OnResumeButtonClicked);
+        }
+
+        if (resumeCloseButton != null)
+        {
+            resumeCloseButton.onClick.RemoveAllListeners();
+            resumeCloseButton.onClick.AddListener(OnResumeCloseButtonClicked);
+        }
+    }
+    private void OnResumeCloseButtonClicked()
+    {
+        GameSaveService.Instance?.ClearLocal();
+        GameSaveService.Instance?.ClearFirestore();
+        retryPanel?.SetActive(false);
+
+        var userData = GameDataTransfer.Instance?.CurrentUserData;
+        if (userData == null) return;
+
+        string userId = FirebaseManager.Instance?.CurrentUser?.UserId;
+        if (string.IsNullOrEmpty(userId)) return;
+
+        bool wasFullBefore = userData.stamina >= StaminaChargeCalculator.MaxStamina;
+        userData.stamina = Mathf.Max(0, userData.stamina - 1);
+
+        if (wasFullBefore)
+            userData.staminaLastChargeTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+        GameDataTransfer.Instance.SetUserData(userData);
+        UserDataService.Instance?.UpdateStaminaData(userId, userData.stamina, userData.staminaLastChargeTime);
+        LobbyUIManager.Instance?.UpdateUI(userData);
     }
 
     private void OnResumeButtonClicked()
