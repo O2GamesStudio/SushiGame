@@ -683,23 +683,6 @@ public class LevelGenerator
     {
         if (levelData.sushiInitEraseCount <= 0) return;
 
-        var typeCountMap = new Dictionary<int, int>();
-        for (int i = 0; i < plates.Count; i++)
-        {
-            if (adPlateIndices.Contains(i)) continue;
-            foreach (var typeId in plates[i].ActiveTypes)
-            {
-                if (!typeCountMap.ContainsKey(typeId)) typeCountMap[typeId] = 0;
-                typeCountMap[typeId]++;
-            }
-            foreach (var layer in plates[i].Layers)
-                foreach (var typeId in layer.SushiTypes)
-                {
-                    if (!typeCountMap.ContainsKey(typeId)) typeCountMap[typeId] = 0;
-                    typeCountMap[typeId]++;
-                }
-        }
-
         var movedSushis = new List<int>();
         int remainingEraseCount = levelData.sushiInitEraseCount;
 
@@ -721,6 +704,24 @@ public class LevelGenerator
                 }
             }
 
+            // candidateSlots 없으면 guaranteedSlots 조건 완화해서 재시도
+            if (candidateSlots.Count == 0)
+            {
+                for (int i = 0; i < plates.Count; i++)
+                {
+                    if (adPlateIndices.Contains(i) || sushiMergePlateIndices.Contains(i) || singleSlotPlateIndices.Contains(i)) continue;
+
+                    int actualCount = plates[i].ActiveTypes.Count(t => t != -1);
+                    if (actualCount <= 1) continue;
+
+                    for (int j = 0; j < plates[i].ActiveTypes.Count; j++)
+                    {
+                        if (plates[i].ActiveTypes[j] == -1) continue;
+                        candidateSlots.Add((i, j));
+                    }
+                }
+            }
+
             if (candidateSlots.Count == 0) break;
 
             var (plateIndex, slotIndex) = candidateSlots[Random.Range(0, candidateSlots.Count)];
@@ -728,7 +729,6 @@ public class LevelGenerator
 
             movedSushis.Add(sushiType);
             plates[plateIndex].ActiveTypes[slotIndex] = -1;
-            typeCountMap[sushiType]--;
             remainingEraseCount--;
         }
 

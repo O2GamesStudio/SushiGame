@@ -135,11 +135,10 @@ public class Plate : MonoBehaviour
 
     private void UpdateSushiVisibility()
     {
-        bool shouldHide = IsLocked;
         for (int i = 0; i < slotCount; i++)
         {
             if (activeSushis[i] != null)
-                activeSushis[i].gameObject.SetActive(!shouldHide);
+                activeSushis[i].gameObject.SetActive(true);
         }
     }
 
