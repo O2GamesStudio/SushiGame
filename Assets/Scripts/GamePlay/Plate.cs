@@ -66,6 +66,11 @@ public class Plate : MonoBehaviour
         foreach (var layer in layers)
             layerQueue.Enqueue(layer);
 
+        // 같은 타입 3개 방어
+        if (slotCount == 3 && activeTypes.Count == 3 &&
+            activeTypes[0] == activeTypes[1] && activeTypes[1] == activeTypes[2])
+            Debug.LogError($"[Plate] Initialize - 같은 타입 3개 감지: typeId={activeTypes[0]}");
+
         int index = 0;
         foreach (var typeId in activeTypes)
         {
