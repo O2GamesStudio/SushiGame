@@ -11,6 +11,7 @@ public class CameraResolutionHandler : MonoBehaviour
     // 상단 UI(타이머 등), 하단 UI(아이템 버튼) 월드 유닛 높이
     [SerializeField] private float topUIWorldHeight = 1.8f;
     [SerializeField] private float bottomUIWorldHeight = 2.2f;
+    [SerializeField] private float plateSetYOffset = -0.5f;
 
     private void Awake()
     {
@@ -58,7 +59,7 @@ public class CameraResolutionHandler : MonoBehaviour
         float cameraY = mainCamera.transform.position.y;
         float topBound = cameraY + mainCamera.orthographicSize - topUIWorldHeight;
         float targetCenterY = topBound - gameAreaHeight * 0.5f;
-        plateSet.position = new Vector3(plateSet.position.x, targetCenterY, plateSet.position.z);
+        plateSet.position = new Vector3(plateSet.position.x, targetCenterY + plateSetYOffset, plateSet.position.z);
     }
 
     private Bounds CalculateBounds(Transform root)

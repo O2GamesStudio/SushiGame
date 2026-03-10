@@ -264,6 +264,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MergeEventSystem
   plateManager: {fileID: 1624048182}
   eventUI: {fileID: 1378560319}
+  trainCtrl: {fileID: 1649222294}
   timePerSushi: 30
 --- !u!1 &39197459
 GameObject:
@@ -6376,6 +6377,30 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1375584082008177597, guid: 5fae615a1f59a9046bb7872d196860a2, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1664315602963261615, guid: 5fae615a1f59a9046bb7872d196860a2, type: 3}
+      propertyPath: endX
+      value: -6.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1664315602963261615, guid: 5fae615a1f59a9046bb7872d196860a2, type: 3}
+      propertyPath: startX
+      value: 6.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1664315602963261615, guid: 5fae615a1f59a9046bb7872d196860a2, type: 3}
+      propertyPath: moveSpeed
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1664315602963261615, guid: 5fae615a1f59a9046bb7872d196860a2, type: 3}
+      propertyPath: floatHeight
+      value: 0.05
+      objectReference: {fileID: 0}
+    - target: {fileID: 1664315602963261615, guid: 5fae615a1f59a9046bb7872d196860a2, type: 3}
+      propertyPath: smokeObject
+      value: 
+      objectReference: {fileID: 2085146430}
     - target: {fileID: 4154454483457626417, guid: 5fae615a1f59a9046bb7872d196860a2, type: 3}
       propertyPath: m_Name
       value: BG_Train
@@ -6419,6 +6444,10 @@ PrefabInstance:
     - target: {fileID: 4682127937048706049, guid: 5fae615a1f59a9046bb7872d196860a2, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6025517241394711784, guid: 5fae615a1f59a9046bb7872d196860a2, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -8292,6 +8321,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1624205608}
   m_CullTransparentMesh: 1
+--- !u!114 &1649222294 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1664315602963261615, guid: 5fae615a1f59a9046bb7872d196860a2, type: 3}
+  m_PrefabInstance: {fileID: 1274404383}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5b48c31841f7414f98f44a6e59d11cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TrainCtrl
 --- !u!1 &1678803345
 GameObject:
   m_ObjectHideFlags: 0
@@ -10164,6 +10204,7 @@ MonoBehaviour:
   plateSet: {fileID: 423205660}
   topUIWorldHeight: 1.8
   bottomUIWorldHeight: 2.2
+  plateSetYOffset: -0.5
 --- !u!4 &1981483902
 Transform:
   m_ObjectHideFlags: 0
@@ -10539,6 +10580,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2067772127}
   m_CullTransparentMesh: 1
+--- !u!4 &2085146430 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 35672212064881045, guid: 5fae615a1f59a9046bb7872d196860a2, type: 3}
+  m_PrefabInstance: {fileID: 1274404383}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2105102654
 GameObject:
   m_ObjectHideFlags: 0

@@ -8,6 +8,7 @@ public class MergeEventSystem : MonoBehaviour
 
     [SerializeField] private PlateManager plateManager;
     [SerializeField] private MergeEventUI eventUI;
+    [SerializeField] private TrainCtrl trainCtrl;
     [SerializeField] private float timePerSushi = 20f;
 
     private MergeEventData[] eventDataList;
@@ -139,10 +140,10 @@ public class MergeEventSystem : MonoBehaviour
 
     private void CompleteEvent()
     {
-        Debug.Log($"[Event] 이벤트 완료 - index:{currentEventIndex}");
         isEventActive = false;
         currentEventIndex++;
         eventUI?.HideEvent();
+        trainCtrl?.PlayOnEventComplete();
     }
 
     private List<Plate> GetAvailableNonLockedPlates()
