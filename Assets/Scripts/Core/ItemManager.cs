@@ -267,7 +267,7 @@ public class ItemManager : MonoBehaviour
                 sushi.CurrentPlate.RemoveSpecificSushi(sushi, true, true);
         }
 
-        AnimateAndRemoveSushis(sushisToRemove, reserveRemoved, platesToCheck);
+        AnimateAndRemoveSushis(sushisToRemove, reserveRemoved, platesToCheck, targetType);
     }
 
     private bool ValidateShuffleResult(int activeSushiCount, List<int> combinedTypes)
@@ -408,7 +408,7 @@ public class ItemManager : MonoBehaviour
         return removed;
     }
 
-    private void AnimateAndRemoveSushis(List<Sushi> activeSushis, List<(int typeId, Plate plate)> reserveTypes, HashSet<Plate> platesToCheck)
+    private void AnimateAndRemoveSushis(List<Sushi> activeSushis, List<(int typeId, Plate plate)> reserveTypes, HashSet<Plate> platesToCheck, int mergedTypeId)
     {
         Vector3 centerPos = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f));
         centerPos.z = 0f;
@@ -442,6 +442,7 @@ public class ItemManager : MonoBehaviour
             packagingEffect.PlayPackagingEffect(centerPos, allSushis,
                 (containerPosition) =>
                 {
+                    PlateUnlockSystem.Instance?.OnSushiMerged(mergedTypeId);
                     if (mergeParticleVFXPrefab != null)
                     {
                         var vfx = Instantiate(mergeParticleVFXPrefab, containerPosition, Quaternion.identity);
@@ -472,6 +473,7 @@ public class ItemManager : MonoBehaviour
                         completedCount++;
                         if (completedCount >= totalCount)
                         {
+                            PlateUnlockSystem.Instance?.OnSushiMerged(mergedTypeId);
                             foreach (var s in activeSushis)
                                 SushiLockSystem.Instance?.ClearLockedSushi(s);
                             foreach (var s in allSushis)

@@ -16,6 +16,8 @@ public class LobbyManager : MonoBehaviour
     [SerializeField] private GameObject retryPanel;
     [SerializeField] private Button resumeButton;
     [SerializeField] private Button resumeCloseButton;
+    [SerializeField] private Button settingButton;
+    [SerializeField] private LobbySettingPanel settingPanel;
 
 
     private int currentStage = 1;
@@ -33,11 +35,10 @@ public class LobbyManager : MonoBehaviour
 
         startButton.onClick.RemoveAllListeners();
         startButton.onClick.AddListener(OnStartButtonClicked);
-        googleLinkButton.onClick.RemoveAllListeners();
-        googleLinkButton.onClick.AddListener(OnGoogleLinkButtonClicked);
-        UpdateGoogleLinkButton();
-        UnityAdsManager.Instance?.HideBanner();
+        settingButton?.onClick.RemoveAllListeners();
+        settingButton?.onClick.AddListener(() => settingPanel?.gameObject.SetActive(true));
 
+        UnityAdsManager.Instance?.HideBanner();
         UpdateResumeButton();
 
         // 캐싱된 데이터로 먼저 UI 업데이트

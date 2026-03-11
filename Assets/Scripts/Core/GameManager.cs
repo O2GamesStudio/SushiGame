@@ -100,7 +100,17 @@ public class GameManager : MonoBehaviour
         eventSkipAdButton?.onClick.AddListener(OnEventSkipAdButtonClicked);
         eventSkipLoseButton?.onClick.AddListener(OnEventSkipLoseButtonClicked);
     }
-
+    public void ResumeTimer()
+    {
+        if (freezeCoroutine != null)
+        {
+            StopCoroutine(freezeCoroutine);
+            freezeCoroutine = null;
+        }
+        isTimerFrozen = false;
+        gameUI.SetTimerFrozen(false);
+        doorTransition?.PlayOpenAnimation();
+    }
     private void StartGame()
     {
         var saveData = GameDataTransfer.Instance?.CurrentSaveData;
