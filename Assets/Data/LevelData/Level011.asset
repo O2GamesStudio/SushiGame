@@ -12,13 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ac28b7e86f3e40438c0623e790f6dee, type: 3}
   m_Name: Level011
   m_EditorClassIdentifier: Assembly-CSharp::LevelData
-  levelIndex: 11
   plateCount: 9
   sushiTypeCount: 18
   totalSushiSetCount: 25
   minLayersPerPlate: 2
   maxLayersPerPlate: 5
-  timeLimitSeconds: 240
+  timeLimitSeconds: 3
   guaranteedMergeSets: 2
   concentratedTypeCount: 4
   sushiInitEraseCount: 10

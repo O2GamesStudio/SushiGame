@@ -17,24 +17,9 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameUI gameUI;
     [SerializeField] private DoorTransition doorTransition;
 
-    [Header("Buttons")]
-    [SerializeField] private Button lobbyButton;
-    [SerializeField] private Button loseLobbyButton;
-    [SerializeField] private Button retryButton;
-    [SerializeField] private Button coinButton;
-    [SerializeField] private Button coin2xButton;
-
-    [Header("Win Panel")]
-    [SerializeField] private TextMeshProUGUI winStaminaText;
-    [SerializeField] private TextMeshProUGUI winStaminaChargingText;
-    [SerializeField] private TextMeshProUGUI winCoinText;
-    [SerializeField] private Button winStaminaButton;
-
-    [Header("Lose Panel")]
-    [SerializeField] private TextMeshProUGUI loseStaminaText;
-    [SerializeField] private TextMeshProUGUI loseStaminaChargingText;
-    [SerializeField] private TextMeshProUGUI loseCoinText;
-    [SerializeField] private Button loseStaminaButton;
+    [Header("Panels")]
+    [SerializeField] private WinPanel winPanel;
+    [SerializeField] private LosePanel losePanel;
     [SerializeField] private GameObject addStaminaPanel;
 
     [Header("Add Time Panel")]
@@ -110,18 +95,10 @@ public class GameManager : MonoBehaviour
 
     private void BindButtons()
     {
-        retryButton?.onClick.AddListener(OnRetryButtonClicked);
-        coinButton?.onClick.AddListener(() => ClaimCoinAndNextStage(100));
-        coin2xButton?.onClick.AddListener(OnCoin2xButtonClicked);
-        winStaminaButton?.onClick.AddListener(() => addStaminaPanel?.SetActive(true));
-        loseStaminaButton?.onClick.AddListener(() => addStaminaPanel?.SetActive(true));
         addTimeAdButton?.onClick.AddListener(OnAddTimeAdButtonClicked);
         addTimeCancelButton?.onClick.AddListener(OnAddTimeCancelButtonClicked);
         eventSkipAdButton?.onClick.AddListener(OnEventSkipAdButtonClicked);
         eventSkipLoseButton?.onClick.AddListener(OnEventSkipLoseButtonClicked);
-
-        lobbyButton?.onClick.AddListener(OnLobbyButtonClicked);
-        loseLobbyButton?.onClick.AddListener(() => SceneLoader.LoadLobby());
     }
 
     private void StartGame()
@@ -163,6 +140,7 @@ public class GameManager : MonoBehaviour
         doorTransition?.PlayOpenAnimation();
         UnityAdsManager.Instance?.ShowBanner();
     }
+
     private void ResumeGame(GameSaveData saveData)
     {
         plateManager.RestoreFromSaveData(saveData, currentLevel);
@@ -191,6 +169,7 @@ public class GameManager : MonoBehaviour
         doorTransition?.PlayOpenAnimation();
         UnityAdsManager.Instance?.ShowBanner();
     }
+
     private void OnApplicationPause(bool pauseStatus)
     {
         if (!pauseStatus || !isGameActive) return;
@@ -270,18 +249,11 @@ public class GameManager : MonoBehaviour
 
         isGameActive = false;
         if (inputHandler != null) inputHandler.enabled = false;
-        gameUI.ShowWin();
+
+        winPanel?.Show();
         UnityAdsManager.Instance?.HideBanner();
 
         NetworkChecker.Instance?.Check(() => OnStageClear());
-
-        var userData = GameDataTransfer.Instance?.CurrentUserData;
-        if (userData != null)
-        {
-            if (winStaminaText != null) winStaminaText.text = userData.stamina.ToString();
-            if (winCoinText != null) winCoinText.text = userData.coin.ToString();
-            StartStaminaChargeDisplay(winStaminaChargingText, userData);
-        }
     }
 
     public void OnGameLose(bool isEventFail = false)
@@ -313,6 +285,7 @@ public class GameManager : MonoBehaviour
 
         isGameActive = false;
         if (inputHandler != null) inputHandler.enabled = false;
+
         gameUI.ShowLose();
         gameUI.SetTimerText("영업종료");
         UnityAdsManager.Instance?.HideBanner();
@@ -321,58 +294,15 @@ public class GameManager : MonoBehaviour
         {
             ConsumeStamina(() =>
             {
-                var userData = GameDataTransfer.Instance?.CurrentUserData;
-                if (userData != null)
-                {
-                    if (loseStaminaText != null) loseStaminaText.text = userData.stamina.ToString();
-                    if (loseCoinText != null) loseCoinText.text = userData.coin.ToString();
-                    StartStaminaChargeDisplay(loseStaminaChargingText, userData);
-                }
+                losePanel?.Show();
             });
         });
     }
 
-    private void OnRetryButtonClicked()
+    public void RefreshStaminaUI(UserData userData)
     {
-        var userData = GameDataTransfer.Instance?.CurrentUserData;
-        if (userData == null) return;
-
-        if (userData.stamina < 1)
-        {
-            addStaminaPanel?.SetActive(true);
-            return;
-        }
-
-        SceneLoader.LoadGameAsync(LoadingUI.Instance);
-    }
-
-    private void OnLobbyButtonClicked()
-    {
-        string userId = FirebaseManager.Instance?.CurrentUser?.UserId;
-        if (!string.IsNullOrEmpty(userId) && isStageClearProcessed)
-        {
-            var userData = GameDataTransfer.Instance?.CurrentUserData;
-            if (userData != null)
-            {
-                userData.coin += 100;
-                GameDataTransfer.Instance.SetUserData(userData);
-                UserDataService.Instance?.UpdateCurrency(userId, userData.stamina, userData.coin);
-            }
-
-            bool isUpdateComplete = false;
-            UserDataService.Instance?.UpdateStage(
-                userId,
-                GameDataTransfer.Instance.CurrentUserData.currentStage,
-                () => isUpdateComplete = true,
-                (error) => isUpdateComplete = true
-            );
-
-            SceneLoader.LoadLobby(() => isUpdateComplete);
-        }
-        else
-        {
-            SceneLoader.LoadLobby();
-        }
+        winPanel?.RefreshStaminaUI(userData);
+        losePanel?.RefreshStaminaUI(userData);
     }
 
     #endregion
@@ -396,67 +326,9 @@ public class GameManager : MonoBehaviour
             UserDataService.Instance?.UpdateStage(userId, nextStage);
     }
 
-    private void LoadNextStage()
-    {
-        var userData = GameDataTransfer.Instance?.CurrentUserData;
-        if (userData == null) return;
-
-        var nextLevelData = levelDataBase.Get(userData.currentStage);
-        if (nextLevelData == null)
-        {
-            SceneLoader.LoadLobby();
-            return;
-        }
-
-        GameDataTransfer.Instance.SetLevelData(nextLevelData);
-        SceneLoader.LoadGameAsync(LoadingUI.Instance);
-    }
-
-    #endregion
-
-    #region Coin / Reward
-
-    private void ClaimCoinAndNextStage(int coinAmount)
-    {
-        var userData = GameDataTransfer.Instance?.CurrentUserData;
-        if (userData == null) return;
-
-        string userId = FirebaseManager.Instance?.CurrentUser?.UserId;
-        if (string.IsNullOrEmpty(userId)) return;
-
-        userData.coin += coinAmount;
-        GameDataTransfer.Instance.SetUserData(userData);
-
-        UserDataService.Instance?.UpdateCurrency(userId, userData.stamina, userData.coin, () =>
-        {
-            LoadNextStage();
-        });
-    }
-
     #endregion
 
     #region Ad Handling
-
-    private void OnCoin2xButtonClicked()
-    {
-        if (UnityAdsManager.Instance == null) return;
-        UnityAdsManager.Instance.OnRewardEarned += OnCoin2xAdRewardEarned;
-        UnityAdsManager.Instance.OnAdFailedToShow += OnCoin2xAdFailed;
-        UnityAdsManager.Instance.ShowRewardedAd();
-    }
-
-    private void OnCoin2xAdRewardEarned()
-    {
-        UnityAdsManager.Instance.OnRewardEarned -= OnCoin2xAdRewardEarned;
-        UnityAdsManager.Instance.OnAdFailedToShow -= OnCoin2xAdFailed;
-        ClaimCoinAndNextStage(200);
-    }
-
-    private void OnCoin2xAdFailed()
-    {
-        UnityAdsManager.Instance.OnRewardEarned -= OnCoin2xAdRewardEarned;
-        UnityAdsManager.Instance.OnAdFailedToShow -= OnCoin2xAdFailed;
-    }
 
     private void OnAddTimeAdButtonClicked()
     {
@@ -550,7 +422,6 @@ public class GameManager : MonoBehaviour
         if (string.IsNullOrEmpty(userId)) { onComplete?.Invoke(); return; }
 
         bool wasFullBefore = userData.stamina >= StaminaChargeCalculator.MaxStamina;
-
         userData.stamina = Mathf.Max(0, userData.stamina - 1);
 
         if (wasFullBefore)
@@ -560,44 +431,6 @@ public class GameManager : MonoBehaviour
         UserDataService.Instance?.UpdateStaminaData(userId, userData.stamina, userData.staminaLastChargeTime, onComplete);
     }
 
-    private void StartStaminaChargeDisplay(TextMeshProUGUI chargingText, UserData userData)
-    {
-        if (chargingText == null) return;
-
-        if (userData.stamina >= StaminaChargeCalculator.MaxStamina)
-        {
-            chargingText.gameObject.SetActive(false);
-            return;
-        }
-
-        var (_, _, remainingSeconds) = StaminaChargeCalculator.Calculate(userData.stamina, userData.staminaLastChargeTime);
-        chargingText.gameObject.SetActive(true);
-
-        if (staminaChargeCoroutine != null)
-            StopCoroutine(staminaChargeCoroutine);
-        staminaChargeCoroutine = StartCoroutine(StaminaChargeCoroutine(chargingText, remainingSeconds));
-    }
-
-    private IEnumerator StaminaChargeCoroutine(TextMeshProUGUI chargingText, float remainingSeconds)
-    {
-        float timeLeft = remainingSeconds;
-
-        while (timeLeft > 0)
-        {
-            timeLeft -= Time.deltaTime;
-            int s = Mathf.Max(0, Mathf.CeilToInt(timeLeft));
-            if (chargingText != null)
-                chargingText.text = $"{s / 60}m {s % 60}s";
-            yield return null;
-        }
-    }
-
-    public void RefreshStaminaUI(UserData userData)
-    {
-        if (winStaminaText != null) winStaminaText.text = userData.stamina.ToString();
-        if (loseStaminaText != null) loseStaminaText.text = userData.stamina.ToString();
-    }
-
     #endregion
 
     #region Lifecycle
@@ -605,8 +438,6 @@ public class GameManager : MonoBehaviour
     private void OnDestroy()
     {
         if (UnityAdsManager.Instance == null) return;
-        UnityAdsManager.Instance.OnRewardEarned -= OnCoin2xAdRewardEarned;
-        UnityAdsManager.Instance.OnAdFailedToShow -= OnCoin2xAdFailed;
         UnityAdsManager.Instance.OnRewardEarned -= OnAddTimeAdRewardEarned;
         UnityAdsManager.Instance.OnAdFailedToShow -= OnAddTimeAdFailed;
         UnityAdsManager.Instance.OnRewardEarned -= OnEventSkipAdRewardEarned;
