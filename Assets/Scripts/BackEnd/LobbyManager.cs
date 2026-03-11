@@ -1,7 +1,7 @@
-using System;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System;
 
 public class LobbyManager : MonoBehaviour
 {
@@ -10,15 +10,13 @@ public class LobbyManager : MonoBehaviour
     [SerializeField] private LevelDataBase levelDataBase;
     [SerializeField] private TextMeshProUGUI stageText;
     [SerializeField] private Button startButton;
-    [SerializeField] private Button googleLinkButton;
-    [SerializeField] private GameObject addStaminaPanel;
+    [SerializeField] private GameObject addStaminaBG;
     [SerializeField] private Button staminaButton;
     [SerializeField] private GameObject retryPanel;
     [SerializeField] private Button resumeButton;
     [SerializeField] private Button resumeCloseButton;
     [SerializeField] private Button settingButton;
     [SerializeField] private LobbySettingPanel settingPanel;
-
 
     private int currentStage = 1;
 
@@ -37,11 +35,12 @@ public class LobbyManager : MonoBehaviour
         startButton.onClick.AddListener(OnStartButtonClicked);
         settingButton?.onClick.RemoveAllListeners();
         settingButton?.onClick.AddListener(() => settingPanel?.gameObject.SetActive(true));
+        staminaButton?.onClick.RemoveAllListeners();
+        staminaButton?.onClick.AddListener(() => addStaminaBG?.SetActive(true));
 
         UnityAdsManager.Instance?.HideBanner();
         UpdateResumeButton();
 
-        // 캐싱된 데이터로 먼저 UI 업데이트
         var cachedUserData = GameDataTransfer.Instance?.CurrentUserData;
         if (cachedUserData != null)
         {
@@ -64,6 +63,7 @@ public class LobbyManager : MonoBehaviour
             });
         });
     }
+
     private void UpdateResumeButton()
     {
         bool hasSave = GameSaveService.Instance?.HasSaveData() ?? false;
@@ -81,6 +81,7 @@ public class LobbyManager : MonoBehaviour
             resumeCloseButton.onClick.AddListener(OnResumeCloseButtonClicked);
         }
     }
+
     private void OnResumeCloseButtonClicked()
     {
         GameSaveService.Instance?.ClearLocal();
@@ -116,16 +117,11 @@ public class LobbyManager : MonoBehaviour
         GameDataTransfer.Instance.SetSaveData(saveData);
         SceneLoader.LoadGameAsync(LoadingUI.Instance);
     }
+
     private void UpdateStageUI()
     {
         if (stageText != null)
             stageText.text = $"Lv.{currentStage}";
-    }
-
-    private void UpdateGoogleLinkButton()
-    {
-        if (googleLinkButton != null)
-            googleLinkButton.gameObject.SetActive(FirebaseManager.Instance.IsAnonymous);
     }
 
     private void OnStartButtonClicked()
@@ -133,7 +129,7 @@ public class LobbyManager : MonoBehaviour
         var userData = GameDataTransfer.Instance?.CurrentUserData;
         if (userData != null && userData.stamina < 1)
         {
-            addStaminaPanel?.SetActive(true);
+            addStaminaBG?.SetActive(true);
             return;
         }
 
@@ -142,16 +138,5 @@ public class LobbyManager : MonoBehaviour
 
         GameDataTransfer.Instance.SetLevelData(levelData);
         SceneLoader.LoadGameAsync(LoadingUI.Instance);
-    }
-
-    private void OnGoogleLinkButtonClicked()
-    {
-        GooglePlayGamesManager.Instance?.StartGoogleSignIn(idToken =>
-        {
-            FirebaseManager.Instance.LinkWithGoogle(idToken,
-                () => UpdateGoogleLinkButton(),
-                null
-            );
-        });
     }
 }

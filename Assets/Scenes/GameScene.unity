@@ -661,7 +661,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 36}
-  m_SizeDelta: {x: 180, y: 210}
+  m_SizeDelta: {x: 180, y: 180}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &124526323
 MonoBehaviour:
@@ -683,7 +683,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: cb04b83a8c3a045558cd1f05866cf45e, type: 3}
+  m_Sprite: {fileID: 21300000, guid: ecaff360c11374bdebeffff4f731c76c, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -3561,6 +3561,17 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 521331333}
   m_CullTransparentMesh: 1
+--- !u!114 &523700839 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 413917324252062621, guid: d46dc4a8265266c429a737a63b7113d5, type: 3}
+  m_PrefabInstance: {fileID: 1542902333}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
 --- !u!1 &529209388
 GameObject:
   m_ObjectHideFlags: 0
@@ -9904,7 +9915,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7603947047070152827, guid: d46dc4a8265266c429a737a63b7113d5, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 88.64832
+      value: 145
       objectReference: {fileID: 0}
     - target: {fileID: 7603947047070152827, guid: d46dc4a8265266c429a737a63b7113d5, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -9918,6 +9929,26 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8643814819420283766, guid: d46dc4a8265266c429a737a63b7113d5, type: 3}
+      propertyPath: adButton
+      value: 
+      objectReference: {fileID: 1542902338}
+    - target: {fileID: 8643814819420283766, guid: d46dc4a8265266c429a737a63b7113d5, type: 3}
+      propertyPath: bgToClose
+      value: 
+      objectReference: {fileID: 1542902335}
+    - target: {fileID: 8643814819420283766, guid: d46dc4a8265266c429a737a63b7113d5, type: 3}
+      propertyPath: exitButton
+      value: 
+      objectReference: {fileID: 1542902336}
+    - target: {fileID: 8643814819420283766, guid: d46dc4a8265266c429a737a63b7113d5, type: 3}
+      propertyPath: goldButton
+      value: 
+      objectReference: {fileID: 1542902337}
+    - target: {fileID: 8643814819420283766, guid: d46dc4a8265266c429a737a63b7113d5, type: 3}
+      propertyPath: goldCostText
+      value: 
+      objectReference: {fileID: 523700839}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System;
 
 public class SettingPanel : MonoBehaviour
 {
@@ -30,11 +31,37 @@ public class SettingPanel : MonoBehaviour
 
     private void OnLobbyClicked()
     {
-        SceneLoader.LoadLobby();
+        ConsumeStaminaAndExecute(() => SceneLoader.LoadLobby());
     }
 
     private void OnRetryClicked()
     {
-        SceneLoader.LoadGameAsync(LoadingUI.Instance);
+        var userData = GameDataTransfer.Instance?.CurrentUserData;
+        if (userData != null && userData.stamina < 1)
+        {
+            gameObject.SetActive(false);
+            GameManager.Instance?.ShowAddStaminaPanel();
+            return;
+        }
+
+        ConsumeStaminaAndExecute(() => SceneLoader.LoadGameAsync(LoadingUI.Instance));
+    }
+
+    private void ConsumeStaminaAndExecute(System.Action onComplete)
+    {
+        var userData = GameDataTransfer.Instance?.CurrentUserData;
+        if (userData == null) { onComplete?.Invoke(); return; }
+
+        string userId = FirebaseManager.Instance?.CurrentUser?.UserId;
+        if (string.IsNullOrEmpty(userId)) { onComplete?.Invoke(); return; }
+
+        bool wasFullBefore = userData.stamina >= StaminaChargeCalculator.MaxStamina;
+        userData.stamina = Mathf.Max(0, userData.stamina - 1);
+
+        if (wasFullBefore)
+            userData.staminaLastChargeTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+        GameDataTransfer.Instance.SetUserData(userData);
+        UserDataService.Instance?.UpdateStaminaData(userId, userData.stamina, userData.staminaLastChargeTime, onComplete);
     }
 }

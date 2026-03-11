@@ -440,6 +440,10 @@ public class GameManager : MonoBehaviour
         GameDataTransfer.Instance.SetUserData(userData);
         UserDataService.Instance?.UpdateStaminaData(userId, userData.stamina, userData.staminaLastChargeTime, onComplete);
     }
+    public void ShowAddStaminaPanel()
+    {
+        addStaminaPanel?.SetActive(true);
+    }
 
     #endregion
 
