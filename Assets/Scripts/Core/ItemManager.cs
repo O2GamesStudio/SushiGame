@@ -11,7 +11,6 @@ public class ItemManager : MonoBehaviour
     [SerializeField] private PlateManager plateManager;
     [SerializeField] private Transform collectCenter;
     [SerializeField] private SushiPackagingEffect packagingEffect;
-    [SerializeField] private ParticleSystem shuffleVFXPrefab;
     [SerializeField] private ParticleSystem mergeParticleVFXPrefab;
 
     [Header("Item Count UI")]
@@ -19,6 +18,8 @@ public class ItemManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI targetRemoverCountText;
     [SerializeField] private TextMeshProUGUI timeFreezerCountText;
     [SerializeField] private TextMeshProUGUI shufflerCountText;
+
+    [SerializeField] private SpotlightEffect spotlightEffect;
 
     private bool isWaitingForTargetSelection = false;
     private System.Action<Sushi> onSushiSelected;
@@ -66,6 +67,7 @@ public class ItemManager : MonoBehaviour
 
     public void UseRandomSetRemover()
     {
+        CancelTargetSelection();
         if (isProcessingItem || randomRemoverCount <= 0) return;
 
         var allActiveSushis = GetAllActiveSushis();
@@ -98,6 +100,7 @@ public class ItemManager : MonoBehaviour
 
     public void UseTimeFreezer()
     {
+        CancelTargetSelection();
         if (timeFreezerCount <= 0) return;
         ConsumeItem(ref timeFreezerCount, timeFreezerCountText, "itemTimeFreezer");
         GameManager.Instance?.FreezeTimer(10f);
@@ -105,6 +108,7 @@ public class ItemManager : MonoBehaviour
 
     public void UseSushiShuffler()
     {
+        CancelTargetSelection();
         if (isProcessingItem || shufflerCount <= 0) return;
 
         var allActiveSushis = GetAllActiveSushis();
@@ -181,30 +185,25 @@ public class ItemManager : MonoBehaviour
                             plate.UpdateReserveDisplay();
                             plate.RecheckMerge();
                         }
-
-                        if (shuffleVFXPrefab != null)
-                        {
-                            Vector3 centerPos = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f));
-                            centerPos.z = 0f;
-                            var vfx = Instantiate(shuffleVFXPrefab, centerPos, Quaternion.identity);
-                            vfx.Play();
-                            Destroy(vfx.gameObject, vfx.main.duration + vfx.main.startLifetime.constantMax);
-                        }
                     }
                 });
         }
     }
-    public ParticleSystem SpawnShuffleVFXAt(Vector3 position)
-    {
-        if (shuffleVFXPrefab == null) return null;
-        var vfx = Instantiate(shuffleVFXPrefab, position, Quaternion.identity);
-        vfx.Play();
-        Destroy(vfx.gameObject, vfx.main.duration + vfx.main.startLifetime.constantMax);
-        return vfx;
-    }
+
     public void UseTargetSetRemover()
     {
-        if (isProcessingItem || targetRemoverCount <= 0) return;
+        if (isProcessingItem) return;
+
+        if (isWaitingForTargetSelection)
+        {
+            CancelTargetSelection();
+            return;
+        }
+
+        if (targetRemoverCount <= 0) return;
+
+        var allActiveSushis = GetAllActiveSushis();
+        spotlightEffect?.Show(allActiveSushis);
 
         isWaitingForTargetSelection = true;
         onSushiSelected = (selectedSushi) =>
@@ -212,11 +211,18 @@ public class ItemManager : MonoBehaviour
             isWaitingForTargetSelection = false;
             onSushiSelected = null;
             isProcessingItem = true;
+            spotlightEffect?.Hide();
             ConsumeItem(ref targetRemoverCount, targetRemoverCountText, "itemTargetRemover");
             RemoveSushiSet(selectedSushi.TypeId, selectedSushi);
         };
     }
 
+    private void CancelTargetSelection()
+    {
+        isWaitingForTargetSelection = false;
+        onSushiSelected = null;
+        spotlightEffect?.Hide();
+    }
     public void OnSushiClicked(Sushi sushi)
     {
         if (isWaitingForTargetSelection && onSushiSelected != null)

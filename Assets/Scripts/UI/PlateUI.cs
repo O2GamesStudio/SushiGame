@@ -145,12 +145,18 @@ public class PlateUI : MonoBehaviour
         var seq = DOTween.Sequence();
         seq.Append(lockLid.transform.DOLocalMoveY(lockLid.transform.localPosition.y + 1.5f, 0.5f)
             .SetEase(Ease.OutCubic));
+        seq.Append(lockLidRenderer.DOFade(0f, 0.15f).SetEase(Ease.InQuad));
         seq.OnComplete(() =>
         {
             lockLid.SetActive(false);
             lockLid.transform.localScale = Vector3.one;
             lockLid.transform.localPosition = new Vector3(
                 lockLid.transform.localPosition.x, 0f, lockLid.transform.localPosition.z);
+
+            var c = lockLidRenderer.color;
+            c.a = 1f;
+            lockLidRenderer.color = c;
+
             if (sushiResetCollider != null) sushiResetCollider.enabled = true;
             if (requiredSushiRiceRenderer != null) requiredSushiRiceRenderer.gameObject.SetActive(false);
             if (requiredSushiToppingRenderer != null) requiredSushiToppingRenderer.gameObject.SetActive(false);

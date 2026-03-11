@@ -843,6 +843,34 @@ public class LevelGenerator
             int requiredType = plate.RequiredSushiTypeId;
             if (requiredType < 0) continue;
 
+            for (int i = plate.ActiveTypes.Count - 1; i >= 0; i--)
+            {
+                if (plate.ActiveTypes[i] != requiredType) continue;
+
+                bool moved = false;
+                for (int otherIdx = 0; otherIdx < plates.Count; otherIdx++)
+                {
+                    if (otherIdx == plateIndex || adPlateIndices.Contains(otherIdx)) continue;
+                    if (plates[otherIdx].Layers.Count >= levelData.maxLayersPerPlate) continue;
+
+                    plates[otherIdx].Layers.Add(new Layer(new List<int> { requiredType }));
+                    plate.ActiveTypes.RemoveAt(i);
+                    moved = true;
+                    break;
+                }
+
+                if (!moved)
+                {
+                    for (int otherIdx = 0; otherIdx < plates.Count; otherIdx++)
+                    {
+                        if (otherIdx == plateIndex || adPlateIndices.Contains(otherIdx)) continue;
+                        plates[otherIdx].Layers.Add(new Layer(new List<int> { requiredType }));
+                        plate.ActiveTypes.RemoveAt(i);
+                        break;
+                    }
+                }
+            }
+
             for (int layerIdx = plate.Layers.Count - 1; layerIdx >= 0; layerIdx--)
             {
                 var layer = plate.Layers[layerIdx];
@@ -854,6 +882,7 @@ public class LevelGenerator
 
                 if (indicesToMove.Count == 0) continue;
 
+                bool moved = false;
                 for (int otherIdx = 0; otherIdx < plates.Count; otherIdx++)
                 {
                     if (otherIdx == plateIndex || adPlateIndices.Contains(otherIdx)) continue;
@@ -868,7 +897,27 @@ public class LevelGenerator
                     if (layer.SushiTypes.Count == 0)
                         plate.Layers.RemoveAt(layerIdx);
 
+                    moved = true;
                     break;
+                }
+
+                if (!moved)
+                {
+                    for (int otherIdx = 0; otherIdx < plates.Count; otherIdx++)
+                    {
+                        if (otherIdx == plateIndex || adPlateIndices.Contains(otherIdx)) continue;
+
+                        plates[otherIdx].Layers.Add(new Layer(new List<int>(
+                            indicesToMove.Select(_ => requiredType))));
+
+                        foreach (var idx in indicesToMove.OrderByDescending(x => x))
+                            layer.SushiTypes.RemoveAt(idx);
+
+                        if (layer.SushiTypes.Count == 0)
+                            plate.Layers.RemoveAt(layerIdx);
+
+                        break;
+                    }
                 }
             }
         }
