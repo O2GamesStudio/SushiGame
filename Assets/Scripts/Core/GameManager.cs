@@ -145,6 +145,7 @@ public class GameManager : MonoBehaviour
         {
             ItemManager.Instance?.InitializeItemCounts(userData);
             gameUI.UpdateStage(userData.currentStage);
+            TutorialManager.Instance?.TryShowTutorial(userData.currentStage);
         }
 
         doorTransition?.PlayOpenAnimation();
