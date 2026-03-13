@@ -257,6 +257,7 @@ public class GameManager : MonoBehaviour
 
         GameSaveService.Instance?.ClearLocal();
         GameSaveService.Instance?.ClearFirestore();
+        GameDataTransfer.Instance?.SetLastMergedCount(mergedSetsCount);
 
         isGameActive = false;
         if (inputHandler != null) inputHandler.enabled = false;
@@ -293,6 +294,7 @@ public class GameManager : MonoBehaviour
     {
         GameSaveService.Instance?.ClearLocal();
         GameSaveService.Instance?.ClearFirestore();
+        GameDataTransfer.Instance?.SetLastMergedCount(mergedSetsCount);
 
         isGameActive = false;
         if (inputHandler != null) inputHandler.enabled = false;

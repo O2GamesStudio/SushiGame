@@ -46,6 +46,11 @@ public class UserDataService : MonoBehaviour
                 if (!snapshot.ContainsField("stamina")) { data.stamina = 5; needsUpdate = true; }
                 if (!snapshot.ContainsField("coin")) { data.coin = 0; needsUpdate = true; }
                 if (!snapshot.ContainsField("staminaLastChargeTime")) { data.staminaLastChargeTime = 0; needsUpdate = true; }
+                if (!snapshot.ContainsField("hasCoinPass")) { data.hasCoinPass = false; needsUpdate = true; }
+                if (!snapshot.ContainsField("passLevel")) { data.passLevel = 1; needsUpdate = true; }
+                if (!snapshot.ContainsField("passXP")) { data.passXP = 0; needsUpdate = true; }
+                if (!snapshot.ContainsField("claimedFreeRewards")) { data.claimedFreeRewards = new List<int>(); needsUpdate = true; }
+                if (!snapshot.ContainsField("claimedPassRewards")) { data.claimedPassRewards = new List<int>(); needsUpdate = true; }
 
                 if (needsUpdate)
                     SaveUserData(userId, data);
@@ -140,6 +145,38 @@ public class UserDataService : MonoBehaviour
             onSuccess?.Invoke();
         });
     }
+    public void UpdatePassData(string userId, int passLevel, int passXP)
+    {
+        var updates = new Dictionary<string, object>
+    {
+        { "passLevel", passLevel },
+        { "passXP", passXP }
+    };
+        db.Collection("users").Document(userId).UpdateAsync(updates);
+    }
+    public void UpdateFields(string userId, Dictionary<string, object> updates)
+    {
+        db.Collection("users").Document(userId).UpdateAsync(updates);
+    }
+
+    public void UpdatePassPurchase(string userId, bool hasCoinPass)
+    {
+        var updates = new Dictionary<string, object>
+    {
+        { "hasCoinPass", hasCoinPass }
+    };
+        db.Collection("users").Document(userId).UpdateAsync(updates);
+    }
+
+    public void UpdatePassClaimedRewards(string userId, List<int> claimedFreeRewards, List<int> claimedPassRewards)
+    {
+        var updates = new Dictionary<string, object>
+    {
+        { "claimedFreeRewards", claimedFreeRewards },
+        { "claimedPassRewards", claimedPassRewards }
+    };
+        db.Collection("users").Document(userId).UpdateAsync(updates);
+    }
 }
 
 [FirestoreData]
@@ -154,4 +191,9 @@ public class UserData
     [FirestoreProperty] public int stamina { get; set; } = 5;
     [FirestoreProperty] public int coin { get; set; } = 0;
     [FirestoreProperty] public long staminaLastChargeTime { get; set; } = 0;
+    [FirestoreProperty] public bool hasCoinPass { get; set; } = false;
+    [FirestoreProperty] public int passLevel { get; set; } = 1;
+    [FirestoreProperty] public int passXP { get; set; } = 0;
+    [FirestoreProperty] public List<int> claimedFreeRewards { get; set; } = new List<int>();
+    [FirestoreProperty] public List<int> claimedPassRewards { get; set; } = new List<int>();
 }

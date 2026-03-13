@@ -8,6 +8,7 @@ public class LobbyManager : MonoBehaviour
 {
     public static LobbyManager Instance { get; private set; }
 
+    [SerializeField] private CoinPassView coinPassView;
     [SerializeField] private LevelDataBase levelDataBase;
     [SerializeField] private TextMeshProUGUI stageText;
     [SerializeField] private Button startButton;
@@ -52,6 +53,13 @@ public class LobbyManager : MonoBehaviour
             currentStage = cachedUserData.currentStage;
             UpdateStageUI();
             LobbyUIManager.Instance?.UpdateUI(cachedUserData);
+
+            string cachedUserId = FirebaseManager.Instance?.CurrentUser?.UserId;
+            if (!string.IsNullOrEmpty(cachedUserId))
+            {
+                CoinPassManager.Instance?.Initialize(cachedUserData, cachedUserId);
+                coinPassView?.Initialize();
+            }
         }
 
         NetworkChecker.Instance?.Check(() =>
@@ -65,6 +73,8 @@ public class LobbyManager : MonoBehaviour
                 GameDataTransfer.Instance.SetUserData(userData);
                 UpdateStageUI();
                 LobbyUIManager.Instance?.UpdateUI(userData);
+                CoinPassManager.Instance?.Initialize(userData, userId);
+                coinPassView?.Initialize();
             });
         });
     }
