@@ -182,7 +182,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlateUI
   nextLayerContainer: {fileID: 6987539663717556746}
   nextLayerIconPrefab: {fileID: 495512148454012414, guid: 7128e019d5acef24d85b6975f7eb50b4, type: 3}
-  specialPlateSprite: {fileID: 21300000, guid: 59aee7a67aa991e47a98155cfd17edfd, type: 3}
+  specialPlateSprite: {fileID: 21300000, guid: bc7af214cfcdaa544b8826cc8f88cced, type: 3}
   nextLayerIconYOffset: -1.2
   nextLayerIconSpacing: 0.6
   nextLayerIconScale: 0.5
@@ -489,7 +489,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 3.37, y: 1.44}
+    oldSize: {x: 3.37, y: 1.48}
     newSize: {x: 3.37, y: 1.44}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
