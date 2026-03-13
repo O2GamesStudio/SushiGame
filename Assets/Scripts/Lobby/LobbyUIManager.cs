@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class LobbyUIManager : MonoBehaviour
 {
@@ -12,18 +13,29 @@ public class LobbyUIManager : MonoBehaviour
     [SerializeField] private GameObject staminaCharging;
     [SerializeField] private TextMeshProUGUI staminaChargingText;
 
-    private Coroutine chargeCoroutine;
+    [Header("LeftButtons")]
+    [SerializeField] Button removeAdsBtn;
+    [SerializeField] RemoveAdsPanel removePanel;
 
+    [Header("RightButtons")]
+    [SerializeField] Button passGoldBtn;
+    [SerializeField] Button passItemBtn;
+
+
+    private Coroutine chargeCoroutine;
     private void Awake()
     {
         if (Instance != null) { Destroy(gameObject); return; }
         Instance = this;
+        removeAdsBtn?.onClick.AddListener(() => removePanel?.gameObject.SetActive(true));
     }
+
 
     private void OnDestroy()
     {
         if (chargeCoroutine != null)
             StopCoroutine(chargeCoroutine);
+        removeAdsBtn?.onClick.RemoveAllListeners();
     }
 
     public void UpdateUI(UserData userData)
