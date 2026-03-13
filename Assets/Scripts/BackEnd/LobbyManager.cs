@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System;
+using DG.Tweening;
 
 public class LobbyManager : MonoBehaviour
 {
@@ -17,6 +18,8 @@ public class LobbyManager : MonoBehaviour
     [SerializeField] private Button resumeCloseButton;
     [SerializeField] private Button settingButton;
     [SerializeField] private LobbySettingPanel settingPanel;
+    [SerializeField] private Button storeButton;
+    [SerializeField] private RectTransform storeRect;
 
     private int currentStage = 1;
 
@@ -37,6 +40,8 @@ public class LobbyManager : MonoBehaviour
         settingButton?.onClick.AddListener(() => settingPanel?.gameObject.SetActive(true));
         staminaButton?.onClick.RemoveAllListeners();
         staminaButton?.onClick.AddListener(() => addStaminaBG?.SetActive(true));
+        storeButton?.onClick.RemoveAllListeners();
+        storeButton?.onClick.AddListener(OnStoreButtonClicked);
 
         UnityAdsManager.Instance?.HideBanner();
         UpdateResumeButton();
@@ -62,6 +67,14 @@ public class LobbyManager : MonoBehaviour
                 LobbyUIManager.Instance?.UpdateUI(userData);
             });
         });
+    }
+
+    private void OnStoreButtonClicked()
+    {
+        storeRect.DOKill();
+        storeRect.anchoredPosition = new Vector2(-1150f, 0f);
+        storeRect.DOAnchorPosX(0f, 0.6f)
+            .SetEase(Ease.OutBack, 1.1f);
     }
 
     private void UpdateResumeButton()
