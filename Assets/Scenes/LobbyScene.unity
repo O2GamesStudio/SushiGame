@@ -8541,6 +8541,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d99f05c46b23da041b7c8a8ee34b5125, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LobbyManager
+  coinPassView: {fileID: 0}
   levelDataBase: {fileID: 11400000, guid: 503080bb1943e104cbd5e65be996bd68, type: 2}
   stageText: {fileID: 1953958339}
   startButton: {fileID: 222963420}
