@@ -23,6 +23,7 @@ public class LobbyUIManager : MonoBehaviour
 
     [Header("Pass")]
     [SerializeField] private GameObject coinPassBG;
+    [SerializeField] private GameObject goldPassAlert;
 
     private Coroutine chargeCoroutine;
 
@@ -49,6 +50,33 @@ public class LobbyUIManager : MonoBehaviour
     public void UpdateCoinUI(int coin)
     {
         if (coinText != null) coinText.text = coin.ToString();
+    }
+    public void RefreshPassAlert()
+    {
+        if (goldPassAlert == null) return;
+
+        var manager = CoinPassManager.Instance;
+        if (manager == null) { goldPassAlert.SetActive(false); return; }
+
+        var userData = GameDataTransfer.Instance?.CurrentUserData;
+        if (userData == null) { goldPassAlert.SetActive(false); return; }
+
+        bool hasUnclaimed = false;
+        for (int i = 1; i <= userData.passLevel; i++)
+        {
+            if (!manager.IsFreeRewardClaimed(i))
+            {
+                hasUnclaimed = true;
+                break;
+            }
+            if (manager.HasPass() && !manager.IsPassRewardClaimed(i))
+            {
+                hasUnclaimed = true;
+                break;
+            }
+        }
+
+        goldPassAlert.SetActive(hasUnclaimed);
     }
 
     public void UpdateUI(UserData userData)

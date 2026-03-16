@@ -13,18 +13,28 @@ public class CoinPassView : MonoBehaviour
     [SerializeField] private Slider progressBar;
     [SerializeField] private TextMeshProUGUI progressText;
     [SerializeField] private Button buyPassBtn;
+    [SerializeField] private GameObject buyPassPanel;
+    [SerializeField] private Button confirmBuyPassBtn;
+    [SerializeField] private Button cancelBuyPassBtn;
 
     private List<PassRowView> rows = new List<PassRowView>();
 
     private void OnEnable()
     {
         buyPassBtn?.onClick.AddListener(OnBuyPassClicked);
+        confirmBuyPassBtn?.onClick.AddListener(OnConfirmBuyPassClicked);
+        cancelBuyPassBtn?.onClick.AddListener(OnCancelBuyPassClicked);
+        IAPManager.Instance.OnPurchaseSuccess += OnPurchaseSuccess;
         Refresh();
     }
 
     private void OnDisable()
     {
         buyPassBtn?.onClick.RemoveAllListeners();
+        confirmBuyPassBtn?.onClick.RemoveAllListeners();
+        cancelBuyPassBtn?.onClick.RemoveAllListeners();
+        if (IAPManager.Instance != null)
+            IAPManager.Instance.OnPurchaseSuccess -= OnPurchaseSuccess;
     }
 
     public void Initialize()
@@ -75,7 +85,26 @@ public class CoinPassView : MonoBehaviour
 
     private void OnBuyPassClicked()
     {
-        CoinPassManager.Instance?.BuyPass();
-        Refresh();
+        buyPassPanel?.SetActive(true);
+    }
+
+    private void OnConfirmBuyPassClicked()
+    {
+        buyPassPanel?.SetActive(false);
+        IAPManager.Instance?.BuyProduct(IAPManager.ItemPackage);
+    }
+
+    private void OnCancelBuyPassClicked()
+    {
+        buyPassPanel?.SetActive(false);
+    }
+
+    private void OnPurchaseSuccess(string productId)
+    {
+        if (productId == IAPManager.ItemPackage)
+        {
+            CoinPassManager.Instance?.BuyPass();
+            Refresh();
+        }
     }
 }

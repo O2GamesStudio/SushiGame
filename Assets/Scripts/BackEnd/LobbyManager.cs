@@ -75,6 +75,7 @@ public class LobbyManager : MonoBehaviour
                 LobbyUIManager.Instance?.UpdateUI(userData);
                 CoinPassManager.Instance?.Initialize(userData, userId);
                 coinPassView?.Initialize();
+                LobbyUIManager.Instance?.RefreshPassAlert();
             });
         });
     }

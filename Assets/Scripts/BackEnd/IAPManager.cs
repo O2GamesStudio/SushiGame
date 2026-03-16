@@ -31,7 +31,13 @@ public class IAPManager : MonoBehaviour, IDetailedStoreListener
 
     private void InitializePurchasing()
     {
-        var builder = ConfigurationBuilder.Instance(StandardPurchasingModule.Instance());
+        var module = StandardPurchasingModule.Instance();
+
+#if UNITY_EDITOR
+        module.useFakeStoreUIMode = FakeStoreUIMode.StandardUser;
+#endif
+
+        var builder = ConfigurationBuilder.Instance(module);
 
         builder.AddProduct(StarterPackage, ProductType.Consumable);
         builder.AddProduct(ItemPackage, ProductType.Consumable);

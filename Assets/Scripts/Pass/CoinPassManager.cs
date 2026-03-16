@@ -157,6 +157,7 @@ public class CoinPassManager : MonoBehaviour
     private void OnExitClicked()
     {
         coinPassBG?.SetActive(false);
+        LobbyUIManager.Instance?.RefreshPassAlert();
     }
 
     public bool IsFreeRewardClaimed(int level) => userData?.claimedFreeRewards.Contains(level) ?? false;

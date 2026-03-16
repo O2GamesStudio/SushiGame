@@ -24,7 +24,7 @@ public class WinPanel : MonoBehaviour
 
     private void OnEnable()
     {
-        coin1xBtn.onClick.AddListener(() => ClaimCoinAndNextStage(100));
+        coin1xBtn.onClick.AddListener(() => ClaimCoinAndNextStage(5));
         coin2xBtn.onClick.AddListener(OnCoin2xButtonClicked);
         exitLobbyBtn.onClick.AddListener(OnExitLobbyButtonClicked);
         staminaButton?.onClick.AddListener(() => addStaminaPanel?.SetActive(true));
@@ -57,12 +57,37 @@ public class WinPanel : MonoBehaviour
         gameObject.SetActive(true);
         PlaySushiToppingAnimation();
 
+        coin1xBtn.gameObject.SetActive(false);
+        exitLobbyBtn.gameObject.SetActive(false);
+
         var userData = GameDataTransfer.Instance?.CurrentUserData;
         if (userData == null) return;
 
         if (staminaText != null) staminaText.text = userData.stamina.ToString();
         if (coinText != null) coinText.text = userData.coin.ToString();
         StartStaminaChargeDisplay(userData);
+
+        StartCoroutine(ShowButtonsCoroutine());
+    }
+    private IEnumerator ShowButtonsCoroutine()
+    {
+        yield return new WaitForSeconds(2f);
+
+        ShowButtonWithAnimation(coin1xBtn.gameObject);
+
+        yield return new WaitForSeconds(0.3f);
+
+        ShowButtonWithAnimation(exitLobbyBtn.gameObject);
+    }
+
+    private void ShowButtonWithAnimation(GameObject btnObj)
+    {
+        btnObj.SetActive(true);
+        btnObj.transform.localScale = Vector3.zero;
+        btnObj.transform.DOScale(1.1f, 0.2f)
+            .SetEase(Ease.OutQuad)
+            .OnComplete(() =>
+                btnObj.transform.DOScale(1f, 0.1f).SetEase(Ease.InQuad));
     }
     private void PlaySushiToppingAnimation()
     {
@@ -128,7 +153,19 @@ public class WinPanel : MonoBehaviour
 
     private void OnExitLobbyButtonClicked()
     {
-        SceneLoader.LoadLobby();
+        var userData = GameDataTransfer.Instance?.CurrentUserData;
+        if (userData == null) { SceneLoader.LoadLobby(); return; }
+
+        string userId = FirebaseManager.Instance?.CurrentUser?.UserId;
+        if (string.IsNullOrEmpty(userId)) { SceneLoader.LoadLobby(); return; }
+
+        userData.coin += 5;
+        GameDataTransfer.Instance.SetUserData(userData);
+
+        UserDataService.Instance?.UpdateCurrency(userId, userData.stamina, userData.coin, () =>
+        {
+            SceneLoader.LoadLobby();
+        });
     }
 
     private void OnCoin2xButtonClicked()
@@ -143,7 +180,7 @@ public class WinPanel : MonoBehaviour
     {
         UnityAdsManager.Instance.OnRewardEarned -= OnCoin2xAdRewardEarned;
         UnityAdsManager.Instance.OnAdFailedToShow -= OnCoin2xAdFailed;
-        ClaimCoinAndNextStage(200);
+        ClaimCoinAndNextStage(20);
     }
 
     private void OnCoin2xAdFailed()
