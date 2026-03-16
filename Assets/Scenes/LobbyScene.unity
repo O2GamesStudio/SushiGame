@@ -7859,7 +7859,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0.00024414062}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: -940}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &705932023
 MonoBehaviour:
@@ -9214,7 +9214,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 1b11eb5fc57123a419e091b2e8ce55e5, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 55fe906037a99f1409798f5673bc87fd, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -10393,9 +10393,9 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 705932022}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 350, y: 0}
   m_SizeDelta: {x: 100, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1079561832
@@ -16799,7 +16799,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1800724704
 RectTransform:
   m_ObjectHideFlags: 0
@@ -20380,58 +20380,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: AddSteminaPanel
       objectReference: {fileID: 0}
-    - target: {fileID: 2275030311228887493, guid: d46dc4a8265266c429a737a63b7113d5, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 3519488490125391314, guid: d46dc4a8265266c429a737a63b7113d5, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 5026314082445521600, guid: d46dc4a8265266c429a737a63b7113d5, type: 3}
-      propertyPath: m_Type
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5026314082445521600, guid: d46dc4a8265266c429a737a63b7113d5, type: 3}
-      propertyPath: m_Sprite
-      value: 
-      objectReference: {fileID: 21300000, guid: 29f77a6b7fd10a2448d66c2e5e7d23c8, type: 3}
-    - target: {fileID: 5026314082445521600, guid: d46dc4a8265266c429a737a63b7113d5, type: 3}
-      propertyPath: m_Color.b
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5026314082445521600, guid: d46dc4a8265266c429a737a63b7113d5, type: 3}
-      propertyPath: m_Color.g
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5089504777360895709, guid: d46dc4a8265266c429a737a63b7113d5, type: 3}
-      propertyPath: m_Type
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5089504777360895709, guid: d46dc4a8265266c429a737a63b7113d5, type: 3}
-      propertyPath: m_Sprite
-      value: 
-      objectReference: {fileID: 21300000, guid: 16435521dc941b241a37bcf68167722c, type: 3}
-    - target: {fileID: 5089504777360895709, guid: d46dc4a8265266c429a737a63b7113d5, type: 3}
-      propertyPath: m_Color.b
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5089504777360895709, guid: d46dc4a8265266c429a737a63b7113d5, type: 3}
-      propertyPath: m_Color.g
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5089504777360895709, guid: d46dc4a8265266c429a737a63b7113d5, type: 3}
-      propertyPath: m_Color.r
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5122389833283909695, guid: d46dc4a8265266c429a737a63b7113d5, type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 140
-      objectReference: {fileID: 0}
-    - target: {fileID: 6802699770322910304, guid: d46dc4a8265266c429a737a63b7113d5, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 10
-      objectReference: {fileID: 0}
     - target: {fileID: 7603947047070152827, guid: d46dc4a8265266c429a737a63b7113d5, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -20511,10 +20459,6 @@ PrefabInstance:
     - target: {fileID: 7603947047070152827, guid: d46dc4a8265266c429a737a63b7113d5, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8319200773128376874, guid: d46dc4a8265266c429a737a63b7113d5, type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 140
       objectReference: {fileID: 0}
     - target: {fileID: 8643814819420283766, guid: d46dc4a8265266c429a737a63b7113d5, type: 3}
       propertyPath: bgToClose

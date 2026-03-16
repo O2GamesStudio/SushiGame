@@ -16,6 +16,8 @@ public static class SceneLoader
 
     private static void LoadWithCondition(string sceneName, Func<bool> condition = null, LoadingUI loadingUI = null)
     {
+        UnityAdsManager.Instance?.ClearAllListeners();
+
         if (NetworkChecker.Instance != null)
         {
             NetworkChecker.Instance.Check(() =>

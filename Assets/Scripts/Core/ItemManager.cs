@@ -8,6 +8,7 @@ public class ItemManager : MonoBehaviour
 {
     public static ItemManager Instance { get; private set; }
 
+    [SerializeField] private AddItemPanel addItemPanel;
     [SerializeField] private PlateManager plateManager;
     [SerializeField] private Transform collectCenter;
     [SerializeField] private SushiPackagingEffect packagingEffect;
@@ -60,6 +61,19 @@ public class ItemManager : MonoBehaviour
         count--;
         text?.SetText(count.ToString());
 
+        var userData = GameDataTransfer.Instance?.CurrentUserData;
+        if (userData != null)
+        {
+            switch (firestoreKey)
+            {
+                case "itemRandomRemover": userData.itemRandomRemover = count; break;
+                case "itemTargetRemover": userData.itemTargetRemover = count; break;
+                case "itemTimeFreezer": userData.itemTimeFreezer = count; break;
+                case "itemShuffler": userData.itemShuffler = count; break;
+            }
+            GameDataTransfer.Instance.SetUserData(userData);
+        }
+
         string userId = FirebaseManager.Instance?.CurrentUser?.UserId;
         if (!string.IsNullOrEmpty(userId))
             UserDataService.Instance?.UpdateItemCount(userId, firestoreKey, count);
@@ -68,7 +82,12 @@ public class ItemManager : MonoBehaviour
     public void UseRandomSetRemover()
     {
         CancelTargetSelection();
-        if (isProcessingItem || randomRemoverCount <= 0) return;
+        if (isProcessingItem) return;
+        if (randomRemoverCount <= 0)
+        {
+            addItemPanel?.Show("랜덤 제거", "itemRandomRemover", 0);
+            return;
+        }
 
         var allActiveSushis = GetAllActiveSushis();
         if (allActiveSushis.Count == 0) return;
@@ -101,7 +120,11 @@ public class ItemManager : MonoBehaviour
     public void UseTimeFreezer()
     {
         CancelTargetSelection();
-        if (timeFreezerCount <= 0) return;
+        if (timeFreezerCount <= 0)
+        {
+            addItemPanel?.Show("시간 정지", "itemTimeFreezer", 2);
+            return;
+        }
         ConsumeItem(ref timeFreezerCount, timeFreezerCountText, "itemTimeFreezer");
         GameManager.Instance?.FreezeTimer(10f);
     }
@@ -109,7 +132,12 @@ public class ItemManager : MonoBehaviour
     public void UseSushiShuffler()
     {
         CancelTargetSelection();
-        if (isProcessingItem || shufflerCount <= 0) return;
+        if (isProcessingItem) return;
+        if (shufflerCount <= 0)
+        {
+            addItemPanel?.Show("셔플", "itemShuffler", 3);
+            return;
+        }
 
         var allActiveSushis = GetAllActiveSushis();
         var allReserveTypes = GetAllReserveTypes();
@@ -200,7 +228,11 @@ public class ItemManager : MonoBehaviour
             return;
         }
 
-        if (targetRemoverCount <= 0) return;
+        if (targetRemoverCount <= 0)
+        {
+            addItemPanel?.Show("타겟 제거", "itemTargetRemover", 1);
+            return;
+        }
 
         var allActiveSushis = GetAllActiveSushis();
         spotlightEffect?.Show(allActiveSushis);
@@ -216,7 +248,6 @@ public class ItemManager : MonoBehaviour
             RemoveSushiSet(selectedSushi.TypeId, selectedSushi);
         };
     }
-
     private void CancelTargetSelection()
     {
         isWaitingForTargetSelection = false;

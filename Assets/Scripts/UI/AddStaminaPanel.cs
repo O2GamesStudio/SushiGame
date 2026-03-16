@@ -18,8 +18,17 @@ public class AddStaminaPanel : MonoBehaviour
     private const string AdCountKey = "StaminaAdCount";
     private const string AdDateKey = "StaminaAdDate";
 
+    private bool isWaitingForAd = false;
+
     private void OnEnable()
     {
+        Debug.Log("[AddStaminaPanel] OnEnable 호출");
+        if (UnityAdsManager.Instance != null)
+        {
+            UnityAdsManager.Instance.OnRewardEarned -= OnAdRewardEarned;
+            UnityAdsManager.Instance.OnAdFailedToShow -= OnAdFailed;
+        }
+
         adButton?.onClick.AddListener(OnAdButtonClicked);
         goldButton?.onClick.AddListener(OnGoldButtonClicked);
         exitButton?.onClick.AddListener(OnExitClicked);
@@ -41,6 +50,8 @@ public class AddStaminaPanel : MonoBehaviour
             UnityAdsManager.Instance.OnRewardEarned -= OnAdRewardEarned;
             UnityAdsManager.Instance.OnAdFailedToShow -= OnAdFailed;
         }
+
+        isWaitingForAd = false;
     }
 
     private void RefreshAdButton()
@@ -48,33 +59,13 @@ public class AddStaminaPanel : MonoBehaviour
         bool isAdsRemoved = GameDataTransfer.Instance?.CurrentUserData?.isAdsRemoved ?? false;
         int remainingCount = GetRemainingAdCount();
 
-        if (isAdsRemoved)
-        {
-            // 광고제거 구매 시 횟수 제한 없이 바로 충전
-            adButton.interactable = true;
-            if (adLimitText != null) adLimitText.text = $"{remainingCount}/{MaxDailyAdCount}";
-        }
-        else
-        {
-            adButton.interactable = remainingCount > 0;
-            if (adLimitText != null) adLimitText.text = $"{remainingCount}/{MaxDailyAdCount}";
-        }
+        adButton.interactable = remainingCount > 0;
+        if (adLimitText != null) adLimitText.text = $"{remainingCount}/{MaxDailyAdCount}";
     }
 
     private int GetRemainingAdCount()
     {
-        string today = System.DateTime.UtcNow.ToString("yyyyMMdd");
-        string savedDate = PlayerPrefs.GetString(AdDateKey, "");
-
-        if (savedDate != today)
-        {
-            PlayerPrefs.SetString(AdDateKey, today);
-            PlayerPrefs.SetInt(AdCountKey, 0);
-            return MaxDailyAdCount;
-        }
-
-        int usedCount = PlayerPrefs.GetInt(AdCountKey, 0);
-        return Mathf.Max(0, MaxDailyAdCount - usedCount);
+        return MaxDailyAdCount; // 임시 제한 해제
     }
 
     private void IncrementAdCount()
@@ -93,6 +84,8 @@ public class AddStaminaPanel : MonoBehaviour
 
     private void OnAdButtonClicked()
     {
+        if (isWaitingForAd) return;
+
         var userData = GameDataTransfer.Instance?.CurrentUserData;
         if (userData == null) return;
         if (userData.stamina >= StaminaChargeCalculator.MaxStamina) return;
@@ -111,6 +104,7 @@ public class AddStaminaPanel : MonoBehaviour
         if (GetRemainingAdCount() <= 0) return;
         if (UnityAdsManager.Instance == null) return;
 
+        isWaitingForAd = true;
         UnityAdsManager.Instance.OnRewardEarned += OnAdRewardEarned;
         UnityAdsManager.Instance.OnAdFailedToShow += OnAdFailed;
         UnityAdsManager.Instance.ShowRewardedAd();
@@ -120,6 +114,7 @@ public class AddStaminaPanel : MonoBehaviour
     {
         UnityAdsManager.Instance.OnRewardEarned -= OnAdRewardEarned;
         UnityAdsManager.Instance.OnAdFailedToShow -= OnAdFailed;
+        isWaitingForAd = false;
         IncrementAdCount();
         AddStamina(StaminaPerAd);
         RefreshAdButton();
@@ -129,6 +124,7 @@ public class AddStaminaPanel : MonoBehaviour
     {
         UnityAdsManager.Instance.OnRewardEarned -= OnAdRewardEarned;
         UnityAdsManager.Instance.OnAdFailedToShow -= OnAdFailed;
+        isWaitingForAd = false;
     }
 
     private void OnGoldButtonClicked()

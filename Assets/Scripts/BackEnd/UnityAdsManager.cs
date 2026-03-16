@@ -132,7 +132,13 @@ public class UnityAdsManager : MonoBehaviour
         LogError($"LevelPlay 초기화 실패 - {error.ErrorMessage}");
         isInitialized = false;
     }
-
+    public void ClearAllListeners()
+    {
+        OnRewardEarned = null;
+        OnAdClosed = null;
+        OnAdFailedToLoad = null;
+        OnAdFailedToShow = null;
+    }
     private void StartBannerRetry()
     {
         if (bannerRetryCoroutine != null)
