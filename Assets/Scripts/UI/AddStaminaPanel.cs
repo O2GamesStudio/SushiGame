@@ -65,7 +65,18 @@ public class AddStaminaPanel : MonoBehaviour
 
     private int GetRemainingAdCount()
     {
-        return MaxDailyAdCount; // 임시 제한 해제
+        string today = System.DateTime.UtcNow.ToString("yyyyMMdd");
+        string savedDate = PlayerPrefs.GetString(AdDateKey, "");
+
+        if (savedDate != today)
+        {
+            PlayerPrefs.SetString(AdDateKey, today);
+            PlayerPrefs.SetInt(AdCountKey, 0);
+            return MaxDailyAdCount;
+        }
+
+        int usedCount = PlayerPrefs.GetInt(AdCountKey, 0);
+        return Mathf.Max(0, MaxDailyAdCount - usedCount);
     }
 
     private void IncrementAdCount()
