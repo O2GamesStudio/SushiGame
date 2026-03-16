@@ -112,9 +112,9 @@ public class PassRowView : MonoBehaviour
             StartCoroutine(CooldownCoroutine());
             var userData = GameDataTransfer.Instance?.CurrentUserData;
             if (userData != null) LobbyUIManager.Instance?.UpdateCoinUI(userData.coin);
+            LobbyUIManager.Instance?.RefreshPassAlert();
         }
     }
-
 
     private void OnPassRewardClicked()
     {
@@ -125,6 +125,7 @@ public class PassRowView : MonoBehaviour
             StartCoroutine(CooldownCoroutine());
             var userData = GameDataTransfer.Instance?.CurrentUserData;
             if (userData != null) LobbyUIManager.Instance?.UpdateCoinUI(userData.coin);
+            LobbyUIManager.Instance?.RefreshPassAlert();
         }
     }
 

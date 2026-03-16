@@ -60,6 +60,9 @@ public class WinPanel : MonoBehaviour
         coin1xBtn.gameObject.SetActive(false);
         exitLobbyBtn.gameObject.SetActive(false);
 
+        bool isAdsRemoved = GameDataTransfer.Instance?.CurrentUserData?.isAdsRemoved ?? false;
+        coin2xBtn.gameObject.SetActive(!isAdsRemoved);
+
         var userData = GameDataTransfer.Instance?.CurrentUserData;
         if (userData == null) return;
 

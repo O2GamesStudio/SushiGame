@@ -345,7 +345,9 @@ public class GameManager : MonoBehaviour
 
     private void OnAddTimeAdButtonClicked()
     {
-        if (UnityAdsManager.Instance == null)
+        bool isAdsRemoved = GameDataTransfer.Instance?.CurrentUserData?.isAdsRemoved ?? false;
+
+        if (isAdsRemoved || UnityAdsManager.Instance == null)
         {
             addTimePanel?.SetActive(false);
             ResumeGameAfterAddTime();
