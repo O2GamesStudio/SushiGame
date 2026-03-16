@@ -1,16 +1,20 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
 
 public class PassRowView : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI passNumText;
+    [SerializeField] private Sprite receiveImage;
+    [SerializeField] private Sprite lockSprite;
 
     [Header("Free Reward")]
     [SerializeField] private GameObject freeRewardObj;
     [SerializeField] private Image freeRewardImage;
     [SerializeField] private TextMeshProUGUI freeAmountText;
     [SerializeField] private GameObject freeLockImage;
+    [SerializeField] private Image freeStateImage;
     [SerializeField] private Button freeRewardBtn;
 
     [Header("Pass Reward")]
@@ -18,6 +22,7 @@ public class PassRowView : MonoBehaviour
     [SerializeField] private Image passRewardImage;
     [SerializeField] private TextMeshProUGUI passAmountText;
     [SerializeField] private GameObject passLockImage;
+    [SerializeField] private Image passStateImage;
     [SerializeField] private Button passRewardBtn;
 
     [Header("Reward Sprites")]
@@ -28,13 +33,23 @@ public class PassRowView : MonoBehaviour
     [SerializeField] private Sprite itemShufflerSprite;
 
     private int level;
+    private bool isCooldown = false;
 
     public void Setup(int level, PassLevelData data)
     {
         this.level = level;
         if (passNumText != null) passNumText.text = level.ToString();
 
-        SetupReward(freeRewardImage, freeAmountText, data.freeReward);
+        if (data.freeReward != null && data.freeReward.amount > 0)
+        {
+            freeRewardObj?.SetActive(true);
+            SetupReward(freeRewardImage, freeAmountText, data.freeReward);
+        }
+        else
+        {
+            freeRewardObj?.SetActive(false);
+        }
+
         SetupReward(passRewardImage, passAmountText, data.passReward);
 
         freeRewardBtn?.onClick.AddListener(OnFreeRewardClicked);
@@ -50,16 +65,24 @@ public class PassRowView : MonoBehaviour
 
         bool isUnlocked = manager.IsLevelUnlocked(level);
         bool hasPass = manager.HasPass();
-
         bool freeClaimed = manager.IsFreeRewardClaimed(level);
-        freeLockImage?.SetActive(!isUnlocked || freeClaimed);
-        freeRewardBtn.interactable = isUnlocked && !freeClaimed;
-
         bool passClaimed = manager.IsPassRewardClaimed(level);
-        passLockImage?.SetActive(!isUnlocked || !hasPass || passClaimed);
-        passRewardBtn.interactable = isUnlocked && hasPass && !passClaimed;
-    }
 
+        if (freeRewardObj != null && freeRewardObj.activeSelf)
+        {
+            freeLockImage?.SetActive(!isUnlocked);
+            if (freeRewardBtn != null)
+                freeRewardBtn.interactable = isUnlocked && !freeClaimed;
+            if (freeStateImage != null)
+                freeStateImage.sprite = freeClaimed ? receiveImage : lockSprite;
+        }
+
+        passLockImage?.SetActive(!isUnlocked || !hasPass);
+        if (passRewardBtn != null)
+            passRewardBtn.interactable = isUnlocked && hasPass && !passClaimed && !isCooldown;
+        if (passStateImage != null)
+            passStateImage.sprite = passClaimed ? receiveImage : lockSprite;
+    }
     private void SetupReward(Image rewardImage, TextMeshProUGUI amountText, PassRewardData reward)
     {
         if (reward == null) return;
@@ -82,14 +105,39 @@ public class PassRowView : MonoBehaviour
 
     private void OnFreeRewardClicked()
     {
+        if (isCooldown) return;
         if (CoinPassManager.Instance.ClaimFreeReward(level))
+        {
             Refresh();
+            StartCoroutine(CooldownCoroutine());
+            var userData = GameDataTransfer.Instance?.CurrentUserData;
+            if (userData != null) LobbyUIManager.Instance?.UpdateCoinUI(userData.coin);
+        }
     }
+
 
     private void OnPassRewardClicked()
     {
+        if (isCooldown) return;
         if (CoinPassManager.Instance.ClaimPassReward(level))
+        {
             Refresh();
+            StartCoroutine(CooldownCoroutine());
+            var userData = GameDataTransfer.Instance?.CurrentUserData;
+            if (userData != null) LobbyUIManager.Instance?.UpdateCoinUI(userData.coin);
+        }
+    }
+
+    private IEnumerator CooldownCoroutine()
+    {
+        isCooldown = true;
+        if (freeRewardBtn != null) freeRewardBtn.interactable = false;
+        if (passRewardBtn != null) passRewardBtn.interactable = false;
+
+        yield return new WaitForSeconds(0.05f);
+
+        isCooldown = false;
+        Refresh();
     }
 
     private void OnDestroy()

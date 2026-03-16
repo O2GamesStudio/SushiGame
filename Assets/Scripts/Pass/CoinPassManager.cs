@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using System.Collections.Generic;
 
 public class CoinPassManager : MonoBehaviour
@@ -6,6 +7,8 @@ public class CoinPassManager : MonoBehaviour
     public static CoinPassManager Instance { get; private set; }
 
     [SerializeField] private PassDataBase passDataBase;
+    [SerializeField] private Button exitBtn;
+    [SerializeField] private GameObject coinPassBG;
 
     private UserData userData;
     private string userId;
@@ -140,6 +143,20 @@ public class CoinPassManager : MonoBehaviour
         var levelData = passDataBase.Get(userData.passLevel);
         if (levelData == null) return 1f;
         return (float)userData.passXP / levelData.requiredXP;
+    }
+    private void OnEnable()
+    {
+        exitBtn?.onClick.AddListener(OnExitClicked);
+    }
+
+    private void OnDisable()
+    {
+        exitBtn?.onClick.RemoveAllListeners();
+    }
+
+    private void OnExitClicked()
+    {
+        coinPassBG?.SetActive(false);
     }
 
     public bool IsFreeRewardClaimed(int level) => userData?.claimedFreeRewards.Contains(level) ?? false;

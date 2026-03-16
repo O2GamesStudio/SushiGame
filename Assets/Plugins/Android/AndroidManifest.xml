@@ -2,8 +2,8 @@
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="com.android.vending.BILLING" />
     <application>
-        <!--Used when Application Entry is set to Activity, otherwise remove this activity block-->
         <activity android:name="com.unity3d.player.UnityPlayerActivity"
                   android:theme="@style/UnityThemeSelector">
             <intent-filter>
@@ -12,7 +12,6 @@
             </intent-filter>
             <meta-data android:name="unityplayer.UnityActivity" android:value="true" />
         </activity>
-        <!--Used when Application Entry is set to GameActivity, otherwise remove this activity block-->
         <activity android:name="com.unity3d.player.UnityPlayerGameActivity"
                   android:theme="@style/BaseUnityGameActivityTheme">
             <intent-filter>

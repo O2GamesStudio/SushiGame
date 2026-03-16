@@ -4,6 +4,7 @@
   <Project Path="Unity.PlasticSCM.Editor.csproj" />
   <Project Path="Unity.2D.Aseprite.Editor.csproj" />
   <Project Path="Unity.Services.Core.Internal.csproj" />
+  <Project Path="Unity.Purchasing.csproj" />
   <Project Path="Unity.ShaderGraph.Editor.csproj" />
   <Project Path="Unity.RenderPipelines.Core.Runtime.csproj" />
   <Project Path="Unity.Mathematics.csproj" />
@@ -42,11 +43,13 @@
   <Project Path="Unity.Services.Core.Editor.csproj" />
   <Project Path="Unity.Burst.CodeGen.csproj" />
   <Project Path="Unity.Services.Core.csproj" />
+  <Project Path="Unity.Purchasing.Stores.csproj" />
   <Project Path="Unity.VisualScripting.Flow.csproj" />
   <Project Path="Google.Play.Games.Editor.csproj" />
   <Project Path="Unity.PerformanceTesting.csproj" />
   <Project Path="Unity.2D.Tilemap.Extras.Editor.csproj" />
   <Project Path="Unity.TextMeshPro.csproj" />
+  <Project Path="UnityEditor.Purchasing.csproj" />
   <Project Path="Unity.TextMeshPro.Editor.csproj" />
   <Project Path="PsdPlugin.csproj" />
   <Project Path="Unity.2D.IK.Editor.csproj" />
@@ -60,6 +63,8 @@
   <Project Path="Google.Play.Games.csproj" />
   <Project Path="Unity.VisualScripting.State.csproj" />
   <Project Path="Unity.InternalAPIEditorBridge.001.csproj" />
+  <Project Path="Unity.Purchasing.AppleMacosStub.csproj" />
+  <Project Path="Unity.Purchasing.Codeless.csproj" />
   <Project Path="UnityEditor.UI.csproj" />
   <Project Path="Unity.RenderPipelines.Universal.2D.Editor.Overrides.csproj" />
   <Project Path="CFXRRuntime.csproj" />
@@ -74,6 +79,7 @@
   <Project Path="Unity.InputSystem.ForUI.csproj" />
   <Project Path="Unity.Services.Core.Scheduler.csproj" />
   <Project Path="CFXRDemo.csproj" />
+  <Project Path="Unity.Purchasing.SecurityCore.csproj" />
   <Project Path="CFXREditor.csproj" />
   <Project Path="Unity.Collections.CodeGen.csproj" />
   <Project Path="Unity.Services.Core.Telemetry.csproj" />
@@ -84,6 +90,7 @@
   <Project Path="Unity.VisualScripting.SettingsProvider.Editor.csproj" />
   <Project Path="Unity.2D.Common.Runtime.csproj" />
   <Project Path="Unity.Services.Core.Threading.csproj" />
+  <Project Path="Unity.Purchasing.Utilities.csproj" />
   <Project Path="Unity.InputSystem.TestFramework.csproj" />
   <Project Path="Unity.CollabProxy.Editor.csproj" />
   <Project Path="Unity.ShaderGraph.Utilities.csproj" />
@@ -91,6 +98,9 @@
   <Project Path="Unity.2D.Aseprite.Common.csproj" />
   <Project Path="Unity.Services.Core.Device.csproj" />
   <Project Path="Unity.Services.Core.Analytics.csproj" />
+  <Project Path="Unity.Purchasing.AppleStub.csproj" />
+  <Project Path="Unity.Purchasing.SecurityStub.csproj" />
+  <Project Path="IAPResolver.csproj" />
   <Project Path="Unity.RenderPipeline.Universal.ShaderLibrary.csproj" />
   <Project Path="LeanPool.csproj" />
   <Project Path="Unity.Services.Core.Registration.csproj" />

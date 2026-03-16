@@ -14,28 +14,41 @@ public class LobbyUIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI staminaChargingText;
 
     [Header("LeftButtons")]
-    [SerializeField] Button removeAdsBtn;
-    [SerializeField] RemoveAdsPanel removePanel;
+    [SerializeField] private Button removeAdsBtn;
+    [SerializeField] private RemoveAdsPanel removePanel;
 
     [Header("RightButtons")]
-    [SerializeField] Button passGoldBtn;
-    [SerializeField] Button passItemBtn;
+    [SerializeField] private Button passGoldBtn;
+    [SerializeField] private Button passItemBtn;
 
+    [Header("Pass")]
+    [SerializeField] private GameObject coinPassBG;
 
     private Coroutine chargeCoroutine;
+
     private void Awake()
     {
         if (Instance != null) { Destroy(gameObject); return; }
         Instance = this;
         removeAdsBtn?.onClick.AddListener(() => removePanel?.gameObject.SetActive(true));
+        passGoldBtn?.onClick.AddListener(OnPassGoldBtnClicked);
     }
-
 
     private void OnDestroy()
     {
         if (chargeCoroutine != null)
             StopCoroutine(chargeCoroutine);
         removeAdsBtn?.onClick.RemoveAllListeners();
+        passGoldBtn?.onClick.RemoveAllListeners();
+    }
+
+    private void OnPassGoldBtnClicked()
+    {
+        coinPassBG?.SetActive(true);
+    }
+    public void UpdateCoinUI(int coin)
+    {
+        if (coinText != null) coinText.text = coin.ToString();
     }
 
     public void UpdateUI(UserData userData)
@@ -82,7 +95,7 @@ public class LobbyUIManager : MonoBehaviour
 
     private IEnumerator ChargeCoroutine(UserData userData, float remainingSeconds)
     {
-        float timeLeft = remainingSeconds; // 현재 남은 시간으로 시작
+        float timeLeft = remainingSeconds;
 
         while (userData.stamina < StaminaChargeCalculator.MaxStamina)
         {

@@ -51,6 +51,7 @@ public class UserDataService : MonoBehaviour
                 if (!snapshot.ContainsField("passXP")) { data.passXP = 0; needsUpdate = true; }
                 if (!snapshot.ContainsField("claimedFreeRewards")) { data.claimedFreeRewards = new List<int>(); needsUpdate = true; }
                 if (!snapshot.ContainsField("claimedPassRewards")) { data.claimedPassRewards = new List<int>(); needsUpdate = true; }
+                if (!snapshot.ContainsField("isAdsRemoved")) { data.isAdsRemoved = false; needsUpdate = true; }
 
                 if (needsUpdate)
                     SaveUserData(userId, data);
@@ -196,4 +197,5 @@ public class UserData
     [FirestoreProperty] public int passXP { get; set; } = 0;
     [FirestoreProperty] public List<int> claimedFreeRewards { get; set; } = new List<int>();
     [FirestoreProperty] public List<int> claimedPassRewards { get; set; } = new List<int>();
+    [FirestoreProperty] public bool isAdsRemoved { get; set; } = false;
 }
