@@ -45,7 +45,6 @@ public class StoreManager : MonoBehaviour
     private void OnEnable()
     {
         IAPManager.Instance.OnPurchaseSuccess += OnPurchaseSuccess;
-        PlayLobbyBtnAnimation();
         RefreshStarterPackage();
     }
 
@@ -85,14 +84,6 @@ public class StoreManager : MonoBehaviour
         starterCheckPanel?.SetActive(isPurchased);
         if (starterPackageBtn != null)
             starterPackageBtn.interactable = !isPurchased;
-    }
-
-    private void PlayLobbyBtnAnimation()
-    {
-        lobbyBtnRT.DOAnchorPosX(originalPos.x + moveAmount, duration)
-            .SetEase(Ease.InOutSine)
-            .SetLoops(-1, LoopType.Yoyo)
-            .SetLink(toLobbyBtn.gameObject);
     }
 
     public void Close()

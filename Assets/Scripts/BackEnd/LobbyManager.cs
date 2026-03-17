@@ -43,7 +43,7 @@ public class LobbyManager : MonoBehaviour
         staminaButton?.onClick.AddListener(() => addStaminaBG?.SetActive(true));
         storeButton?.onClick.RemoveAllListeners();
         storeButton?.onClick.AddListener(OnStoreButtonClicked);
-
+        LobbyUIManager.Instance?.RefreshDailyRewardAlert();
         UnityAdsManager.Instance?.HideBanner();
         UpdateResumeButton();
 

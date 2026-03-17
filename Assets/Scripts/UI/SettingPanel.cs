@@ -31,9 +31,10 @@ public class SettingPanel : MonoBehaviour
 
     private void OnLobbyClicked()
     {
+        GameSaveService.Instance?.ClearLocal();
+        GameSaveService.Instance?.ClearFirestore();
         ConsumeStaminaAndExecute(() => SceneLoader.LoadLobby());
     }
-
     private void OnRetryClicked()
     {
         var userData = GameDataTransfer.Instance?.CurrentUserData;

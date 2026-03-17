@@ -25,6 +25,11 @@ public class LobbyUIManager : MonoBehaviour
     [SerializeField] private GameObject coinPassBG;
     [SerializeField] private GameObject goldPassAlert;
 
+    [Header("Daily Reward")]
+    [SerializeField] private GameObject dailyRewardAlert;
+    [SerializeField] private Button dailyRewardBtn;
+    [SerializeField] private GameObject dailyRewardBG;
+
     private Coroutine chargeCoroutine;
 
     private void Awake()
@@ -33,6 +38,7 @@ public class LobbyUIManager : MonoBehaviour
         Instance = this;
         removeAdsBtn?.onClick.AddListener(() => removePanel?.gameObject.SetActive(true));
         passGoldBtn?.onClick.AddListener(OnPassGoldBtnClicked);
+        dailyRewardBtn?.onClick.AddListener(OnDailyRewardBtnClicked);
     }
 
     private void OnDestroy()
@@ -41,6 +47,31 @@ public class LobbyUIManager : MonoBehaviour
             StopCoroutine(chargeCoroutine);
         removeAdsBtn?.onClick.RemoveAllListeners();
         passGoldBtn?.onClick.RemoveAllListeners();
+        dailyRewardBtn?.onClick.RemoveAllListeners();
+    }
+    private void OnDailyRewardBtnClicked()
+    {
+        dailyRewardBG?.SetActive(true);
+        dailyRewardAlert?.SetActive(false);
+    }
+
+    public void RefreshDailyRewardAlert()
+    {
+        if (dailyRewardAlert == null) return;
+
+        var userData = GameDataTransfer.Instance?.CurrentUserData;
+        if (userData == null) { dailyRewardAlert.SetActive(false); return; }
+
+        bool isClaimedToday = false;
+        if (userData.dailyRewardLastClaimTime > 0)
+        {
+            string lastClaimDate = DateTimeOffset.FromUnixTimeMilliseconds(userData.dailyRewardLastClaimTime)
+                .UtcDateTime.ToString("yyyyMMdd");
+            string today = DateTime.UtcNow.ToString("yyyyMMdd");
+            isClaimedToday = lastClaimDate == today;
+        }
+
+        dailyRewardAlert.SetActive(!isClaimedToday);
     }
 
     private void OnPassGoldBtnClicked()

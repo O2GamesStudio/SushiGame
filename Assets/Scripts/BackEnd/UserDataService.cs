@@ -52,6 +52,8 @@ public class UserDataService : MonoBehaviour
                 if (!snapshot.ContainsField("claimedFreeRewards")) { data.claimedFreeRewards = new List<int>(); needsUpdate = true; }
                 if (!snapshot.ContainsField("claimedPassRewards")) { data.claimedPassRewards = new List<int>(); needsUpdate = true; }
                 if (!snapshot.ContainsField("isAdsRemoved")) { data.isAdsRemoved = false; needsUpdate = true; }
+                if (!snapshot.ContainsField("dailyRewardDay")) { data.dailyRewardDay = 0; needsUpdate = true; }
+                if (!snapshot.ContainsField("dailyRewardLastClaimTime")) { data.dailyRewardLastClaimTime = 0; needsUpdate = true; }
 
                 if (needsUpdate)
                     SaveUserData(userId, data);
@@ -155,9 +157,13 @@ public class UserDataService : MonoBehaviour
     };
         db.Collection("users").Document(userId).UpdateAsync(updates);
     }
-    public void UpdateFields(string userId, Dictionary<string, object> updates)
+    public void UpdateFields(string userId, Dictionary<string, object> updates, Action onSuccess = null)
     {
-        db.Collection("users").Document(userId).UpdateAsync(updates);
+        db.Collection("users").Document(userId).UpdateAsync(updates).ContinueWithOnMainThread(task =>
+        {
+            if (!task.IsFaulted && !task.IsCanceled)
+                onSuccess?.Invoke();
+        });
     }
 
     public void UpdatePassPurchase(string userId, bool hasCoinPass)
@@ -198,4 +204,6 @@ public class UserData
     [FirestoreProperty] public List<int> claimedFreeRewards { get; set; } = new List<int>();
     [FirestoreProperty] public List<int> claimedPassRewards { get; set; } = new List<int>();
     [FirestoreProperty] public bool isAdsRemoved { get; set; } = false;
+    [FirestoreProperty] public int dailyRewardDay { get; set; } = 0;
+    [FirestoreProperty] public long dailyRewardLastClaimTime { get; set; } = 0;
 }
