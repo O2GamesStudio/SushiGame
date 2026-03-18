@@ -1,14 +1,17 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEditor.Rendering.UITK.ShaderGraph;
 
 public class DailyRewardItem : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI dayText;
     [SerializeField] private Image rewardItemImage;
     [SerializeField] private TextMeshProUGUI rewardCountText;
-    [SerializeField] private GameObject lockImage;
+    [SerializeField] private GameObject lockBG;
     [SerializeField] private Button rewardBtn;
+    [SerializeField] private Image checkImage;
+    [SerializeField] private Image lockImage;
 
     private int day;
     private System.Action<int> onClaim;
@@ -30,7 +33,25 @@ public class DailyRewardItem : MonoBehaviour
         bool isUnlocked = day <= currentDay;
         bool canClaim = day == currentDay && !isClaimed;
 
-        lockImage?.SetActive(!isUnlocked || isClaimed);
+        if (isClaimed)
+        {
+            lockBG?.SetActive(true);
+            lockImage?.gameObject.SetActive(false);
+            checkImage?.gameObject.SetActive(true);
+        }
+        else if (!isUnlocked)
+        {
+            lockBG?.SetActive(true);
+            lockImage?.gameObject.SetActive(true);
+            checkImage?.gameObject.SetActive(false);
+        }
+        else
+        {
+            lockBG?.SetActive(false);
+            lockImage?.gameObject.SetActive(false);
+            checkImage?.gameObject.SetActive(false);
+        }
+
         if (rewardBtn != null) rewardBtn.interactable = canClaim;
     }
 

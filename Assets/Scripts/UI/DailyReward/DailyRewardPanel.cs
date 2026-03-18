@@ -30,14 +30,18 @@ public class DailyRewardPanel : MonoBehaviour
 
         UpdateDayProgress(userData);
 
+        bool claimedToday = IsAlreadyClaimedToday(userData);
+        int currentDay = userData.dailyRewardDay;
+
         for (int i = 0; i < rewardItems.Length; i++)
         {
             int day = i + 1;
             var data = rewardDataBase.Get(day);
             if (data == null) continue;
 
+            bool isClaimed = day < currentDay || (day == currentDay && claimedToday);
             rewardItems[i].Setup(day, data, OnClaimReward);
-            rewardItems[i].Refresh(userData.dailyRewardDay + 1, IsAlreadyClaimedToday(userData));
+            rewardItems[i].Refresh(currentDay, isClaimed);
         }
     }
 
@@ -123,8 +127,15 @@ public class DailyRewardPanel : MonoBehaviour
 
     private void RefreshAll(UserData userData)
     {
+        bool claimedToday = IsAlreadyClaimedToday(userData);
+        int currentDay = userData.dailyRewardDay;
+
         for (int i = 0; i < rewardItems.Length; i++)
-            rewardItems[i].Refresh(userData.dailyRewardDay + 1, IsAlreadyClaimedToday(userData));
+        {
+            int day = i + 1;
+            bool isClaimed = day < currentDay || (day == currentDay && claimedToday);
+            rewardItems[i].Refresh(currentDay, isClaimed);
+        }
     }
 
     private void OnExitClicked() => gameObject.SetActive(false);

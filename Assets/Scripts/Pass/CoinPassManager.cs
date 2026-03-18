@@ -30,7 +30,7 @@ public class CoinPassManager : MonoBehaviour
         AddXP(mergedCount);
         GameDataTransfer.Instance.ClearLastMergedCount();
     }
-
+    public PassLevelData GetLevelData(int level) => passDataBase.Get(level);
     public void AddXP(int amount)
     {
         if (userData == null) return;
@@ -69,6 +69,7 @@ public class CoinPassManager : MonoBehaviour
 
     public bool ClaimFreeReward(int level)
     {
+        Debug.Log($"[CoinPassManager] ClaimFreeReward level:{level} claimedFreeRewards:{string.Join(",", userData.claimedFreeRewards)}");
         if (userData == null) return false;
         if (userData.passLevel < level) return false;
         if (userData.claimedFreeRewards.Contains(level)) return false;

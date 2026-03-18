@@ -95,7 +95,10 @@ public class LobbyUIManager : MonoBehaviour
         bool hasUnclaimed = false;
         for (int i = 1; i <= userData.passLevel; i++)
         {
-            if (!manager.IsFreeRewardClaimed(i))
+            var levelData = CoinPassManager.Instance?.GetLevelData(i);
+            if (levelData == null) continue;
+
+            if (levelData.freeReward != null && levelData.freeReward.amount > 0 && !manager.IsFreeRewardClaimed(i))
             {
                 hasUnclaimed = true;
                 break;

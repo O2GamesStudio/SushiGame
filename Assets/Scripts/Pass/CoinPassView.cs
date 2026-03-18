@@ -24,7 +24,10 @@ public class CoinPassView : MonoBehaviour
         buyPassBtn?.onClick.AddListener(OnBuyPassClicked);
         confirmBuyPassBtn?.onClick.AddListener(OnConfirmBuyPassClicked);
         cancelBuyPassBtn?.onClick.AddListener(OnCancelBuyPassClicked);
-        IAPManager.Instance.OnPurchaseSuccess += OnPurchaseSuccess;
+
+        if (IAPManager.Instance != null)
+            IAPManager.Instance.OnPurchaseSuccess += OnPurchaseSuccess;
+
         Refresh();
     }
 

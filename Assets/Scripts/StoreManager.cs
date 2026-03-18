@@ -44,7 +44,8 @@ public class StoreManager : MonoBehaviour
 
     private void OnEnable()
     {
-        IAPManager.Instance.OnPurchaseSuccess += OnPurchaseSuccess;
+        if (IAPManager.Instance != null)
+            IAPManager.Instance.OnPurchaseSuccess += OnPurchaseSuccess;
         RefreshStarterPackage();
     }
 

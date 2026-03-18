@@ -6,6 +6,7 @@ public class AppInitializer : MonoBehaviour
     [SerializeField] private FirebaseManager firebaseManager;
     [SerializeField] private UserDataService userDataService;
     [SerializeField] private LoadingUI loadingUI;
+    [SerializeField] private AppVersionChecker appVersionChecker;
 
     private void Awake()
     {
@@ -48,21 +49,22 @@ public class AppInitializer : MonoBehaviour
         firebaseManager.Initialize(() =>
         {
             userDataService.Initialize();
-            firebaseManager.SignInAnonymous(() =>
+            appVersionChecker.CheckVersion(() =>
             {
-                string userId = firebaseManager.CurrentUser.UserId;
-                Debug.Log($"[AppInitializer] Firestore 로드 시작: {userId}");
-                userDataService.LoadUserData(userId, (userData) =>
+                firebaseManager.SignInAnonymous(() =>
                 {
-                    Debug.Log($"[AppInitializer] Firestore 로드 완료: stage={userData.currentStage}");
-                    GameDataTransfer.Instance.SetUserData(userData);
-                    loadingUI?.Hide();
-                    LobbyManager.Instance.Initialize(userData.currentStage);
+                    string userId = firebaseManager.CurrentUser.UserId;
+                    userDataService.LoadUserData(userId, (userData) =>
+                    {
+                        GameDataTransfer.Instance.SetUserData(userData);
+                        loadingUI?.Hide();
+                        LobbyManager.Instance.Initialize(userData.currentStage);
+                    });
+                },
+                (error) =>
+                {
+                    loadingUI?.ShowError("네트워크 연결을 확인해주세요.");
                 });
-            },
-            (error) =>
-            {
-                loadingUI?.ShowError("네트워크 연결을 확인해주세요.");
             });
         });
     }
