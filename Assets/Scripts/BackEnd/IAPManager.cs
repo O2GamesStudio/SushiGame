@@ -61,6 +61,15 @@ public class IAPManager : MonoBehaviour, IDetailedStoreListener
     public void BuyProduct(string productId)
     {
         if (storeController == null) return;
+
+#if !UNITY_EDITOR
+    if (FirebaseManager.Instance.IsAnonymous)
+    {
+        LobbyUIManager.Instance?.ShowGoogleLoginPanel(() => storeController.InitiatePurchase(productId));
+        return;
+    }
+#endif
+
         storeController.InitiatePurchase(productId);
     }
 

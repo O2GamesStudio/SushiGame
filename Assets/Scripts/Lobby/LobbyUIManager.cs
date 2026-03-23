@@ -12,6 +12,7 @@ public class LobbyUIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI coinText;
     [SerializeField] private GameObject staminaCharging;
     [SerializeField] private TextMeshProUGUI staminaChargingText;
+    [SerializeField] private GoogleLoginPanel googleLoginPanel;
 
     [Header("LeftButtons")]
     [SerializeField] private Button removeAdsBtn;
@@ -72,6 +73,10 @@ public class LobbyUIManager : MonoBehaviour
         }
 
         dailyRewardAlert.SetActive(!isClaimedToday);
+    }
+    public void ShowGoogleLoginPanel(Action onLoginSuccess = null)
+    {
+        googleLoginPanel?.Show(onLoginSuccess);
     }
 
     private void OnPassGoldBtnClicked()
