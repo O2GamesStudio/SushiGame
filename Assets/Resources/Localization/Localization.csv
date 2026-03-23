@@ -1,0 +1,33 @@
+key,ko,en
+Resume,이어하기,Resume
+Exit,나가기,Exit
+Setting,세팅,Setting
+Sfx,사운드,SFX
+Music,음악,BGM
+Haptic,진동,Haptic
+Restore_Purchases,구매복원,Restore_Purchases
+RemoveAdsReward01,골드 보상 광고 제거,No Ads for Gold Rewards
+RemoveAdsReward02,하트 충전 광고 제거,No Ads for Heart Refill
+Store,상점,Store
+Value,가치,Value
+1st_Pack,첫결제 패키지,Starter Pack
+Item_Pack,아이템 패키지,Item Pack
+StoreCoin01,코인 조각,Coin
+StoreCoin02,코인 보따리,Coin Bag
+StoreCoin03,코인 상자 ,Coin Chest
+CoinStore,코인 상점,Coin Store
+AddTime,시간 연장,Time Extension
+Skip,괜찮아요,Skip
+Timer,타이머,Timer
+EventSkip,이벤트 스킵,Skip
+Retry,다시하기,Retry
+TutTitle01,잠긴 접시,Locked Plate
+TutDesc01,특정 초밥을 머지해야 열립니다,Merge specific sushi to unlock
+TutTitle02,숨겨진 초밥,Unknown sushi
+TutDesc02,어떤 초밥인지 알 수 없습니다,Unknown sushi
+TutTitle03,서빙용 접시,Serving Plate
+TutDesc03,특수한 접시입니다,Special type of plate
+TutTitle04,냉동 초밥,Frozen Sushi
+TutDesc04,머지하여 얼음을 깰 수 있습니다,Merge to break the ice
+TutTitle05,머지 불가,Cannot Merge
+TutDesc05,초밥을 머지 할 수 없는 칸입니다,Sushi cannot be merged here
