@@ -15,6 +15,7 @@ public class PlateUI : MonoBehaviour
     [SerializeField] private float nextLayerIconScale = 0.5f;
     [SerializeField] private Sprite lockIconSprites;
     [SerializeField] private Sprite hiddenSushiSprite;
+    [SerializeField] private Sprite cantMergePlateSprite;
 
     [Header("Reserve Plate Visuals")]
     [SerializeField] private Sprite reservePlateSprite;
@@ -71,6 +72,14 @@ public class PlateUI : MonoBehaviour
 
     public void UpdateLockState(PlateState state, int requiredSushiTypeId)
     {
+        if (plateSpriteRenderer != null)
+        {
+            Sprite targetSprite = state == PlateState.CantMerge && cantMergePlateSprite != null
+                ? cantMergePlateSprite
+                : (slotCount == 1 ? singleSlotNormalPlateSprite : normalPlateSprite);
+            plateSpriteRenderer.sprite = targetSprite;
+        }
+
         if (state == PlateState.LockedSushi && requiredSushiTypeId >= 0)
         {
             if (lockLid != null)

@@ -9,6 +9,7 @@ public class WinPanel : MonoBehaviour
     [SerializeField] private GameObject[] sushiToppings;
 
     [Header("UI")]
+    [SerializeField] GameObject coin2xAdsImage;
     [SerializeField] private Button coin2xBtn;
     [SerializeField] private Button coin1xBtn;
     [SerializeField] private Button exitLobbyBtn;
@@ -21,6 +22,8 @@ public class WinPanel : MonoBehaviour
     [SerializeField] private GameObject addStaminaPanel;
 
     private Coroutine staminaChargeCoroutine;
+    private Coroutine showButtonsCoroutine;
+    private Vector2[] toppingOriginPositions;
 
     private void OnEnable()
     {
@@ -30,14 +33,16 @@ public class WinPanel : MonoBehaviour
         staminaButton?.onClick.AddListener(() => addStaminaPanel?.SetActive(true));
     }
 
-
     private void OnDisable()
     {
-        foreach (var topping in sushiToppings)
+        for (int i = 0; i < sushiToppings.Length; i++)
         {
-            if (topping == null) continue;
-            var rt = topping.GetComponent<RectTransform>();
-            rt?.DOKill();
+            if (sushiToppings[i] == null) continue;
+            var rt = sushiToppings[i].GetComponent<RectTransform>();
+            if (rt == null) continue;
+            rt.DOKill();
+            if (toppingOriginPositions != null && i < toppingOriginPositions.Length)
+                rt.anchoredPosition = toppingOriginPositions[i];
         }
 
         coin1xBtn.onClick.RemoveAllListeners();
@@ -55,13 +60,16 @@ public class WinPanel : MonoBehaviour
     public void Show()
     {
         gameObject.SetActive(true);
+
+        CacheToppingOriginPositions();
         PlaySushiToppingAnimation();
 
         coin1xBtn.gameObject.SetActive(false);
         exitLobbyBtn.gameObject.SetActive(false);
 
         bool isAdsRemoved = GameDataTransfer.Instance?.CurrentUserData?.isAdsRemoved ?? false;
-        coin2xBtn.gameObject.SetActive(!isAdsRemoved);
+        coin2xAdsImage?.SetActive(!isAdsRemoved);
+        coin2xBtn.transform.localScale = Vector3.one;
 
         var userData = GameDataTransfer.Instance?.CurrentUserData;
         if (userData == null) return;
@@ -70,21 +78,35 @@ public class WinPanel : MonoBehaviour
         if (coinText != null) coinText.text = userData.coin.ToString();
         StartStaminaChargeDisplay(userData);
 
-        StartCoroutine(ShowButtonsCoroutine());
+        if (showButtonsCoroutine != null) StopCoroutine(showButtonsCoroutine);
+        showButtonsCoroutine = StartCoroutine(ShowButtonsCoroutine());
     }
+
+    private void CacheToppingOriginPositions()
+    {
+        if (toppingOriginPositions != null && toppingOriginPositions.Length == sushiToppings.Length) return;
+
+        toppingOriginPositions = new Vector2[sushiToppings.Length];
+        for (int i = 0; i < sushiToppings.Length; i++)
+        {
+            if (sushiToppings[i] == null) continue;
+            var rt = sushiToppings[i].GetComponent<RectTransform>();
+            if (rt != null) toppingOriginPositions[i] = rt.anchoredPosition;
+        }
+    }
+
     private IEnumerator ShowButtonsCoroutine()
     {
         yield return new WaitForSeconds(2f);
-
         ShowButtonWithAnimation(coin1xBtn.gameObject);
 
         yield return new WaitForSeconds(0.3f);
-
         ShowButtonWithAnimation(exitLobbyBtn.gameObject);
     }
 
     private void ShowButtonWithAnimation(GameObject btnObj)
     {
+        btnObj.transform.DOKill();
         btnObj.SetActive(true);
         btnObj.transform.localScale = Vector3.zero;
         btnObj.transform.DOScale(1.1f, 0.2f)
@@ -92,28 +114,32 @@ public class WinPanel : MonoBehaviour
             .OnComplete(() =>
                 btnObj.transform.DOScale(1f, 0.1f).SetEase(Ease.InQuad));
     }
+
     private void PlaySushiToppingAnimation()
     {
-        foreach (var topping in sushiToppings)
+        for (int i = 0; i < sushiToppings.Length; i++)
         {
+            var topping = sushiToppings[i];
             if (topping == null) continue;
 
             var rt = topping.GetComponent<RectTransform>();
             if (rt == null) continue;
 
             rt.DOKill();
-            Vector2 originPos = rt.anchoredPosition;
-
-            DOTween.Sequence()
-                .Append(rt.DOAnchorPosY(originPos.y + 80f, 0.2f).SetEase(Ease.OutQuad))
-                .Append(rt.DOShakeAnchorPos(0.3f, new Vector2(8f, 4f), 15, 0f, false))
-                .Append(rt.DOAnchorPos(originPos, 0.3f).SetEase(Ease.OutBounce))
-                .AppendInterval(0.3f)
-                .SetLoops(-1, LoopType.Restart)
-                .SetLink(topping);
+            PlayToppingLoop(rt, toppingOriginPositions[i], topping);
         }
     }
-
+    private void PlayToppingLoop(RectTransform rt, Vector2 originPos, GameObject linkTarget)
+    {
+        rt.anchoredPosition = originPos;
+        DOTween.Sequence()
+            .Append(rt.DOAnchorPosY(originPos.y + 80f, 0.4f).SetEase(Ease.OutQuad))
+            .Append(rt.DOShakeAnchorPos(0.5f, new Vector2(8f, 4f), 10, 0f, false))
+            .Append(rt.DOAnchorPos(originPos, 0.6f).SetEase(Ease.OutBounce))
+            .AppendInterval(0.6f)
+            .OnComplete(() => PlayToppingLoop(rt, originPos, linkTarget))
+            .SetLink(linkTarget);
+    }
 
     public void RefreshStaminaUI(UserData userData)
     {
@@ -173,6 +199,13 @@ public class WinPanel : MonoBehaviour
 
     private void OnCoin2xButtonClicked()
     {
+        bool isAdsRemoved = GameDataTransfer.Instance?.CurrentUserData?.isAdsRemoved ?? false;
+        if (isAdsRemoved)
+        {
+            ClaimCoinAndNextStage(20);
+            return;
+        }
+
         if (UnityAdsManager.Instance == null) return;
         UnityAdsManager.Instance.OnRewardEarned += OnCoin2xAdRewardEarned;
         UnityAdsManager.Instance.OnAdFailedToShow += OnCoin2xAdFailed;

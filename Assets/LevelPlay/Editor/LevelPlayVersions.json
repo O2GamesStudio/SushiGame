@@ -564,6 +564,17 @@
       "dependencyXmlFileName": "ISAdMobAdapterDependencies.xml",
       "SKAdNetworkIdXmlURL": "https://s3.amazonaws.com/ssa.public/Unity/SKAdNetwork-IDs/All/skadnetworks.admob.plist.xml",
       "versions": {
+        "5.12.0.0": {
+          "ironSourceSdkVersion": "[9.0.0, 10.0[",
+          "android": {
+            "adapterVersion": "5.7.0",
+            "adNetworkVersion": "25.1.0"
+          },
+          "ios": {
+            "adapterVersion": "5.6.0.0",
+            "adNetworkVersion": "13.1.0"
+          }
+        },
         "5.11.0.0": {
           "ironSourceSdkVersion": "[9.0.0, 10.0[",
           "android": {
@@ -704,6 +715,17 @@
       "dependencyXmlFileName": "ISHyprMXAdapterDependencies.xml",
       "SKAdNetworkIdXmlURL": "https://s3.amazonaws.com/ssa.public/Unity/SKAdNetwork-IDs/All/skadnetworks.hyprmx.plist.xml",
       "versions": {
+        "5.3.0.0": {
+          "ironSourceSdkVersion": "[9.0.0, 10.0[",
+          "android": {
+            "adapterVersion": "5.1.0",
+            "adNetworkVersion": "6.4.5"
+          },
+          "ios": {
+            "adapterVersion": "5.3.0.0",
+            "adNetworkVersion": "6.4.6"
+          }
+        },
         "5.2.0.0": {
           "ironSourceSdkVersion": "[9.0.0, 10.0[",
           "android": {
@@ -1245,6 +1267,17 @@
       "dependencyXmlFileName": "ISMolocoAdapterDependencies.xml",
       "SKAdNetworkIdXmlURL": "https://s3.amazonaws.com/ssa.public/Unity/SKAdNetwork-IDs/All/skadnetworks.moloco.plist.xml",
       "versions": {
+        "5.12.0.0": {
+          "ironSourceSdkVersion": "[9.0.0, 10.0[",
+          "android": {
+            "adapterVersion": "5.8.0",
+            "adNetworkVersion": "4.7.0"
+          },
+          "ios": {
+            "adapterVersion": "5.8.0.0",
+            "adNetworkVersion": "4.5.0"
+          }
+        },
         "5.11.0.0": {
           "ironSourceSdkVersion": "[9.0.0, 10.0[",
           "android": {
@@ -1459,6 +1492,17 @@
       "dependencyXmlFileName": "ISPangleAdapterDependencies.xml",
       "SKAdNetworkIdXmlURL": "https://s3.amazonaws.com/ssa.public/Unity/SKAdNetwork-IDs/All/skadnetworks.pangle.plist.xml",
       "versions": {
+        "5.18.0.0": {
+          "ironSourceSdkVersion": "[9.0.0, 10.0[",
+          "android": {
+            "adapterVersion": "5.12.0",
+            "adNetworkVersion": "7.9.1.2"
+          },
+          "ios": {
+            "adapterVersion": "5.17.0.0",
+            "adNetworkVersion": "7.9.0.9"
+          }
+        },
         "5.17.0.0": {
           "ironSourceSdkVersion": "[9.0.0, 10.0[",
           "android": {
@@ -1718,6 +1762,17 @@
       "dependencyXmlFileName": "ISSmaatoAdapterDependencies.xml",
       "SKAdNetworkIdXmlURL": "https://s3.amazonaws.com/ssa.public/Unity/SKAdNetwork-IDs/All/skadnetworks.smaato.plist.xml",
       "versions": {
+        "5.2.0.0": {
+          "ironSourceSdkVersion": "[9.0.0, 10.0[",
+          "android": {
+            "adapterVersion": "5.1.0",
+            "adNetworkVersion": "23.0.1"
+          },
+          "ios": {
+            "adapterVersion": "5.1.0.0",
+            "adNetworkVersion": "23.0.1"
+          }
+        },
         "5.1.0.0": {
           "ironSourceSdkVersion": "[9.0.0, 10.0[",
           "android": {

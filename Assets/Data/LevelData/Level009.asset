@@ -17,7 +17,7 @@ MonoBehaviour:
   totalSushiSetCount: 21
   minLayersPerPlate: 2
   maxLayersPerPlate: 5
-  timeLimitSeconds: 240
+  timeLimitSeconds: 180
   guaranteedMergeSets: 2
   concentratedTypeCount: 2
   sushiInitEraseCount: 6

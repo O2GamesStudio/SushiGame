@@ -40,6 +40,7 @@ public class AppInitializer : MonoBehaviour
         {
             Debug.Log($"[AppInitializer] 캐시 데이터 사용: stage={cachedUserData.currentStage}");
             loadingUI?.Hide();
+            SoundManager.Instance?.PlayLobbyBGM();
             LobbyManager.Instance.Initialize(cachedUserData.currentStage);
             return;
         }

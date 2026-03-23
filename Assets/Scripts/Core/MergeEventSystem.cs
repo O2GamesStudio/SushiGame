@@ -149,7 +149,7 @@ public class MergeEventSystem : MonoBehaviour
     private List<Plate> GetAvailableNonLockedPlates()
     {
         return plateManager.GetAllPlates()
-            .Where(p => p.gameObject.activeSelf && !p.IsLocked && p.SlotCount == 3)
+            .Where(p => p.gameObject.activeSelf && !p.IsLocked && p.State == PlateState.Normal && p.SlotCount == 3)
             .ToList();
     }
 

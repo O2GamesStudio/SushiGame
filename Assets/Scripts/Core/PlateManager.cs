@@ -69,7 +69,11 @@ public class PlateManager : MonoBehaviour
 
             plateIndexMapping.Add(plateIndex);
 
-            if (data.State != PlateState.Normal)
+            if (data.State == PlateState.CantMerge)
+            {
+                plates[plateIndex].SetState(PlateState.CantMerge);
+            }
+            else if (data.State != PlateState.Normal)
             {
                 PlateUnlockSystem.Instance?.RegisterLockedPlate(
                     plates[plateIndex],
@@ -79,7 +83,6 @@ public class PlateManager : MonoBehaviour
             }
         }
     }
-
     public void RestoreFromSaveData(GameSaveData saveData, LevelData levelData)
     {
         plateIndexMapping.Clear();
@@ -102,7 +105,6 @@ public class PlateManager : MonoBehaviour
                 layers.Add(layer);
             }
 
-            // -1 제거
             var validActiveTypes = ps.activeTypes.FindAll(t => t != -1);
 
             plates[ps.plateIndex].gameObject.SetActive(true);
@@ -116,7 +118,11 @@ public class PlateManager : MonoBehaviour
             plateIndexMapping.Add(ps.plateIndex);
 
             var state = (PlateState)ps.state;
-            if (state != PlateState.Normal)
+            if (state == PlateState.CantMerge)
+            {
+                plates[ps.plateIndex].SetState(PlateState.CantMerge);
+            }
+            else if (state != PlateState.Normal)
             {
                 PlateUnlockSystem.Instance?.RegisterLockedPlate(
                     plates[ps.plateIndex],

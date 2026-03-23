@@ -9,10 +9,10 @@ public class ButtonScaleEffect : MonoBehaviour, IPointerDownHandler, IPointerUpH
 
     public void OnPointerDown(PointerEventData eventData)
     {
+        SoundManager.Instance?.PlayUIClickSFX();
         transform.DOKill();
         transform.DOScale(pressedScale, duration).SetEase(Ease.OutQuad);
     }
-
     public void OnPointerUp(PointerEventData eventData)
     {
         transform.DOKill();

@@ -9,6 +9,7 @@ public class LoadingUI : MonoBehaviour
     [SerializeField] private GameObject loadingRoot;
     [SerializeField] private Image progressBar;
     [SerializeField] private TextMeshProUGUI errorText;
+    [SerializeField] private TextMeshProUGUI loadingText;
 
     private void Awake()
     {
@@ -37,6 +38,9 @@ public class LoadingUI : MonoBehaviour
     {
         if (progressBar != null)
             progressBar.fillAmount = Mathf.Clamp01(value);
+
+        if (loadingText != null)
+            loadingText.text = $"{Mathf.RoundToInt(value * 100)}%";
     }
 
     public void ShowError(string message)

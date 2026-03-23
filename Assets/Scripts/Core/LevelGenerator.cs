@@ -16,7 +16,8 @@ public class LevelGenerator
     private HashSet<(int plateIndex, int slotIndex)> guaranteedSlots;
     private HashSet<int> railPlateIndices;
     private RailData railData;
-    private Dictionary<int, int> eraseCountPerPlate; // 클래스 필드로 승격 - EnsureNoEmptyPlates에서 접근 필요
+    private Dictionary<int, int> eraseCountPerPlate;
+    private HashSet<int> cantMergePlateIndices;
 
     public LevelGenerator(LevelData data)
     {
@@ -28,6 +29,7 @@ public class LevelGenerator
         guaranteedPlateIndices = new HashSet<int>();
         guaranteedSlots = new HashSet<(int, int)>();
         railPlateIndices = new HashSet<int>();
+        cantMergePlateIndices = new HashSet<int>();
         eraseCountPerPlate = new Dictionary<int, int>();
         SelectRandomSushiTypes();
         GenerateSushiPool();
@@ -740,6 +742,7 @@ public class LevelGenerator
         adPlateIndices.Clear();
         sushiMergePlateIndices.Clear();
         singleSlotPlateIndices.Clear();
+        cantMergePlateIndices.Clear();
 
         int effectivePlateCount = GetEffectivePlateCount();
         int guaranteedPlateCount = cachedGuaranteedSushis.Count;
@@ -764,6 +767,25 @@ public class LevelGenerator
         int singleSlotCount = Mathf.Min(levelData.singleSlotPlateCount, remainingPlates.Count);
         for (int i = 0; i < singleSlotCount; i++)
             singleSlotPlateIndices.Add(remainingPlates[i]);
+
+        var cantMergeCandidates = new List<int>();
+        for (int i = 0; i < effectivePlateCount; i++)
+        {
+            if (!adPlateIndices.Contains(i) &&
+                !sushiMergePlateIndices.Contains(i) &&
+                !singleSlotPlateIndices.Contains(i))
+                cantMergeCandidates.Add(i);
+        }
+
+        Shuffle(cantMergeCandidates);
+
+        int cantMergeCount = Mathf.Min(levelData.cantMergePlateCount, cantMergeCandidates.Count);
+
+        if (cantMergeCount < levelData.cantMergePlateCount)
+            Debug.LogError($"[LevelGenerator] cantMergePlateCount({levelData.cantMergePlateCount}) 충족 불가 - 가능 접시: {cantMergeCandidates.Count}");
+
+        for (int i = 0; i < cantMergeCount; i++)
+            cantMergePlateIndices.Add(cantMergeCandidates[i]);
     }
 
     private void ValidatePlates(List<PlateData> plates)
@@ -830,6 +852,9 @@ public class LevelGenerator
 
         foreach (var plateIndex in singleSlotPlateIndices)
             plates[plateIndex].SlotCount = 1;
+
+        foreach (var plateIndex in cantMergePlateIndices)
+            plates[plateIndex].State = PlateState.CantMerge;
 
         AssignLockedSushis(plates);
         ResolveLockedPlateDeadlocks(plates);

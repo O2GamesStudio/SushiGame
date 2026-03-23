@@ -8,7 +8,8 @@ public enum PlateState
 {
     Normal,
     LockedAd,
-    LockedSushi
+    LockedSushi,
+    CantMerge
 }
 
 [RequireComponent(typeof(BoxCollider2D))]
@@ -47,7 +48,7 @@ public class Plate : MonoBehaviour
     public bool IsEmpty => ActiveCount == 0 && LayerCount == 0;
     public Layer CurrentNextLayer => layerQueue.Count > 0 ? layerQueue.Peek() : null;
     public PlateState State => plateState;
-    public bool IsLocked => plateState != PlateState.Normal;
+    public bool IsLocked => plateState == PlateState.LockedAd || plateState == PlateState.LockedSushi;
     public int RequiredSushiTypeId => requiredSushiTypeId;
     private int GetSlotTransformIndex(int activeIndex) => slotCount == 1 ? 1 : activeIndex;
     private void Awake()
@@ -288,6 +289,7 @@ public class Plate : MonoBehaviour
     {
         if (ActiveCount != slotCount) return;
         if (slotCount == 1) return;
+        if (plateState == PlateState.CantMerge) return;
 
         var nonNullSushis = activeSushis.Where(s => s != null).ToList();
         if (nonNullSushis.Any(s => s.IsLocked)) return;
@@ -347,6 +349,8 @@ public class Plate : MonoBehaviour
         var ps = vfx.GetComponent<ParticleSystem>();
         float duration = ps != null ? ps.main.duration + ps.main.startLifetime.constantMax : 2f;
         LeanPool.Despawn(vfx, duration);
+
+        SoundManager.Instance?.PlayMergeSFX();
     }
 
     private void OnPackagingComplete(List<Sushi> sushis, int mergedTypeId)

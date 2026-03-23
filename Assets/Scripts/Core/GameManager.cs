@@ -262,6 +262,7 @@ public class GameManager : MonoBehaviour
         isGameActive = false;
         if (inputHandler != null) inputHandler.enabled = false;
 
+        SoundManager.Instance?.PlayWinSFX();
         winPanel?.Show();
         UnityAdsManager.Instance?.HideBanner();
 
@@ -299,6 +300,7 @@ public class GameManager : MonoBehaviour
         isGameActive = false;
         if (inputHandler != null) inputHandler.enabled = false;
 
+        SoundManager.Instance?.PlayLoseSFX();
         gameUI.ShowLose();
         gameUI.SetTimerText("영업종료");
         UnityAdsManager.Instance?.HideBanner();
