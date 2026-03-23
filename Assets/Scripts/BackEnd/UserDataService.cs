@@ -52,7 +52,7 @@ public class UserDataService : MonoBehaviour
                 if (!snapshot.ContainsField("claimedFreeRewards")) { data.claimedFreeRewards = new List<int>(); needsUpdate = true; }
                 if (!snapshot.ContainsField("claimedPassRewards")) { data.claimedPassRewards = new List<int>(); needsUpdate = true; }
                 if (!snapshot.ContainsField("isAdsRemoved")) { data.isAdsRemoved = false; needsUpdate = true; }
-                if (!snapshot.ContainsField("dailyRewardDay")) { data.dailyRewardDay = 0; needsUpdate = true; }
+                if (!snapshot.ContainsField("dailyRewardDay")) { data.dailyRewardDay = 1; needsUpdate = true; }
                 if (!snapshot.ContainsField("dailyRewardLastClaimTime")) { data.dailyRewardLastClaimTime = 0; needsUpdate = true; }
 
                 if (needsUpdate)
@@ -204,6 +204,6 @@ public class UserData
     [FirestoreProperty] public List<int> claimedFreeRewards { get; set; } = new List<int>();
     [FirestoreProperty] public List<int> claimedPassRewards { get; set; } = new List<int>();
     [FirestoreProperty] public bool isAdsRemoved { get; set; } = false;
-    [FirestoreProperty] public int dailyRewardDay { get; set; } = 0;
+    [FirestoreProperty] public int dailyRewardDay { get; set; } = 1;
     [FirestoreProperty] public long dailyRewardLastClaimTime { get; set; } = 0;
 }

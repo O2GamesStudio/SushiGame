@@ -24,6 +24,7 @@ public class WinPanel : MonoBehaviour
     private Coroutine staminaChargeCoroutine;
     private Coroutine showButtonsCoroutine;
     private Vector2[] toppingOriginPositions;
+    private LevelDataBase levelDataBase;
 
     private void OnEnable()
     {
@@ -56,7 +57,10 @@ public class WinPanel : MonoBehaviour
             UnityAdsManager.Instance.OnAdFailedToShow -= OnCoin2xAdFailed;
         }
     }
-
+    public void SetLevelDataBase(LevelDataBase db)
+    {
+        levelDataBase = db;
+    }
     public void Show()
     {
         gameObject.SetActive(true);
@@ -97,10 +101,10 @@ public class WinPanel : MonoBehaviour
 
     private IEnumerator ShowButtonsCoroutine()
     {
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSeconds(1f);
         ShowButtonWithAnimation(coin1xBtn.gameObject);
 
-        yield return new WaitForSeconds(0.3f);
+        yield return new WaitForSeconds(0.2f);
         ShowButtonWithAnimation(exitLobbyBtn.gameObject);
     }
 
@@ -168,7 +172,6 @@ public class WinPanel : MonoBehaviour
         var userData = GameDataTransfer.Instance?.CurrentUserData;
         if (userData == null) return;
 
-        var levelDataBase = Resources.Load<LevelDataBase>("LevelDataBase");
         var nextLevelData = levelDataBase?.Get(userData.currentStage);
         if (nextLevelData == null)
         {

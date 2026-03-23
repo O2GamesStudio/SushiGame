@@ -263,10 +263,14 @@ public class GameManager : MonoBehaviour
         if (inputHandler != null) inputHandler.enabled = false;
 
         SoundManager.Instance?.PlayWinSFX();
-        winPanel?.Show();
         UnityAdsManager.Instance?.HideBanner();
 
-        NetworkChecker.Instance?.Check(() => OnStageClear());
+        NetworkChecker.Instance?.Check(() =>
+        {
+            OnStageClear();
+            winPanel?.SetLevelDataBase(levelDataBase);
+            winPanel?.Show();
+        });
     }
 
     public void OnGameLose(bool isEventFail = false)

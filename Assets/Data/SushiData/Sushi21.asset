@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae960acc2c7070446befb926089e8ef6, type: 3}
+  m_Name: Sushi21
+  m_EditorClassIdentifier: Assembly-CSharp::SushiData
+  typeId: 20
+  sushiType: 3
+  riceSprite: {fileID: 21300000, guid: 392337e6904b3fc489adc4b27899cb52, type: 3}
+  toppingSprite: {fileID: 0}
+  toppingOffsetX: 0
+  toppingOffsetY: 0
+  plateOffsetY: 0.1
