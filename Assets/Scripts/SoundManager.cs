@@ -45,7 +45,7 @@ public class SoundManager : MonoBehaviour
 
     private void Start()
     {
-        Application.targetFrameRate = 60;
+        Application.targetFrameRate = 100;
     }
 
     private void OnDestroy()

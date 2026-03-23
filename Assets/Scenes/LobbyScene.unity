@@ -18883,7 +18883,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6b394a47c49d82440abcd567cf908b0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LocalizationManager
-  forceEnglish: 1
+  forceEnglish: 0
 --- !u!4 &1632043906
 Transform:
   m_ObjectHideFlags: 0

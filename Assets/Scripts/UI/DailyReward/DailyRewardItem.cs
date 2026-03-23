@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using UnityEditor.Rendering.UITK.ShaderGraph;
 
 public class DailyRewardItem : MonoBehaviour
 {
