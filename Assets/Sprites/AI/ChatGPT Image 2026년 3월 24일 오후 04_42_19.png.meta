@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: e26e4072c212c1943827f0eecd03151b
+guid: 5bf1e9b81f6f4c8429a97d5dd1696101
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 995987441921843563
-    second: RemoveAds1_0
+      213: -8729036675269360956
+    second: "ChatGPT Image 2026\uB144 3\uC6D4 24\uC77C \uC624\uD6C4 04_42_19_0"
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,7 +46,7 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -72,7 +72,7 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 4096
+    maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: RemoveAds1_0
+      name: "ChatGPT Image 2026\uB144 3\uC6D4 24\uC77C \uC624\uD6C4 04_42_19_0"
       rect:
         serializedVersion: 2
-        x: 9
-        y: 6
-        width: 785
-        height: 666
+        x: 0
+        y: 0
+        width: 1024
+        height: 1536
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: b61608c2d4572dd00800000000000000
-      internalID: 995987441921843563
+      spriteID: 4c2863b646b3cd680800000000000000
+      internalID: -8729036675269360956
       vertices: []
       indices: 
       edges: []
@@ -138,7 +138,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      RemoveAds1_0: 995987441921843563
+      "ChatGPT Image 2026\uB144 3\uC6D4 24\uC77C \uC624\uD6C4 04_42_19_0": -8729036675269360956
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -21,6 +21,19 @@ public class GooglePlayGamesManager : MonoBehaviour
         PlayGamesPlatform.Activate();
     }
 
+    public void LinkToFirebase(System.Action onSuccess, System.Action<string> onFailed = null)
+    {
+        StartGoogleSignIn(
+            onSuccess: authCode =>
+            {
+                FirebaseManager.Instance?.LinkWithGoogle(authCode,
+                    onSuccess: onSuccess,
+                    onFailed: onFailed
+                );
+            },
+            onFailed: onFailed
+        );
+    }
     public void StartGoogleSignIn(Action<string> onSuccess, Action<string> onFailed = null)
     {
         PlayGamesPlatform.Instance.Authenticate((success) =>

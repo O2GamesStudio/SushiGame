@@ -24,13 +24,15 @@ public class LoadingUI : MonoBehaviour
 
     public void Show()
     {
-        loadingRoot?.SetActive(true);
-        if (errorText != null)
-            errorText.gameObject.SetActive(false);
         if (progressBar != null)
             progressBar.fillAmount = 0f;
-    }
+        if (loadingText != null)
+            loadingText.text = "0%";
+        if (errorText != null)
+            errorText.gameObject.SetActive(false);
 
+        loadingRoot?.SetActive(true);
+    }
     public void Hide()
     {
         loadingRoot?.SetActive(false);

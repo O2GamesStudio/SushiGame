@@ -1,11 +1,13 @@
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+using TMPro;
 
 public class LobbySettingPanel : MonoBehaviour
 {
     [SerializeField] private Button exitBtn;
     [SerializeField] private Button googleLinkButton;
+    [SerializeField] private TextMeshProUGUI debugText;
 
     [Header("Toggles")]
     [SerializeField] private Button sfxToggleBtn;
@@ -76,12 +78,10 @@ public class LobbySettingPanel : MonoBehaviour
 
     private void OnGoogleLinkClicked()
     {
-        GooglePlayGamesManager.Instance?.StartGoogleSignIn(idToken =>
+        LobbyUIManager.Instance?.ShowGoogleLoginPanel(() =>
         {
-            FirebaseManager.Instance.LinkWithGoogle(idToken,
-                () => UpdateGoogleLinkButton(),
-                null
-            );
+            debugText?.SetText("[LobbySettingPanel] 연동 성공");
+            UpdateGoogleLinkButton();
         });
     }
 

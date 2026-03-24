@@ -36,7 +36,7 @@ public class AppInitializer : MonoBehaviour
         GooglePlayGamesManager.Instance.Initialize();
 
         // 이미 BootScene에서 Show했지만 혹시 모를 경우 대비
-        LoadingUI.Instance?.Show();
+        //LoadingUI.Instance?.Show();
 
         var cachedUserData = GameDataTransfer.Instance?.CurrentUserData;
         if (cachedUserData != null)
