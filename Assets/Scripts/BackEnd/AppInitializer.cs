@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -33,6 +34,9 @@ public class AppInitializer : MonoBehaviour
     {
         if (LobbyManager.Instance == null) return;
 
+        // 캐시 여부와 무관하게 항상 먼저 초기화
+        GooglePlayGamesManager.Instance.Initialize();
+
         loadingUI?.Show();
 
         var cachedUserData = GameDataTransfer.Instance?.CurrentUserData;
@@ -44,8 +48,6 @@ public class AppInitializer : MonoBehaviour
             LobbyManager.Instance.Initialize(cachedUserData.currentStage);
             return;
         }
-
-        GooglePlayGamesManager.Instance.Initialize();
 
         firebaseManager.Initialize(() =>
         {

@@ -44,7 +44,7 @@ public class LobbyManager : MonoBehaviour
         storeButton?.onClick.RemoveAllListeners();
         storeButton?.onClick.AddListener(OnStoreButtonClicked);
         LobbyUIManager.Instance?.RefreshDailyRewardAlert();
-        UnityAdsManager.Instance?.HideBanner();
+        UnityAdsManager.Instance?.DestroyBanner();
         UpdateResumeButton();
 
         var cachedUserData = GameDataTransfer.Instance?.CurrentUserData;

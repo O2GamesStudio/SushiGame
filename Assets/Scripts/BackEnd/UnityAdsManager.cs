@@ -333,7 +333,7 @@ public class UnityAdsManager : MonoBehaviour
     {
         Log("배너 광고 로드 완료");
         isBannerLoaded = true;
-        ShowBanner();
+        //ShowBanner();
     }
 
     private void OnBannerAdLoadFailed(LevelPlayAdError error)
