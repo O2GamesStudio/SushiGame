@@ -97,7 +97,7 @@ public class SettingPanel : MonoBehaviour
             return;
         }
 
-        ConsumeStaminaAndExecute(() => SceneLoader.LoadGameAsync(LoadingUI.Instance));
+        ConsumeStaminaAndExecute(() => SceneLoader.LoadGameAsync());
     }
 
     private void ConsumeStaminaAndExecute(Action onComplete)

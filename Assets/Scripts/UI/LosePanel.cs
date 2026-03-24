@@ -123,7 +123,7 @@ public class LosePanel : MonoBehaviour
             return;
         }
 
-        SceneLoader.LoadGameAsync(LoadingUI.Instance);
+        SceneLoader.LoadGameAsync();
     }
 
     private void StartStaminaChargeDisplay(UserData userData)

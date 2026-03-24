@@ -11,79 +11,71 @@ public static class SceneLoader
 
     public static void LoadLobby(Func<bool> condition = null) => LoadWithCondition(LobbyScene, condition);
     public static void ReloadGame(Func<bool> condition = null) => LoadWithCondition(SceneManager.GetActiveScene().name, condition);
-    public static void LoadGameAsync(LoadingUI loadingUI = null) => LoadWithCondition(GameScene, null, loadingUI);
-    public static void LoadLobbyAsync(LoadingUI loadingUI = null) => LoadWithCondition(LobbyScene, null, loadingUI);
+    public static void LoadGameAsync() => LoadWithCondition(GameScene);
+    public static void LoadLobbyAsync() => LoadWithCondition(LobbyScene);
 
-    private static void LoadWithCondition(string sceneName, Func<bool> condition = null, LoadingUI loadingUI = null)
+    private static void LoadWithCondition(string sceneName, Func<bool> condition = null)
     {
         UnityAdsManager.Instance?.ClearAllListeners();
 
         if (NetworkChecker.Instance != null)
         {
-            NetworkChecker.Instance.Check(() =>
-            {
-                var go = new GameObject("SceneLoaderRunner");
-                var runner = go.AddComponent<SceneLoaderRunner>();
-                runner.Load(sceneName, loadingUI, MinLoadingDuration, condition);
-            });
+            NetworkChecker.Instance.Check(() => SpawnRunner(sceneName, condition));
         }
         else
         {
-            var go = new GameObject("SceneLoaderRunner");
-            var runner = go.AddComponent<SceneLoaderRunner>();
-            runner.Load(sceneName, loadingUI, MinLoadingDuration, condition);
+            SpawnRunner(sceneName, condition);
         }
+    }
+
+    private static void SpawnRunner(string sceneName, Func<bool> condition)
+    {
+        var go = new GameObject("SceneLoaderRunner");
+        var runner = go.AddComponent<SceneLoaderRunner>();
+        runner.Load(sceneName, MinLoadingDuration, condition);
     }
 }
 
 public class SceneLoaderRunner : MonoBehaviour
 {
-    public void Load(string sceneName, LoadingUI loadingUI, float minDuration, Func<bool> condition = null)
+    public void Load(string sceneName, float minDuration, Func<bool> condition = null)
     {
         DontDestroyOnLoad(gameObject);
-        StartCoroutine(LoadRoutine(sceneName, loadingUI, minDuration, condition));
+        StartCoroutine(LoadRoutine(sceneName, minDuration, condition));
     }
 
-    private IEnumerator LoadRoutine(string sceneName, LoadingUI loadingUI, float minDuration, Func<bool> condition)
+    private IEnumerator LoadRoutine(string sceneName, float minDuration, Func<bool> condition)
     {
-        var ui = loadingUI ?? LoadingUI.Instance;
-        ui?.Show();
-        ui?.UpdateProgress(0f);
-
-        Debug.Log($"[SceneLoader] 씬 로딩 시작: {sceneName}");
+        LoadingUI.Instance?.Show();
+        LoadingUI.Instance?.UpdateProgress(0f);
 
         float startTime = Time.realtimeSinceStartup;
         var op = SceneManager.LoadSceneAsync(sceneName);
         op.allowSceneActivation = false;
 
-        // 씬 로드: 0 ~ 0.7 구간
         while (op.progress < 0.9f)
         {
-            ui?.UpdateProgress(op.progress / 0.9f * 0.7f);
+            LoadingUI.Instance?.UpdateProgress(op.progress / 0.9f * 0.7f);
             yield return null;
         }
 
-        // 조건 대기: 0.7 ~ 1.0 구간
-        Debug.Log($"[SceneLoader] 씬 로드 완료, 조건 대기 중: {sceneName}");
         while (true)
         {
             float elapsed = Time.realtimeSinceStartup - startTime;
             bool conditionMet = condition == null || condition();
-
             float waitProgress = Mathf.Clamp01(elapsed / minDuration);
-            ui?.UpdateProgress(0.7f + waitProgress * 0.3f);
+            LoadingUI.Instance?.UpdateProgress(0.7f + waitProgress * 0.3f);
 
             if (elapsed >= minDuration && conditionMet)
                 break;
             yield return null;
         }
 
-        ui?.UpdateProgress(1f);
-        Debug.Log($"[SceneLoader] 씬 전환: {sceneName} / 소요시간: {Time.realtimeSinceStartup - startTime:F2}초");
+        LoadingUI.Instance?.UpdateProgress(1f);
         op.allowSceneActivation = true;
 
         yield return new WaitUntil(() => SceneManager.GetActiveScene().name == sceneName);
-        ui?.Hide();
+        LoadingUI.Instance?.Hide();
         Destroy(gameObject);
     }
 }

@@ -6,7 +6,6 @@ public class AppInitializer : MonoBehaviour
 {
     [SerializeField] private FirebaseManager firebaseManager;
     [SerializeField] private UserDataService userDataService;
-    [SerializeField] private LoadingUI loadingUI;
     [SerializeField] private AppVersionChecker appVersionChecker;
 
     private void Awake()
@@ -34,16 +33,15 @@ public class AppInitializer : MonoBehaviour
     {
         if (LobbyManager.Instance == null) return;
 
-        // 캐시 여부와 무관하게 항상 먼저 초기화
         GooglePlayGamesManager.Instance.Initialize();
 
-        loadingUI?.Show();
+        // 이미 BootScene에서 Show했지만 혹시 모를 경우 대비
+        LoadingUI.Instance?.Show();
 
         var cachedUserData = GameDataTransfer.Instance?.CurrentUserData;
         if (cachedUserData != null)
         {
-            Debug.Log($"[AppInitializer] 캐시 데이터 사용: stage={cachedUserData.currentStage}");
-            loadingUI?.Hide();
+            LoadingUI.Instance?.Hide();
             SoundManager.Instance?.PlayLobbyBGM();
             LobbyManager.Instance.Initialize(cachedUserData.currentStage);
             return;
@@ -57,16 +55,17 @@ public class AppInitializer : MonoBehaviour
                 firebaseManager.SignInAnonymous(() =>
                 {
                     string userId = firebaseManager.CurrentUser.UserId;
-                    userDataService.LoadUserData(userId, (userData) =>
+                    userDataService.LoadUserData(userId, userData =>
                     {
                         GameDataTransfer.Instance.SetUserData(userData);
-                        loadingUI?.Hide();
+                        LoadingUI.Instance?.Hide();
+                        SoundManager.Instance?.PlayLobbyBGM();
                         LobbyManager.Instance.Initialize(userData.currentStage);
                     });
                 },
-                (error) =>
+                error =>
                 {
-                    loadingUI?.ShowError("네트워크 연결을 확인해주세요.");
+                    LoadingUI.Instance?.ShowError("네트워크 연결을 확인해주세요.");
                 });
             });
         });

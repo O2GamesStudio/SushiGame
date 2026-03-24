@@ -27,6 +27,8 @@ public class LoadingUI : MonoBehaviour
         loadingRoot?.SetActive(true);
         if (errorText != null)
             errorText.gameObject.SetActive(false);
+        if (progressBar != null)
+            progressBar.fillAmount = 0f;
     }
 
     public void Hide()
@@ -38,7 +40,6 @@ public class LoadingUI : MonoBehaviour
     {
         if (progressBar != null)
             progressBar.fillAmount = Mathf.Clamp01(value);
-
         if (loadingText != null)
             loadingText.text = $"{Mathf.RoundToInt(value * 100)}%";
     }

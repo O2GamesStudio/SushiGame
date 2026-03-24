@@ -180,7 +180,7 @@ public class WinPanel : MonoBehaviour
         }
 
         GameDataTransfer.Instance.SetLevelData(nextLevelData);
-        SceneLoader.LoadGameAsync(LoadingUI.Instance);
+        SceneLoader.LoadGameAsync();
     }
 
     private void OnExitLobbyButtonClicked()

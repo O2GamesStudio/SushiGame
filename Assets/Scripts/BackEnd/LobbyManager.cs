@@ -140,7 +140,7 @@ public class LobbyManager : MonoBehaviour
 
         GameDataTransfer.Instance.SetLevelData(levelData);
         GameDataTransfer.Instance.SetSaveData(saveData);
-        SceneLoader.LoadGameAsync(LoadingUI.Instance);
+        SceneLoader.LoadGameAsync();
     }
 
     private void UpdateStageUI()
@@ -162,6 +162,6 @@ public class LobbyManager : MonoBehaviour
         if (levelData == null) return;
 
         GameDataTransfer.Instance.SetLevelData(levelData);
-        SceneLoader.LoadGameAsync(LoadingUI.Instance);
+        SceneLoader.LoadGameAsync();
     }
 }
