@@ -10,6 +10,7 @@ public class MergeEventSystem : MonoBehaviour
     [SerializeField] private MergeEventUI eventUI;
     [SerializeField] private TrainCtrl trainCtrl;
     [SerializeField] private float timePerSushi = 20f;
+    [SerializeField] private AudioClip eventSFX;
 
     private MergeEventData[] eventDataList;
     private int currentEventIndex = 0;
@@ -138,6 +139,8 @@ public class MergeEventSystem : MonoBehaviour
             totalEventTime = 20f * 3 + 20f;
 
         eventTimeRemaining = totalEventTime;
+
+        SoundManager.Instance?.PlaySFX(eventSFX);
 
         var allTargets = specialTargetTypes.Concat(normalTargetTypes).ToList();
         Debug.Log($"[Event] 이벤트 시작 - 특수타겟:{string.Join(",", specialTargetTypes)} / 일반타겟:{string.Join(",", normalTargetTypes)}");

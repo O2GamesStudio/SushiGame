@@ -312,6 +312,9 @@ public class Plate : MonoBehaviour
         SushiLockSystem.Instance?.OnMergeCompleted();
         SpawnMergeParticle(transform.position);
 
+        // 이벤트 카운터 즉시 업데이트 - 애니메이션 전
+        GameManager.Instance?.OnSushiMerged(mergedTypeId, this);
+
         DOVirtual.DelayedCall(0.2f, () =>
         {
             if (packagingEffect != null)
@@ -361,12 +364,10 @@ public class Plate : MonoBehaviour
             SushiPool.Instance.Return(sushi);
         }
 
-        GameManager.Instance?.OnSushiMerged(mergedTypeId, this);
-
+        // GameManager.OnSushiMerged 제거 - ExecuteMerge에서 이미 호출
         if (IsEmpty)
             GameStateChecker.Instance.CheckWinCondition();
     }
-
     public void RecheckMerge() => CheckMerge();
 
     private void RefillFromNextLayer()
@@ -387,6 +388,7 @@ public class Plate : MonoBehaviour
 
             activeSushis[activeIndex] = sushi;
             sushi.SetCurrentPlate(this);
+            sushi.SetBaseSortingOrder(sushi.SpriteRenderer.sortingLayerName, 5);
 
             if (lockStages[i] > 0)
                 SushiLockSystem.Instance?.RegisterLockedSushi(sushi, lockStages[i]);

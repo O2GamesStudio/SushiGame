@@ -292,6 +292,7 @@ MonoBehaviour:
   eventUI: {fileID: 1378560319}
   trainCtrl: {fileID: 1649222294}
   timePerSushi: 30
+  eventSFX: {fileID: 8300000, guid: 453425ae4f61e29428f831b25dd779cc, type: 3}
 --- !u!1 &42828410
 GameObject:
   m_ObjectHideFlags: 0

@@ -97,7 +97,7 @@ public class PlateUI : MonoBehaviour
                 {
                     requiredSushiRiceRenderer.sprite = data.riceSprite;
                     requiredSushiRiceRenderer.gameObject.SetActive(true);
-                    requiredSushiRiceRenderer.transform.localPosition = new Vector3(1.1f, data.plateOffsetY + 0.15f, 0f);
+                    requiredSushiRiceRenderer.transform.localPosition = new Vector3(0f, data.plateOffsetY + 0.15f, 0f);
                     requiredSushiRiceRenderer.transform.localScale = Vector3.one * 0.8f;
 
                     var col = requiredSushiRiceRenderer.GetComponent<Collider2D>();
@@ -108,7 +108,7 @@ public class PlateUI : MonoBehaviour
                 {
                     requiredSushiToppingRenderer.sprite = data.toppingSprite;
                     requiredSushiToppingRenderer.gameObject.SetActive(data.toppingSprite != null);
-                    requiredSushiToppingRenderer.transform.localPosition = new Vector3(1.1f + data.toppingOffsetX, data.toppingOffsetY + data.plateOffsetY + 0.15f, 0f);
+                    requiredSushiToppingRenderer.transform.localPosition = new Vector3(0f + data.toppingOffsetX, data.toppingOffsetY + data.plateOffsetY + 0.15f, 0f);
                     requiredSushiToppingRenderer.transform.localScale = Vector3.one * 0.8f;
 
                     var col = requiredSushiToppingRenderer.GetComponent<Collider2D>();
@@ -200,13 +200,16 @@ public class PlateUI : MonoBehaviour
             icon.transform.localPosition = new Vector3(xPos, nextLayerIconYOffset + offsetY, 0f);
 
             if (sushiView != null && data != null)
+            {
                 sushiView.Initialize(types[i], data.riceSprite, data.toppingSprite, data.sushiType, data.toppingOffsetX, data.toppingOffsetY);
+                sushiView.SetBaseSortingOrder(sushiView.SpriteRenderer.sortingLayerName, 2);
+            }
 
             bool isLocked = lockStages[i] > 0;
             bool isHidden = hiddenStates != null && i < hiddenStates.Count && hiddenStates[i];
 
             if (isHidden && !isLocked)
-                sushiView?.SetHidden(true, hiddenSushiSprite);
+                sushiView?.SetHidden(true, hiddenSushiSprite, offsetY);
 
             if (sushiView != null && isLocked && lockIconSprites != null)
                 sushiView.ShowLockIcon(lockIconSprites);

@@ -414,8 +414,32 @@ public class GameManager : MonoBehaviour
         UnityAdsManager.Instance.OnAdFailedToShow -= OnEventSkipAdFailed;
         eventSkipAdPanel?.SetActive(false);
         MergeEventSystem.Instance?.ForceCompleteEvent();
-        isGameActive = true;
-        if (inputHandler != null) inputHandler.enabled = true;
+
+        if (plateManager.AreAllPlatesEmpty())
+        {
+            // IsEventActive 체크 없이 직접 승리 처리
+            GameSaveService.Instance?.ClearLocal();
+            GameSaveService.Instance?.ClearFirestore();
+            GameDataTransfer.Instance?.SetLastMergedCount(mergedSetsCount);
+
+            isGameActive = false;
+            if (inputHandler != null) inputHandler.enabled = false;
+
+            SoundManager.Instance?.PlayWinSFX();
+            UnityAdsManager.Instance?.HideBanner();
+
+            NetworkChecker.Instance?.Check(() =>
+            {
+                OnStageClear();
+                winPanel?.SetLevelDataBase(levelDataBase);
+                winPanel?.Show();
+            });
+        }
+        else
+        {
+            isGameActive = true;
+            if (inputHandler != null) inputHandler.enabled = true;
+        }
     }
 
     private void OnEventSkipAdFailed()

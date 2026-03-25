@@ -35,6 +35,7 @@ public class UnityAdsManager : MonoBehaviour
     private bool isLoadingAd = false;
     private bool isBannerLoaded = false;
     private bool isBannerDisplayed = false;
+    private bool pendingShowBanner = false;
 
     private Coroutine bannerRetryCoroutine;
 
@@ -74,28 +75,15 @@ public class UnityAdsManager : MonoBehaviour
     {
         if (adsConfig == null || string.IsNullOrEmpty(adsConfig.appKey))
         {
-#if UNITY_EDITOR
-            Debug.LogError("[UnityAdsManager] AdsConfig가 없거나 AppKey가 비어있습니다.");
-#endif
+            LogError("AdsConfig가 없거나 AppKey가 비어있습니다.");
             return;
         }
 
         StartCoroutine(InitializeLevelPlay());
     }
 
-    private void Log(string message)
-    {
-#if UNITY_EDITOR
-        Debug.Log($"[UnityAdsManager] {message}");
-#endif
-    }
-
-    private void LogError(string message)
-    {
-#if UNITY_EDITOR
-        Debug.LogError($"[UnityAdsManager] {message}");
-#endif
-    }
+    private void Log(string message) => Debug.Log($"[UnityAdsManager] {message}");
+    private void LogError(string message) => Debug.LogError($"[UnityAdsManager] {message}");
 
     private IEnumerator InitializeLevelPlay()
     {
@@ -132,6 +120,7 @@ public class UnityAdsManager : MonoBehaviour
         LogError($"LevelPlay 초기화 실패 - {error.ErrorMessage}");
         isInitialized = false;
     }
+
     public void ClearAllListeners()
     {
         OnRewardEarned = null;
@@ -139,6 +128,7 @@ public class UnityAdsManager : MonoBehaviour
         OnAdFailedToLoad = null;
         OnAdFailedToShow = null;
     }
+
     private void StartBannerRetry()
     {
         if (bannerRetryCoroutine != null)
@@ -333,7 +323,13 @@ public class UnityAdsManager : MonoBehaviour
     {
         Log("배너 광고 로드 완료");
         isBannerLoaded = true;
-        //ShowBanner();
+
+        if (pendingShowBanner)
+        {
+            pendingShowBanner = false;
+            try { bannerAd?.ShowAd(); }
+            catch (Exception e) { LogError($"배너 표시 예외 - {e.Message}"); }
+        }
     }
 
     private void OnBannerAdLoadFailed(LevelPlayAdError error)
@@ -341,6 +337,7 @@ public class UnityAdsManager : MonoBehaviour
         LogError($"배너 로드 실패 - {error.ErrorCode}: {error.ErrorMessage}");
         isBannerLoaded = false;
         isBannerDisplayed = false;
+        pendingShowBanner = false;
     }
 
     private void OnBannerAdDisplayed(LevelPlayAdInfo adInfo)
@@ -358,19 +355,59 @@ public class UnityAdsManager : MonoBehaviour
     public void ShowBanner()
     {
         if (!isInitialized) return;
-        if (isBannerLoaded) bannerAd?.ShowAd();
-        else bannerAd?.LoadAd();
+        if (string.IsNullOrEmpty(bannerAdUnitId)) return;
+
+        try
+        {
+            if (bannerAd == null)
+            {
+                SetupBannerAd();
+                if (bannerAd == null) return;
+                pendingShowBanner = true;
+                LoadBannerAd();
+                return;
+            }
+
+            if (isBannerLoaded)
+                bannerAd?.ShowAd();
+            else
+            {
+                pendingShowBanner = true;
+                bannerAd?.LoadAd();
+            }
+        }
+        catch (Exception e)
+        {
+            LogError($"배너 표시 예외 - {e.Message}");
+        }
     }
 
     public void HideBanner()
     {
-        bannerAd?.HideAd();
-        isBannerDisplayed = false;
+        pendingShowBanner = false;
+        try
+        {
+            bannerAd?.HideAd();
+            isBannerDisplayed = false;
+        }
+        catch (Exception e)
+        {
+            LogError($"배너 숨김 예외 - {e.Message}");
+        }
     }
 
     public void DestroyBanner()
     {
-        bannerAd?.DestroyAd();
+        pendingShowBanner = false;
+        try
+        {
+            bannerAd?.DestroyAd();
+        }
+        catch (Exception e)
+        {
+            LogError($"배너 파괴 예외 - {e.Message}");
+        }
+        bannerAd = null;
         isBannerLoaded = false;
         isBannerDisplayed = false;
     }
@@ -387,6 +424,7 @@ public class UnityAdsManager : MonoBehaviour
     {
         isQuitting = true;
     }
+
     private void OnDestroy()
     {
         if (bannerRetryCoroutine != null)

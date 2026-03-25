@@ -167,7 +167,7 @@ public class Sushi : MonoBehaviour
         }
     }
 
-    public void SetHidden(bool hidden, Sprite hiddenSprite = null)
+    public void SetHidden(bool hidden, Sprite hiddenSprite = null, float offsetY = 0f)
     {
         isHidden = hidden;
 
@@ -179,8 +179,8 @@ public class Sushi : MonoBehaviour
             if (hiddenOverlay == null)
             {
                 hiddenOverlay = new GameObject("HiddenOverlay");
-                hiddenOverlay.transform.SetParent(transform);
-                hiddenOverlay.transform.localPosition = Vector3.zero;
+                hiddenOverlay.transform.SetParent(CurrentPlate != null ? CurrentPlate.transform : transform);
+                hiddenOverlay.transform.localPosition = new Vector3(0f, -offsetY + 0.15f, 0f);
                 hiddenOverlay.transform.localScale = Vector3.one * 1.5f;
                 hiddenOverlayRenderer = hiddenOverlay.AddComponent<SpriteRenderer>();
                 hiddenOverlayRenderer.sortingLayerName = riceRenderer.sortingLayerName;
