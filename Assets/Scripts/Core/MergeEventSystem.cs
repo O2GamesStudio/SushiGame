@@ -9,12 +9,12 @@ public class MergeEventSystem : MonoBehaviour
     [SerializeField] private PlateManager plateManager;
     [SerializeField] private MergeEventUI eventUI;
     [SerializeField] private TrainCtrl trainCtrl;
-    [SerializeField] private float timePerSushi = 20f;
     [SerializeField] private AudioClip eventSFX;
 
     private MergeEventData[] eventDataList;
     private int currentEventIndex = 0;
     private bool isEventActive = false;
+    private bool isEventCompleting = false;
     private List<int> specialTargetTypes = new List<int>();
     private List<int> normalTargetTypes = new List<int>();
     private List<Plate> specialPlates = new List<Plate>();
@@ -30,7 +30,7 @@ public class MergeEventSystem : MonoBehaviour
 
     private void Update()
     {
-        if (!isEventActive) return;
+        if (!isEventActive || isEventCompleting) return;
 
         eventTimeRemaining -= Time.deltaTime;
         eventUI?.UpdateTimer(eventTimeRemaining, totalEventTime);
@@ -41,9 +41,11 @@ public class MergeEventSystem : MonoBehaviour
             GameManager.Instance?.OnGameLose(true);
         }
     }
+
     public void ForceCompleteEvent()
     {
         isEventActive = false;
+        isEventCompleting = false;
         currentEventIndex++;
         eventUI?.HideEvent();
     }
@@ -53,6 +55,7 @@ public class MergeEventSystem : MonoBehaviour
         eventDataList = events;
         currentEventIndex = 0;
         isEventActive = false;
+        isEventCompleting = false;
         specialPlates.Clear();
         eventUI?.HideEvent();
 
@@ -80,7 +83,7 @@ public class MergeEventSystem : MonoBehaviour
 
     public void OnSushiMergedDuringEvent(int typeId, Plate plate)
     {
-        if (!isEventActive) return;
+        if (!isEventActive || isEventCompleting) return;
 
         bool isSpecialPlate = plate != null && specialPlates.Contains(plate);
 
@@ -110,12 +113,16 @@ public class MergeEventSystem : MonoBehaviour
         }
 
         if (specialTargetTypes.Count == 0 && normalTargetTypes.Count == 0)
+        {
+            isEventCompleting = true;
             CompleteEvent();
+        }
     }
 
     private void StartEvent(MergeEventData data)
     {
         isEventActive = true;
+        isEventCompleting = false;
         specialTargetTypes.Clear();
         normalTargetTypes.Clear();
 
@@ -150,6 +157,7 @@ public class MergeEventSystem : MonoBehaviour
     private void CompleteEvent()
     {
         isEventActive = false;
+        isEventCompleting = false;
         currentEventIndex++;
         eventUI?.HideEvent();
         trainCtrl?.PlayOnEventComplete();
