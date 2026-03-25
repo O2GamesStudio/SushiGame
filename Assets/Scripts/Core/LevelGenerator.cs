@@ -18,6 +18,7 @@ public class LevelGenerator
     private RailData railData;
     private Dictionary<int, int> eraseCountPerPlate;
     private HashSet<int> cantMergePlateIndices;
+    private List<int> layerSizePool = new List<int>();
 
     public LevelGenerator(LevelData data)
     {
@@ -184,6 +185,10 @@ public class LevelGenerator
         cachedGuaranteedSushis = ExtractGuaranteedSushis();
         DetermineLockedPlates();
 
+        int estimatedLayers = GetEffectivePlateCount() * levelData.maxLayersPerPlate;
+        InitializeLayerSizePool(estimatedLayers);
+        layerSizePoolIndex = 0;
+
         var plates = new List<PlateData>();
 
         if (concentratedTypes.Count > 0)
@@ -204,16 +209,49 @@ public class LevelGenerator
     }
 
     private int GetEffectivePlateCount() => levelData.plateCount - railPlateIndices.Count;
+    private void InitializeLayerSizePool(int totalLayers)
+    {
+        layerSizePool.Clear();
+        int total = levelData.layerSize1Weight + levelData.layerSize2Weight + levelData.layerSize3Weight;
+        if (total <= 0)
+        {
+            for (int i = 0; i < totalLayers; i++)
+                layerSizePool.Add(Random.Range(1, 4));
+            Shuffle(layerSizePool);
+            return;
+        }
 
+        int count1 = Mathf.RoundToInt((float)levelData.layerSize1Weight / total * totalLayers);
+        int count3 = Mathf.RoundToInt((float)levelData.layerSize3Weight / total * totalLayers);
+        int count2 = totalLayers - count1 - count3;
+
+        // count2가 음수가 되지 않도록 보정
+        if (count2 < 0)
+        {
+            count3 += count2;
+            count2 = 0;
+        }
+
+        for (int i = 0; i < count1; i++) layerSizePool.Add(1);
+        for (int i = 0; i < count2; i++) layerSizePool.Add(2);
+        for (int i = 0; i < count3; i++) layerSizePool.Add(3);
+
+        Shuffle(layerSizePool);
+    }
+    private int layerSizePoolIndex = 0;
     private int GetWeightedLayerSize()
     {
-        int total = levelData.layerSize1Weight + levelData.layerSize2Weight + levelData.layerSize3Weight;
-        if (total <= 0) return Random.Range(1, 4);
-
-        int roll = Random.Range(0, total);
-        if (roll < levelData.layerSize1Weight) return 1;
-        if (roll < levelData.layerSize1Weight + levelData.layerSize2Weight) return 2;
-        return 3;
+        if (layerSizePool.Count == 0 || layerSizePoolIndex >= layerSizePool.Count)
+        {
+            // 풀 소진 시 fallback
+            int total = levelData.layerSize1Weight + levelData.layerSize2Weight + levelData.layerSize3Weight;
+            if (total <= 0) return Random.Range(1, 4);
+            int roll = Random.Range(0, total);
+            if (roll < levelData.layerSize1Weight) return 1;
+            if (roll < levelData.layerSize1Weight + levelData.layerSize2Weight) return 2;
+            return 3;
+        }
+        return layerSizePool[layerSizePoolIndex++];
     }
 
     private int CountTypeInReserve(PlateData plate, int typeId, List<int> currentLayer)
