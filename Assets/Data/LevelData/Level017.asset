@@ -18,8 +18,8 @@ MonoBehaviour:
   minLayersPerPlate: 2
   maxLayersPerPlate: 5
   timeLimitSeconds: 180
-  guaranteedMergeSets: 2
-  concentratedTypeCount: 4
+  guaranteedMergeSets: 3
+  concentratedTypeCount: 5
   sushiInitEraseCount: 9
   layerSize1Weight: 20
   layerSize2Weight: 40
@@ -30,6 +30,7 @@ MonoBehaviour:
   mergeUnlockCount: 0
   lockedSushiCount: 0
   singleSlotPlateCount: 0
+  cantMergePlateCount: 0
   sequentialActivation: 0
   isRail: 0
   railSushiCount: 0

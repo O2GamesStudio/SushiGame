@@ -130,7 +130,13 @@ public class MergeEventSystem : MonoBehaviour
                 normalTargetTypes.Add(shuffled[i]);
         }
 
-        totalEventTime = totalCount * timePerSushi;
+        if (totalCount == 1)
+            totalEventTime = 20f;
+        else if (totalCount == 2)
+            totalEventTime = 20f * 2 + 10f;
+        else
+            totalEventTime = 20f * 3 + 20f;
+
         eventTimeRemaining = totalEventTime;
 
         var allTargets = specialTargetTypes.Concat(normalTargetTypes).ToList();
