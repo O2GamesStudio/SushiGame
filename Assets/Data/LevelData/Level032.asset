@@ -30,6 +30,7 @@ MonoBehaviour:
   mergeUnlockCount: 2
   lockedSushiCount: 0
   singleSlotPlateCount: 1
+  cantMergePlateCount: 0
   sequentialActivation: 0
   isRail: 0
   railSushiCount: 0

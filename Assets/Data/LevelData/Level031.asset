@@ -21,9 +21,9 @@ MonoBehaviour:
   guaranteedMergeSets: 2
   concentratedTypeCount: 3
   sushiInitEraseCount: 6
-  layerSize1Weight: 10
-  layerSize2Weight: 30
-  layerSize3Weight: 60
+  layerSize1Weight: 20
+  layerSize2Weight: 40
+  layerSize3Weight: 40
   specialPlateCount: 0
   hiddenReserveCount: 15
   lockedPlateCount: 4
