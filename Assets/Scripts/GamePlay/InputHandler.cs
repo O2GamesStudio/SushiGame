@@ -13,6 +13,7 @@ public class InputHandler : MonoBehaviour
     private Sushi draggedSushi;
     private Vector3 originalPosition;
     private RailSlot originRailSlot;
+    private Plate _pendingUnlockPlate;
 
     private void Update()
     {
@@ -72,8 +73,34 @@ public class InputHandler : MonoBehaviour
         if (clickedPlate != null && clickedPlate.IsLocked)
         {
             if (clickedPlate.State == PlateState.LockedAd)
-                PlateUnlockSystem.Instance?.TryUnlockAdPlate(clickedPlate);
+            {
+                if (UnityAdsManager.Instance == null) return;
+
+                UnityAdsManager.Instance.OnRewardEarned += OnAdPlateUnlockRewardEarned;
+                UnityAdsManager.Instance.OnAdFailedToShow += OnAdPlateUnlockFailed;
+
+                _pendingUnlockPlate = clickedPlate;
+                UnityAdsManager.Instance.ShowRewardedAd();
+            }
         }
+    }
+    private void OnAdPlateUnlockRewardEarned()
+    {
+        UnityAdsManager.Instance.OnRewardEarned -= OnAdPlateUnlockRewardEarned;
+        UnityAdsManager.Instance.OnAdFailedToShow -= OnAdPlateUnlockFailed;
+
+        if (_pendingUnlockPlate != null)
+        {
+            PlateUnlockSystem.Instance?.TryUnlockAdPlate(_pendingUnlockPlate);
+            _pendingUnlockPlate = null;
+        }
+    }
+
+    private void OnAdPlateUnlockFailed()
+    {
+        UnityAdsManager.Instance.OnRewardEarned -= OnAdPlateUnlockRewardEarned;
+        UnityAdsManager.Instance.OnAdFailedToShow -= OnAdPlateUnlockFailed;
+        _pendingUnlockPlate = null;
     }
 
     private void OnMouseDrag()
