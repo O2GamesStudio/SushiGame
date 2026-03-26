@@ -20,7 +20,9 @@ public class TutorialPanel : MonoBehaviour
     {
         confirmBtn?.onClick.RemoveAllListeners();
         transform.DOKill();
+        content?.StopAnimation();
     }
+
 
     public void Show(Action onConfirm = null)
     {
@@ -33,11 +35,14 @@ public class TutorialPanel : MonoBehaviour
         transform.localScale = new Vector3(0f, 1f, 1f);
         transform.DOScaleX(1.15f, 0.2f)
             .SetEase(Ease.OutQuad)
+            .SetLink(gameObject)
             .OnComplete(() =>
                 transform.DOScaleX(1f, 0.1f)
                     .SetEase(Ease.InQuad)
+                    .SetLink(gameObject)
                     .OnComplete(() =>
-                        DOVirtual.DelayedCall(1f, () => content?.PlayAnimation())));
+                        DOVirtual.DelayedCall(1f, () => content?.PlayAnimation())
+                            .SetLink(gameObject)));
     }
 
     private void OnConfirmClicked()

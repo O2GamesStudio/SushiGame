@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Level059
   m_EditorClassIdentifier: Assembly-CSharp::LevelData
   plateCount: 10
-  sushiTypeCount: 19
+  sushiTypeCount: 21
   totalSushiSetCount: 42
   minLayersPerPlate: 2
   maxLayersPerPlate: 7

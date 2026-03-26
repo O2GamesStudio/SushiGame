@@ -82,6 +82,11 @@ public class GameManager : MonoBehaviour
         if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
             SceneLoader.ReloadGame();
 
+#if UNITY_EDITOR
+        if (Keyboard.current != null && Keyboard.current.digit1Key.wasPressedThisFrame)
+            OnGameWin();
+#endif
+
         if (!isGameActive || !isTimerStarted || isTimerFrozen) return;
 
         timeRemaining -= Time.deltaTime;

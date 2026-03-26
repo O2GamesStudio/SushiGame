@@ -438,7 +438,6 @@ public class LevelGenerator
     {
         int effectivePlateCount = GetEffectivePlateCount();
 
-        // 로컬 변수 제거 - 클래스 필드 사용
         ComputeEraseCountPerPlate(effectivePlateCount);
 
         var concentratedSushis = new Dictionary<int, List<int>>();
@@ -575,7 +574,12 @@ public class LevelGenerator
         while (dispersedIndex < dispersedSushis.Count)
             pendingLayerSushis.Add(dispersedSushis[dispersedIndex++]);
 
-        Shuffle(pendingLayerSushis);
+        // 집중 타입을 앞으로, 각 그룹 내부는 셔플
+        var concentratedPending = pendingLayerSushis.Where(t => concentratedTypes.Contains(t)).ToList();
+        var dispersedPending = pendingLayerSushis.Where(t => !concentratedTypes.Contains(t)).ToList();
+        Shuffle(concentratedPending);
+        Shuffle(dispersedPending);
+        pendingLayerSushis = concentratedPending.Concat(dispersedPending).ToList();
 
         var validPlateIndices = GetValidPlateIndices(plates);
         int poolIndex = 0;
@@ -990,33 +994,44 @@ public class LevelGenerator
     {
         if (levelData.lockedSushiCount <= 0) return;
 
-        var availableSlots = new List<(int plateIndex, int slotIndex, bool isActive, int layerIndex)>();
+        var activeSlots = new List<(int plateIndex, int slotIndex)>();
+        var layerSlots = new List<(int plateIndex, int slotIndex, int layerIndex)>();
 
         for (int i = 0; i < plates.Count; i++)
         {
             if (plates[i].State != PlateState.Normal) continue;
 
             for (int j = 0; j < plates[i].ActiveTypes.Count; j++)
-                availableSlots.Add((i, j, true, -1));
+                activeSlots.Add((i, j));
 
             for (int layerIdx = 0; layerIdx < plates[i].Layers.Count; layerIdx++)
             {
                 var layer = plates[i].Layers[layerIdx];
                 for (int j = 0; j < layer.Count; j++)
-                    availableSlots.Add((i, j, false, layerIdx));
+                    layerSlots.Add((i, j, layerIdx));
             }
         }
 
-        Shuffle(availableSlots);
-        int lockedCount = Mathf.Min(levelData.lockedSushiCount, availableSlots.Count);
+        Shuffle(activeSlots);
+        Shuffle(layerSlots);
 
-        for (int i = 0; i < lockedCount; i++)
+        int lockedCount = levelData.lockedSushiCount;
+
+        // active에는 최대 1개만 배치
+        if (activeSlots.Count > 0)
         {
-            var slot = availableSlots[i];
-            if (slot.isActive)
-                plates[slot.plateIndex].ActiveLockStages[slot.slotIndex] = 3;
-            else
-                plates[slot.plateIndex].Layers[slot.layerIndex].SetLockStage(slot.slotIndex, 3);
+            var slot = activeSlots[0];
+            plates[slot.plateIndex].ActiveLockStages[slot.slotIndex] = 3;
+            lockedCount--;
+        }
+
+        // 나머지는 모두 reserve(layer)에 배치
+        int layerAssigned = 0;
+        foreach (var slot in layerSlots)
+        {
+            if (layerAssigned >= lockedCount) break;
+            plates[slot.plateIndex].Layers[slot.layerIndex].SetLockStage(slot.slotIndex, 3);
+            layerAssigned++;
         }
     }
 

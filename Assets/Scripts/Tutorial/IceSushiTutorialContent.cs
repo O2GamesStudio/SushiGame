@@ -10,6 +10,7 @@ public class IceSushiTutorialContent : TutorialContent
 
     private int currentIndex = 0;
     private bool isPlaying = false;
+    private Sequence loopSequence;
 
     public override void PlayAnimation()
     {
@@ -25,7 +26,9 @@ public class IceSushiTutorialContent : TutorialContent
         sushiImage.gameObject.SetActive(true);
         sushiImage.sprite = sprites[currentIndex];
 
-        DOVirtual.DelayedCall(1f, () =>
+        loopSequence = DOTween.Sequence();
+        loopSequence.AppendInterval(1f);
+        loopSequence.OnComplete(() =>
         {
             if (!isPlaying) return;
 
@@ -35,14 +38,16 @@ public class IceSushiTutorialContent : TutorialContent
             {
                 sushiImage.gameObject.SetActive(false);
 
-                if (iceBreakVfxPrefab != null)
+                /*if (isPlaying && iceBreakVfxPrefab != null)
                 {
                     var vfx = Instantiate(iceBreakVfxPrefab, sushiImage.transform.position, Quaternion.identity);
                     vfx.Play();
                     Destroy(vfx.gameObject, vfx.main.duration + vfx.main.startLifetime.constantMax);
-                }
+                }*/
 
-                DOVirtual.DelayedCall(1f, () =>
+                loopSequence = DOTween.Sequence();
+                loopSequence.AppendInterval(1f);
+                loopSequence.OnComplete(() =>
                 {
                     if (!isPlaying) return;
                     currentIndex = 0;
@@ -59,7 +64,8 @@ public class IceSushiTutorialContent : TutorialContent
     public override void StopAnimation()
     {
         isPlaying = false;
-        DOTween.Kill(this);
+        loopSequence?.Kill();
+        loopSequence = null;
         sushiImage.gameObject.SetActive(true);
         if (sprites.Length > 0)
             sushiImage.sprite = sprites[0];
