@@ -357,7 +357,6 @@ public class LevelGenerator
         int effectivePlateCount = GetEffectivePlateCount();
         int index = 0;
 
-        // 로컬 변수 제거 - 클래스 필드 사용
         ComputeEraseCountPerPlate(effectivePlateCount);
 
         for (int i = 0; i < effectivePlateCount; i++)
@@ -431,7 +430,7 @@ public class LevelGenerator
         }
 
         var validPlateIndices = GetValidPlateIndices(plates);
-        DistributeLayersToPlates(plates, validPlateIndices, allSushiTypes, ref index);
+        DistributeLayersByTypeGroup(plates, validPlateIndices, allSushiTypes.Skip(index).ToList());
     }
 
     private void GeneratePlatesWithConcentration(List<PlateData> plates)
@@ -574,7 +573,6 @@ public class LevelGenerator
         while (dispersedIndex < dispersedSushis.Count)
             pendingLayerSushis.Add(dispersedSushis[dispersedIndex++]);
 
-        // 집중 타입을 앞으로, 각 그룹 내부는 셔플
         var concentratedPending = pendingLayerSushis.Where(t => concentratedTypes.Contains(t)).ToList();
         var dispersedPending = pendingLayerSushis.Where(t => !concentratedTypes.Contains(t)).ToList();
         Shuffle(concentratedPending);
@@ -582,9 +580,8 @@ public class LevelGenerator
         pendingLayerSushis = concentratedPending.Concat(dispersedPending).ToList();
 
         var validPlateIndices = GetValidPlateIndices(plates);
-        int poolIndex = 0;
-        DistributeLayersToPlates(plates, validPlateIndices, pendingLayerSushis, ref poolIndex);
-        EnsureNoEmptyPlates(plates, pendingLayerSushis.Skip(poolIndex).ToList());
+        DistributeLayersByTypeGroup(plates, validPlateIndices, pendingLayerSushis);
+        EnsureNoEmptyPlates(plates, new List<int>());
     }
 
     private void EnsureNoEmptyPlates(List<PlateData> plates, List<int> pendingLayerSushis)
@@ -732,12 +729,16 @@ public class LevelGenerator
             int remainder = kvp.Value % 3;
             if (remainder == 0) continue;
 
+            // selectedSushiTypes에 없는 타입은 스킵
+            if (!selectedSushiTypes.Contains(typeId))
+            {
+                Debug.LogError($"[LevelGenerator] FixTypeMultiples - 선택되지 않은 타입 {typeId} 발견");
+                continue;
+            }
+
             int toAdd = 3 - remainder;
             for (int added = 0; added < toAdd; added++)
             {
-                // 항상 레이어에만 추가 - active slot에는 절대 추가하지 않음
-                // active에 추가하면 sushiInitEraseCount로 비워둔 슬롯이 복구되어버림
-                // maxLayersPerPlate 제한 무시 - 타입 균형이 우선
                 for (int i = 0; i < plates.Count; i++)
                 {
                     if (adPlateIndices.Contains(i)) continue;
@@ -863,11 +864,16 @@ public class LevelGenerator
         }
 
         Debug.Log($"[LevelGenerator] 배치된 총 초밥: {totalSushis}, 3의 배수: {totalSushis % 3 == 0}");
+        Debug.Log($"[LevelGenerator] 실제 사용 타입 수: {typeCount.Count} / 설정 타입 수: {levelData.sushiTypeCount}");
+        Debug.Log($"[LevelGenerator] 사용 타입 목록: [{string.Join(", ", typeCount.Keys)}]");
+
+        if (typeCount.Count != levelData.sushiTypeCount)
+            Debug.LogError($"[LevelGenerator] 실제 사용 타입 수({typeCount.Count})가 설정값({levelData.sushiTypeCount})과 다릅니다! 사용 타입: [{string.Join(", ", typeCount.Keys)}]");
+
         foreach (var kvp in typeCount)
-        {
             if (kvp.Value % 3 != 0)
                 Debug.LogError($"[LevelGenerator] 타입 {kvp.Key}: {kvp.Value}개 - 3의 배수 아님!");
-        }
+
         if (totalSushis % 3 != 0)
             Debug.LogError($"[LevelGenerator] 초밥 총합이 3의 배수 아님! ({totalSushis}개)");
     }
@@ -1033,6 +1039,157 @@ public class LevelGenerator
             plates[slot.plateIndex].Layers[slot.layerIndex].SetLockStage(slot.slotIndex, 3);
             layerAssigned++;
         }
+    }
+    private void DistributeLayersByTypeGroup(List<PlateData> plates, List<int> validPlateIndices, List<int> pool)
+    {
+        if (pool.Count == 0) return;
+
+        // 1단계 - 타입별 그룹화
+        var typeGroups = new Dictionary<int, List<int>>();
+        foreach (var typeId in pool)
+        {
+            if (!typeGroups.ContainsKey(typeId))
+                typeGroups[typeId] = new List<int>();
+            typeGroups[typeId].Add(typeId);
+        }
+
+        // 플레이트별 레이어 슬롯 관리 - (plateIndex, layerDepth) -> 해당 레이어의 타입 리스트
+        var layerSlots = new Dictionary<(int plateIndex, int depth), List<int>>();
+
+        // 기존 레이어 정보 로드
+        for (int i = 0; i < plates.Count; i++)
+        {
+            if (!validPlateIndices.Contains(i)) continue;
+            for (int d = 0; d < plates[i].Layers.Count; d++)
+            {
+                layerSlots[(i, d)] = new List<int>(plates[i].Layers[d].SushiTypes);
+            }
+        }
+
+        var shuffledTypes = new List<int>(typeGroups.Keys);
+        Shuffle(shuffledTypes);
+
+        var shuffledPlates = new List<int>(validPlateIndices);
+
+        foreach (var typeId in shuffledTypes)
+        {
+            var sushisToPlace = typeGroups[typeId];
+            if (sushisToPlace.Count == 0) continue;
+
+            // 2단계 - 시작 깊이 랜덤 결정
+            int maxExistingDepth = 0;
+            foreach (var pi in validPlateIndices)
+                if (plates[pi].Layers.Count > maxExistingDepth)
+                    maxExistingDepth = plates[pi].Layers.Count;
+
+            int startDepth = maxExistingDepth > 0 ? Random.Range(0, maxExistingDepth) : 0;
+            int maxDepth = startDepth + 2; // startDepth ~ startDepth+2 범위
+
+            // 3단계 - 각 초밥 배치
+            foreach (var sushi in sushisToPlace)
+            {
+                bool placed = false;
+                Shuffle(shuffledPlates);
+
+                // startDepth ~ maxDepth 범위 내에서 배치 시도
+                for (int depth = startDepth; depth <= maxDepth && !placed; depth++)
+                {
+                    foreach (var pi in shuffledPlates)
+                    {
+                        if (!validPlateIndices.Contains(pi)) continue;
+                        if (plates[pi].Layers.Count > levelData.maxLayersPerPlate) continue;
+
+                        var key = (pi, depth);
+                        if (!layerSlots.ContainsKey(key))
+                            layerSlots[key] = new List<int>();
+
+                        var layerTypes = layerSlots[key];
+
+                        // 4단계 - 같은 레이어에 같은 타입 3개 금지
+                        int countInLayer = layerTypes.Count(t => t == typeId);
+                        if (countInLayer >= 2) continue;
+
+                        // 레이어 크기 제한 (GetWeightedLayerSize 기반)
+                        bool isSingleSlot = singleSlotPlateIndices.Contains(pi);
+                        int maxLayerSize = isSingleSlot ? 1 : 3;
+                        if (layerTypes.Count >= maxLayerSize) continue;
+
+                        layerTypes.Add(sushi);
+                        placed = true;
+                        break;
+                    }
+                }
+
+                // 5단계 - fallback: 범위 내 배치 불가 시 범위 확장
+                if (!placed)
+                {
+                    Shuffle(shuffledPlates);
+                    foreach (var pi in shuffledPlates)
+                    {
+                        if (!validPlateIndices.Contains(pi)) continue;
+
+                        bool isSingleSlot = singleSlotPlateIndices.Contains(pi);
+                        int maxLayerSize = isSingleSlot ? 1 : 3;
+
+                        // 기존 레이어에서 배치 가능한 슬롯 찾기
+                        bool placedInExisting = false;
+                        for (int d = 0; d < plates[pi].Layers.Count + 1; d++)
+                        {
+                            var key = (pi, d);
+                            if (!layerSlots.ContainsKey(key))
+                                layerSlots[key] = new List<int>();
+
+                            var layerTypes = layerSlots[key];
+                            int countInLayer = layerTypes.Count(t => t == typeId);
+                            if (countInLayer >= 2) continue;
+                            if (layerTypes.Count >= maxLayerSize) continue;
+
+                            layerTypes.Add(sushi);
+                            placedInExisting = true;
+                            placed = true;
+                            break;
+                        }
+
+                        if (placedInExisting) break;
+                    }
+                }
+            }
+        }
+
+        // layerSlots를 실제 plates에 적용
+        ApplyLayerSlots(plates, validPlateIndices, layerSlots);
+    }
+
+    private void ApplyLayerSlots(List<PlateData> plates, List<int> validPlateIndices, Dictionary<(int plateIndex, int depth), List<int>> layerSlots)
+    {
+        // 기존 레이어 초기화
+        foreach (var pi in validPlateIndices)
+            plates[pi].Layers.Clear();
+
+        // depth 순서대로 정렬해서 적용
+        var sortedKeys = layerSlots.Keys
+            .Where(k => validPlateIndices.Contains(k.plateIndex))
+            .OrderBy(k => k.depth)
+            .ToList();
+
+        foreach (var key in sortedKeys)
+        {
+            var types = layerSlots[key];
+            if (types.Count == 0) continue;
+
+            int pi = key.plateIndex;
+            int depth = key.depth;
+
+            // depth에 맞게 레이어 확장
+            while (plates[pi].Layers.Count <= depth)
+                plates[pi].Layers.Add(new Layer(new List<int>()));
+
+            plates[pi].Layers[depth] = new Layer(new List<int>(types));
+        }
+
+        // 빈 레이어 제거
+        foreach (var pi in validPlateIndices)
+            plates[pi].Layers.RemoveAll(l => l.SushiTypes.Count == 0);
     }
 
     private List<List<int>> ExtractGuaranteedSushis()

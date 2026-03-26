@@ -18,8 +18,8 @@ MonoBehaviour:
   minLayersPerPlate: 3
   maxLayersPerPlate: 7
   timeLimitSeconds: 200
-  guaranteedMergeSets: 2
-  concentratedTypeCount: 4
+  guaranteedMergeSets: 1
+  concentratedTypeCount: 3
   sushiInitEraseCount: 10
   layerSize1Weight: 20
   layerSize2Weight: 40

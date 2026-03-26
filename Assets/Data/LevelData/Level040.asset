@@ -17,13 +17,13 @@ MonoBehaviour:
   totalSushiSetCount: 40
   minLayersPerPlate: 3
   maxLayersPerPlate: 5
-  timeLimitSeconds: 240
+  timeLimitSeconds: 200
   guaranteedMergeSets: 2
   concentratedTypeCount: 7
-  sushiInitEraseCount: 11
+  sushiInitEraseCount: 9
   layerSize1Weight: 15
-  layerSize2Weight: 35
-  layerSize3Weight: 50
+  layerSize2Weight: 40
+  layerSize3Weight: 45
   specialPlateCount: 2
   hiddenReserveCount: 12
   lockedPlateCount: 4
@@ -35,10 +35,4 @@ MonoBehaviour:
   isRail: 0
   railSushiCount: 0
   railPlateSprite: {fileID: 0}
-  mergeEvents:
-  - mergeTriggerCount: 10
-    eventSushiCount: 3
-    requiredSpecialMergeCount: 2
-  - mergeTriggerCount: 20
-    eventSushiCount: 3
-    requiredSpecialMergeCount: 2
+  mergeEvents: []
