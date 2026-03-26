@@ -32,6 +32,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Button eventSkipAdButton;
     [SerializeField] private Button eventSkipLoseButton;
 
+    private bool isGameWinProcessed = false;
+
     #region State
 
     private bool isStageClearProcessed = false;
@@ -118,6 +120,8 @@ public class GameManager : MonoBehaviour
     }
     private void StartGame()
     {
+        isGameWinProcessed = false;
+        isStageClearProcessed = false;
         var saveData = GameDataTransfer.Instance?.CurrentSaveData;
         if (saveData != null)
         {
@@ -159,6 +163,8 @@ public class GameManager : MonoBehaviour
 
     private void ResumeGame(GameSaveData saveData)
     {
+        isGameWinProcessed = false;
+        isStageClearProcessed = false;
         plateManager.RestoreFromSaveData(saveData, currentLevel);
         GameStateChecker.Instance.Initialize(plateManager);
 
@@ -254,6 +260,9 @@ public class GameManager : MonoBehaviour
 
     public void OnGameWin()
     {
+        if (isGameWinProcessed) return;
+        isGameWinProcessed = true;
+
         if (MergeEventSystem.Instance != null && MergeEventSystem.Instance.IsEventActive)
         {
             OnGameLose(true);

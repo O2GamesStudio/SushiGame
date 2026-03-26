@@ -15,7 +15,7 @@ MonoBehaviour:
   plateCount: 10
   sushiTypeCount: 20
   totalSushiSetCount: 36
-  minLayersPerPlate: 2
+  minLayersPerPlate: 3
   maxLayersPerPlate: 5
   timeLimitSeconds: 220
   guaranteedMergeSets: 3

@@ -112,7 +112,6 @@ public class InputHandler : MonoBehaviour
 
     private void OnMouseUp()
     {
-        var targetPlate = GetPlateAtMousePosition();
         var dropPosition = draggedSushi.transform.position;
         var sushi = draggedSushi;
         var fromPlate = selectedPlate;
@@ -125,9 +124,12 @@ public class InputHandler : MonoBehaviour
 
         if (fromRailSlot != null)
         {
-            HandleRailDrop(sushi, targetPlate, dropPosition, fromRailSlot, returnPos);
+            var targetPlateForRail = GetPlateOverlappingWithSushi(sushi);
+            HandleRailDrop(sushi, targetPlateForRail, dropPosition, fromRailSlot, returnPos);
             return;
         }
+
+        var targetPlate = GetPlateOverlappingWithSushi(sushi);
 
         if (targetPlate != null)
         {
@@ -162,6 +164,32 @@ public class InputHandler : MonoBehaviour
         {
             ReturnToPosition(sushi, returnPos);
         }
+    }
+    private Plate GetPlateOverlappingWithSushi(Sushi sushi)
+    {
+        var collider = sushi.GetComponent<CircleCollider2D>();
+        if (collider == null) return null;
+
+        var results = new Collider2D[5];
+        var filter = new ContactFilter2D { layerMask = plateLayer, useLayerMask = true };
+        int count = Physics2D.OverlapCollider(collider, filter, results);
+
+        Plate closestPlate = null;
+        float minDistance = float.MaxValue;
+
+        for (int i = 0; i < count; i++)
+        {
+            if (results[i] == null) continue;
+            var plate = results[i].GetComponent<Plate>();
+            if (plate == null) continue;
+            float dist = Vector2.Distance(sushi.transform.position, plate.transform.position);
+            if (dist < minDistance)
+            {
+                minDistance = dist;
+                closestPlate = plate;
+            }
+        }
+        return closestPlate;
     }
 
     private void HandleRailDrop(Sushi sushi, Plate targetPlate, Vector3 dropPosition, RailSlot fromSlot, Vector3 returnPos)

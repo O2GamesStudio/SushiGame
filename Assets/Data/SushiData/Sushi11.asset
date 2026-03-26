@@ -18,3 +18,4 @@ MonoBehaviour:
   toppingSprite: {fileID: 21300000, guid: 7f2bb365b45799f469ba9cd168e86e55, type: 3}
   toppingOffsetX: -0.03
   toppingOffsetY: 0.147
+  plateOffsetY: 0.11

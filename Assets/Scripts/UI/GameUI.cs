@@ -64,7 +64,7 @@ public class GameUI : MonoBehaviour
     public void UpdateStage(int stage)
     {
         if (stageText != null)
-            stageText.text = $"{stage}층";
+            stageText.text = $"Lv.{stage}";
     }
 
     public void SetTimerFrozen(bool isFrozen)

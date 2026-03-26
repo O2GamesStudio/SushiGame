@@ -17,5 +17,5 @@ MonoBehaviour:
   riceSprite: {fileID: 21300000, guid: 001d9241eb4614340aada0fc52f9bc9f, type: 3}
   toppingSprite: {fileID: 0}
   toppingOffsetX: 0
-  toppingOffsetY: 0
+  toppingOffsetY: -0.05
   plateOffsetY: 0.35

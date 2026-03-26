@@ -166,7 +166,6 @@ public class Sushi : MonoBehaviour
             hiddenOverlayRenderer.sortingOrder = baseOrder + 3;
         }
     }
-
     public void SetHidden(bool hidden, Sprite hiddenSprite = null, float offsetY = 0f)
     {
         isHidden = hidden;
