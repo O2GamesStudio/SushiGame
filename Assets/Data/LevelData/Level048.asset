@@ -22,8 +22,8 @@ MonoBehaviour:
   concentratedTypeCount: 4
   sushiInitEraseCount: 10
   layerSize1Weight: 20
-  layerSize2Weight: 40
-  layerSize3Weight: 40
+  layerSize2Weight: 50
+  layerSize3Weight: 30
   specialPlateCount: 0
   hiddenReserveCount: 10
   lockedPlateCount: 4

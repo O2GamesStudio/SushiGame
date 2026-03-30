@@ -342,6 +342,17 @@
       "dependencyXmlFileName": "ISBigoAdapterDependencies.xml",
       "SKAdNetworkIdXmlURL": "https://s3.amazonaws.com/ssa.public/Unity/SKAdNetwork-IDs/All/skadnetworks.bigo.plist.xml",
       "versions": {
+        "5.6.0.0": {
+          "ironSourceSdkVersion": "[9.0.0, 10.0[",
+          "android": {
+            "adapterVersion": "5.4.0",
+            "adNetworkVersion": "5.7.1"
+          },
+          "ios": {
+            "adapterVersion": "5.5.0.0",
+            "adNetworkVersion": "5.1.1"
+          }
+        },
         "5.5.0.0": {
           "ironSourceSdkVersion": "[9.0.0, 10.0[",
           "android": {
@@ -1322,6 +1333,17 @@
       "dependencyXmlFileName": "ISMolocoAdapterDependencies.xml",
       "SKAdNetworkIdXmlURL": "https://s3.amazonaws.com/ssa.public/Unity/SKAdNetwork-IDs/All/skadnetworks.moloco.plist.xml",
       "versions": {
+        "5.13.0.0": {
+          "ironSourceSdkVersion": "[9.0.0, 10.0[",
+          "android": {
+            "adapterVersion": "5.8.0",
+            "adNetworkVersion": "4.7.0"
+          },
+          "ios": {
+            "adapterVersion": "5.9.0.0",
+            "adNetworkVersion": "4.5.1"
+          }
+        },
         "5.12.0.0": {
           "ironSourceSdkVersion": "[9.0.0, 10.0[",
           "android": {
@@ -1547,6 +1569,17 @@
       "dependencyXmlFileName": "ISPangleAdapterDependencies.xml",
       "SKAdNetworkIdXmlURL": "https://s3.amazonaws.com/ssa.public/Unity/SKAdNetwork-IDs/All/skadnetworks.pangle.plist.xml",
       "versions": {
+        "5.19.0.0": {
+          "ironSourceSdkVersion": "[9.0.0, 10.0[",
+          "android": {
+            "adapterVersion": "5.12.0",
+            "adNetworkVersion": "7.9.1.2"
+          },
+          "ios": {
+            "adapterVersion": "5.18.0.0",
+            "adNetworkVersion": "7.9.1.0"
+          }
+        },
         "5.18.0.0": {
           "ironSourceSdkVersion": "[9.0.0, 10.0[",
           "android": {
@@ -1858,6 +1891,17 @@
       "dependencyXmlFileName": "ISSuperAwesomeAdapterDependencies.xml",
       "SKAdNetworkIdXmlURL": "https://s3.amazonaws.com/ssa.public/Unity/SKAdNetwork-IDs/All/skadnetworks.superawesome.plist.xml",
       "versions": {
+        "5.1.0.0": {
+          "ironSourceSdkVersion": "[9.0.0, 10.0[",
+          "android": {
+            "adapterVersion": "5.1.0",
+            "adNetworkVersion": "10.0.0"
+          },
+          "ios": {
+            "adapterVersion": "5.0.0.0",
+            "adNetworkVersion": "9.4.0"
+          }
+        },
         "5.0.0.0": {
           "ironSourceSdkVersion": "[9.0.0, 10.0[",
           "android": {
