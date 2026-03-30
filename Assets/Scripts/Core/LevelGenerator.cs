@@ -160,7 +160,10 @@ public class LevelGenerator
     {
         cachedGuaranteedSushis = ExtractGuaranteedSushis();
         DetermineLockedPlates();
-        InitializeLayerSizePool(GetEffectivePlateCount() * levelData.maxLayersPerPlate);
+
+        // 단일 슬롯 플레이트 제외한 일반 플레이트 수만 사용
+        int normalPlateCount = GetEffectivePlateCount() - singleSlotPlateIndices.Count;
+        InitializeLayerSizePool(normalPlateCount * levelData.maxLayersPerPlate);
         layerSizePoolIndex = 0;
 
         var plates = new List<PlateData>();
@@ -912,10 +915,15 @@ public class LevelGenerator
             foreach (var t in plate.ActiveTypes) { typeCount.TryGetValue(t, out int c); typeCount[t] = c + 1; totalSushis++; }
             foreach (var layer in plate.Layers)
             {
-                int s = layer.SushiTypes.Count;
-                if (s == 1) size1++;
-                else if (s == 2) size2++;
-                else if (s >= 3) size3++;
+                // 단일 슬롯 플레이트는 size 비율 카운트 제외
+                bool isSingleSlot = plate.SlotCount == 1;
+                if (!isSingleSlot)
+                {
+                    int s = layer.SushiTypes.Count;
+                    if (s == 1) size1++;
+                    else if (s == 2) size2++;
+                    else if (s >= 3) size3++;
+                }
                 foreach (var t in layer.SushiTypes) { typeCount.TryGetValue(t, out int c); typeCount[t] = c + 1; totalSushis++; }
             }
         }
