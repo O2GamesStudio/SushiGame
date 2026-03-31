@@ -28,7 +28,7 @@ MonoBehaviour:
   hiddenReserveCount: 5
   lockedPlateCount: 2
   mergeUnlockCount: 1
-  lockedSushiCount: 10
+  lockedSushiCount: 4
   singleSlotPlateCount: 2
   cantMergePlateCount: 0
   sequentialActivation: 0

@@ -693,7 +693,7 @@ public class LevelGenerator
                         foreach (var t in layer.SushiTypes) if (t == kvp.Key) cntInLayer++;
                         if (layer.SushiTypes.Count < 3 && cntInLayer < 2)
                         {
-                            layer.SushiTypes.Add(kvp.Key);
+                            layer.AddSushi(kvp.Key);
                             merged = true;
                         }
                     }
@@ -736,16 +736,29 @@ public class LevelGenerator
 
         int effectivePlateCount = GetEffectivePlateCount();
         int guaranteedPlateCount = cachedGuaranteedSushis.Count;
-        var available = new List<int>();
-        for (int i = guaranteedPlateCount; i < effectivePlateCount; i++) available.Add(i);
-        Shuffle(available);
+
+        // locked 후보: 전체 플레이트 (guaranteed 포함)
+        var lockedCandidates = new List<int>();
+        for (int i = 0; i < effectivePlateCount; i++) lockedCandidates.Add(i);
+        Shuffle(lockedCandidates);
 
         int mergeUnlockCount = Mathf.Min(levelData.mergeUnlockCount, levelData.lockedPlateCount);
-        int totalLockedCount = Mathf.Min(levelData.lockedPlateCount, available.Count);
-        for (int i = 0; i < mergeUnlockCount && i < totalLockedCount; i++) sushiMergePlateIndices.Add(available[i]);
-        for (int i = mergeUnlockCount; i < totalLockedCount; i++) adPlateIndices.Add(available[i]);
+        int totalLockedCount = Mathf.Min(levelData.lockedPlateCount, lockedCandidates.Count);
 
-        var remaining = available.Skip(totalLockedCount).Where(i => !singleSlotPlateIndices.Contains(i)).ToList();
+        if (totalLockedCount < levelData.lockedPlateCount)
+            Debug.LogError($"[LevelGenerator] lockedPlateCount({levelData.lockedPlateCount}) 충족 불가 - 가능: {lockedCandidates.Count}");
+
+        for (int i = 0; i < mergeUnlockCount && i < totalLockedCount; i++)
+            sushiMergePlateIndices.Add(lockedCandidates[i]);
+        for (int i = mergeUnlockCount; i < totalLockedCount; i++)
+            adPlateIndices.Add(lockedCandidates[i]);
+
+        // singleSlot/cantMerge 후보: guaranteed 플레이트 제외 (slotCount=1 충돌 방지)
+        var remaining = new List<int>();
+        for (int i = guaranteedPlateCount; i < effectivePlateCount; i++)
+            if (!adPlateIndices.Contains(i) && !sushiMergePlateIndices.Contains(i))
+                remaining.Add(i);
+
         int singleSlotCount = Mathf.Min(levelData.singleSlotPlateCount, remaining.Count);
         for (int i = 0; i < singleSlotCount; i++) singleSlotPlateIndices.Add(remaining[i]);
 

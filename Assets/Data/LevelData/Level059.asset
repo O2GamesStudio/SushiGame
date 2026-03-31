@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LevelData
   plateCount: 10
   sushiTypeCount: 21
-  totalSushiSetCount: 42
+  totalSushiSetCount: 35
   minLayersPerPlate: 3
   maxLayersPerPlate: 7
   timeLimitSeconds: 240
@@ -32,8 +32,8 @@ MonoBehaviour:
   singleSlotPlateCount: 1
   cantMergePlateCount: 0
   sequentialActivation: 0
-  isRail: 0
-  railSushiCount: 0
+  isRail: 1
+  railSushiCount: 21
   railPlateSprite: {fileID: 21300000, guid: 0e41cd2f6ff915142a77fd87a44a6d5b, type: 3}
   mergeEvents:
   - mergeTriggerCount: 15

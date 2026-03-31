@@ -13,22 +13,22 @@ MonoBehaviour:
   m_Name: Level050
   m_EditorClassIdentifier: Assembly-CSharp::LevelData
   plateCount: 10
-  sushiTypeCount: 21
-  totalSushiSetCount: 40
+  sushiTypeCount: 20
+  totalSushiSetCount: 38
   minLayersPerPlate: 3
   maxLayersPerPlate: 7
-  timeLimitSeconds: 240
+  timeLimitSeconds: 200
   guaranteedMergeSets: 2
-  concentratedTypeCount: 3
-  sushiInitEraseCount: 6
-  layerSize1Weight: 20
-  layerSize2Weight: 35
-  layerSize3Weight: 45
-  specialPlateCount: 0
+  concentratedTypeCount: 4
+  sushiInitEraseCount: 7
+  layerSize1Weight: 15
+  layerSize2Weight: 50
+  layerSize3Weight: 35
+  specialPlateCount: 1
   hiddenReserveCount: 5
   lockedPlateCount: 1
   mergeUnlockCount: 0
-  lockedSushiCount: 0
+  lockedSushiCount: 2
   singleSlotPlateCount: 1
   cantMergePlateCount: 0
   sequentialActivation: 0

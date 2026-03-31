@@ -43,7 +43,25 @@ public class Layer
             SlotIndices.Add(slotIndex);
         }
     }
+    public void AddSushi(int typeId)
+    {
+        SushiTypes.Add(typeId);
+        LockStages.Add(0);
+        HiddenStates.Add(false);
 
+        // SlotIndices 업데이트
+        var usedSlots = new HashSet<int>(SlotIndices);
+        for (int s = 0; s < 3; s++)
+        {
+            if (!usedSlots.Contains(s))
+            {
+                SlotIndices.Add(s);
+                return;
+            }
+        }
+        // 모든 슬롯 사용 중이면 랜덤
+        SlotIndices.Add(Random.Range(0, 3));
+    }
     private void InitializeLockStages()
     {
         for (int i = 0; i < Count; i++)
