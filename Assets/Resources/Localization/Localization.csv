@@ -30,7 +30,7 @@ TutDesc03,특수한 접시입니다,Special type of plate
 TutTitle04,냉동 초밥,Frozen Sushi
 TutDesc04,머지하여 얼음을 깰 수 있습니다,Merge to break the ice
 TutTitle05,머지 불가,Cannot Merge
-ㅌ,초밥을 머지 할 수 없는 칸입니다,Sushi cannot be merged here
+TutDesc05,초밥을 머지 할 수 없는 칸입니다,Sushi cannot be merged here
 GoogleLogin,구글 로그인,Google Login
 LoginDesc01,"결제를 위해
 구글 로그인을 진행합니다","Sign in with Google to 
