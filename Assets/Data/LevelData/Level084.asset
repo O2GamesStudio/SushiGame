@@ -10,35 +10,35 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4ac28b7e86f3e40438c0623e790f6dee, type: 3}
-  m_Name: Level080
+  m_Name: Level084
   m_EditorClassIdentifier: Assembly-CSharp::LevelData
-  plateCount: 12
+  plateCount: 11
   sushiTypeCount: 21
-  totalSushiSetCount: 44
+  totalSushiSetCount: 38
   minLayersPerPlate: 3
   maxLayersPerPlate: 7
-  timeLimitSeconds: 280
+  timeLimitSeconds: 230
   guaranteedMergeSets: 2
   concentratedTypeCount: 4
-  sushiInitEraseCount: 8
-  layerSize1Weight: 0
-  layerSize2Weight: 30
-  layerSize3Weight: 70
+  sushiInitEraseCount: 10
+  layerSize1Weight: 10
+  layerSize2Weight: 40
+  layerSize3Weight: 50
   specialPlateCount: 1
-  hiddenReserveCount: 7
-  lockedPlateCount: 3
+  hiddenReserveCount: 8
+  lockedPlateCount: 2
   mergeUnlockCount: 1
   lockedSushiCount: 5
-  singleSlotPlateCount: 0
-  cantMergePlateCount: 1
+  singleSlotPlateCount: 1
+  cantMergePlateCount: 2
   sequentialActivation: 0
-  isRail: 0
-  railSushiCount: 18
+  isRail: 1
+  railSushiCount: 21
   railPlateSprite: {fileID: 21300000, guid: 0e41cd2f6ff915142a77fd87a44a6d5b, type: 3}
   mergeEvents:
   - mergeTriggerCount: 10
     eventSushiCount: 2
-    requiredSpecialMergeCount: 2
-  - mergeTriggerCount: 25
+    requiredSpecialMergeCount: 0
+  - mergeTriggerCount: 20
     eventSushiCount: 3
-    requiredSpecialMergeCount: 2
+    requiredSpecialMergeCount: 1

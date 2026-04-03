@@ -24,7 +24,7 @@ MonoBehaviour:
   layerSize1Weight: 0
   layerSize2Weight: 30
   layerSize3Weight: 70
-  specialPlateCount: 0
+  specialPlateCount: 1
   hiddenReserveCount: 7
   lockedPlateCount: 3
   mergeUnlockCount: 2
