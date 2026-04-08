@@ -77,6 +77,17 @@ public class LobbyManager : MonoBehaviour
                 coinPassView?.Initialize();
                 LobbyUIManager.Instance?.RefreshPassAlert();
                 LobbyUIManager.Instance?.RefreshDailyRewardAlert();
+
+                // 첫 실행 (stage 1) 자동 게임씬 진입
+                if (userData.currentStage == 1 && !GameSaveService.Instance.HasSaveData())
+                {
+                    var levelData = levelDataBase.Get(1);
+                    if (levelData != null)
+                    {
+                        GameDataTransfer.Instance.SetLevelData(levelData);
+                        SceneLoader.LoadGameAsync();
+                    }
+                }
             });
         });
     }
