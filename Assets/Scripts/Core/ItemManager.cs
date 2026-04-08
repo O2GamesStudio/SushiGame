@@ -390,6 +390,7 @@ public class ItemManager : MonoBehaviour
     private List<(int typeId, Plate plate)> RemoveTypesFromReserve(int targetType, int count)
     {
         var removed = new List<(int typeId, Plate plate)>();
+        var affectedPlates = new HashSet<Plate>();
 
         foreach (var plate in plateManager.GetAllPlates())
         {
@@ -404,7 +405,6 @@ public class ItemManager : MonoBehaviour
                 if (removed.Count >= count) break;
 
                 var layer = layers[layerIdx];
-                var lockStages = layer.GetLockStages();
                 var indicesToRemove = new List<int>();
 
                 for (int i = layer.SushiTypes.Count - 1; i >= 0 && removed.Count < count; i--)
@@ -421,9 +421,15 @@ public class ItemManager : MonoBehaviour
                     layer.SushiTypes.RemoveAt(idx);
                     if (layer.SlotIndices.Count > idx)
                         layer.SlotIndices.RemoveAt(idx);
-                    if (lockStages != null && lockStages.Count > idx)
-                        lockStages.RemoveAt(idx);
+                    // LockStages/HiddenStates도 Layer 내부 직접 제거
+                    if (layer.LockStages.Count > idx)
+                        layer.LockStages.RemoveAt(idx);
+                    if (layer.HiddenStates.Count > idx)
+                        layer.HiddenStates.RemoveAt(idx);
                 }
+
+                if (indicesToRemove.Count > 0)
+                    affectedPlates.Add(plate);
 
                 if (layer.SushiTypes.Count == 0)
                     layersToRemove.Add(layerIdx);
@@ -432,7 +438,8 @@ public class ItemManager : MonoBehaviour
             foreach (var layerIdx in layersToRemove.OrderByDescending(x => x))
                 plate.RemoveLayer(layerIdx);
 
-            if (layersToRemove.Count > 0)
+            // 변경이 있으면 항상 시각 업데이트
+            if (affectedPlates.Contains(plate))
                 plate.UpdateReserveDisplay();
         }
 

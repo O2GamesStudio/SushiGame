@@ -34,7 +34,8 @@ public class DailyRewardPanel : MonoBehaviour
         UpdateDayProgress(userData);
 
         bool claimedToday = IsAlreadyClaimedToday(userData);
-        int currentDay = userData.dailyRewardDay;
+        int currentDay = claimedToday ? userData.dailyRewardDay : userData.dailyRewardDay + 1;
+        currentDay = Mathf.Clamp(currentDay, 1, rewardDataBase.TotalDays);
 
         for (int i = 0; i < rewardItems.Length; i++)
         {
@@ -58,7 +59,6 @@ public class DailyRewardPanel : MonoBehaviour
 
         if (lastClaimDate == today) return;
 
-        // 하루 건너뛰어도 다음 날 보상으로 진행
         if (userData.dailyRewardDay >= rewardDataBase.TotalDays)
             userData.dailyRewardDay = 0;
     }
@@ -131,7 +131,8 @@ public class DailyRewardPanel : MonoBehaviour
     private void RefreshAll(UserData userData)
     {
         bool claimedToday = IsAlreadyClaimedToday(userData);
-        int currentDay = userData.dailyRewardDay;
+        int currentDay = claimedToday ? userData.dailyRewardDay : userData.dailyRewardDay + 1;
+        currentDay = Mathf.Clamp(currentDay, 1, rewardDataBase.TotalDays);
 
         for (int i = 0; i < rewardItems.Length; i++)
         {
