@@ -1,5 +1,4 @@
 using System;
-using System.Threading.Tasks;
 using Firebase;
 using Firebase.Auth;
 using Firebase.Extensions;
@@ -20,16 +19,13 @@ public class FirebaseManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance != null)
-        {
-            Destroy(gameObject);
-            return;
-        }
+        if (Instance != null) { Destroy(gameObject); return; }
         Instance = this;
         DontDestroyOnLoad(gameObject);
     }
 
-    public void Initialize(Action onComplete = null)
+    // Fix 3: 실패 시 onFailed 호출 보장
+    public void Initialize(Action onComplete = null, Action<string> onFailed = null)
     {
         FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
         {
@@ -42,51 +38,59 @@ public class FirebaseManager : MonoBehaviour
             }
             else
             {
-                Debug.LogError($"[FirebaseManager] Firebase 초기화 실패: {task.Result}");
+                Debug.LogError($"[FirebaseManager] 초기화 실패: {task.Result}");
+                onFailed?.Invoke(task.Result.ToString());
             }
         });
     }
 
-    public void SignInAnonymous(Action onSuccess = null, Action<string> onFailed = null)
+    private const int MaxAnonymousRetry = 3;
+
+    public void SignInAnonymous(Action onSuccess = null, Action<string> onFailed = null, int retryCount = 0)
     {
-        if (CurrentUser != null)
-        {
-            onSuccess?.Invoke();
-            return;
-        }
+        if (CurrentUser != null) { onSuccess?.Invoke(); return; }
 
         Auth.SignInAnonymouslyAsync().ContinueWithOnMainThread(task =>
         {
             if (task.IsCanceled || task.IsFaulted)
             {
+                if (retryCount < MaxAnonymousRetry)
+                {
+                    SignInAnonymous(onSuccess, onFailed, retryCount + 1);
+                    return;
+                }
                 string error = task.Exception?.Message ?? "Unknown error";
                 Debug.LogError($"[FirebaseManager] 익명 로그인 실패: {error}");
                 onFailed?.Invoke(error);
                 OnLoginFailed?.Invoke(error);
                 return;
             }
-
-            Debug.Log($"[FirebaseManager] 익명 로그인 성공 uid:{CurrentUser.UserId}");
             onSuccess?.Invoke();
             OnLoginSuccess?.Invoke();
         });
     }
 
+    // Fix 2: CredentialAlreadyInUse → SignInWithGoogle 폴백
     public void LinkWithGoogle(string authCode, Action onSuccess = null, Action<string> onFailed = null)
     {
-        var credential = Firebase.Auth.PlayGamesAuthProvider.GetCredential(authCode);
+        var credential = PlayGamesAuthProvider.GetCredential(authCode);
 
         CurrentUser.LinkWithCredentialAsync(credential).ContinueWithOnMainThread(task =>
         {
             if (task.IsCanceled || task.IsFaulted)
             {
+                var firebaseEx = task.Exception?.GetBaseException() as FirebaseException;
+                if (firebaseEx != null && firebaseEx.ErrorCode == (int)AuthError.CredentialAlreadyInUse)
+                {
+                    SignInWithGoogle(authCode, onSuccess, onFailed);
+                    return;
+                }
+
                 string error = task.Exception?.Message ?? "Unknown error";
                 Debug.LogError($"[FirebaseManager] 구글 연동 실패: {error}");
                 onFailed?.Invoke(error);
                 return;
             }
-
-            Debug.Log($"[FirebaseManager] 구글 연동 성공 uid:{CurrentUser.UserId}");
             onSuccess?.Invoke();
             OnLoginSuccess?.Invoke();
         });
@@ -94,7 +98,7 @@ public class FirebaseManager : MonoBehaviour
 
     public void SignInWithGoogle(string authCode, Action onSuccess = null, Action<string> onFailed = null)
     {
-        var credential = Firebase.Auth.PlayGamesAuthProvider.GetCredential(authCode);
+        var credential = PlayGamesAuthProvider.GetCredential(authCode);
 
         Auth.SignInWithCredentialAsync(credential).ContinueWithOnMainThread(task =>
         {
@@ -106,15 +110,10 @@ public class FirebaseManager : MonoBehaviour
                 OnLoginFailed?.Invoke(error);
                 return;
             }
-
-            Debug.Log($"[FirebaseManager] 구글 로그인 성공 uid:{CurrentUser.UserId}");
             onSuccess?.Invoke();
             OnLoginSuccess?.Invoke();
         });
     }
 
-    public void SignOut()
-    {
-        Auth.SignOut();
-    }
+    public void SignOut() => Auth.SignOut();
 }

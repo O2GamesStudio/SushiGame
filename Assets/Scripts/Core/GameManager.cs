@@ -36,7 +36,6 @@ public class GameManager : MonoBehaviour
 
     #region State
 
-    private bool isStageClearProcessed = false;
     private bool addTimePanelUsed = false;
     private int totalSushiSets;
     private int mergedSetsCount;
@@ -55,12 +54,6 @@ public class GameManager : MonoBehaviour
     private Coroutine freezeCoroutine;
 
     public bool IsTimerStarted => isTimerStarted;
-
-    #endregion
-
-    #region Stamina State
-
-    private Coroutine staminaChargeCoroutine;
 
     #endregion
 
@@ -121,7 +114,6 @@ public class GameManager : MonoBehaviour
     private void StartGame()
     {
         isGameWinProcessed = false;
-        isStageClearProcessed = false;
         var saveData = GameDataTransfer.Instance?.CurrentSaveData;
         if (saveData != null)
         {
@@ -164,7 +156,6 @@ public class GameManager : MonoBehaviour
     private void ResumeGame(GameSaveData saveData)
     {
         isGameWinProcessed = false;
-        isStageClearProcessed = false;
         plateManager.RestoreFromSaveData(saveData, currentLevel);
         GameStateChecker.Instance.Initialize(plateManager);
 
@@ -344,9 +335,6 @@ public class GameManager : MonoBehaviour
 
     private void OnStageClear()
     {
-        if (isStageClearProcessed) return;
-        isStageClearProcessed = true;
-
         var userData = GameDataTransfer.Instance?.CurrentUserData;
         if (userData == null) return;
 
@@ -430,25 +418,7 @@ public class GameManager : MonoBehaviour
         MergeEventSystem.Instance?.ForceCompleteEvent();
 
         if (plateManager.AreAllPlatesEmpty())
-        {
-            // IsEventActive 체크 없이 직접 승리 처리
-            GameSaveService.Instance?.ClearLocal();
-            GameSaveService.Instance?.ClearFirestore();
-            GameDataTransfer.Instance?.SetLastMergedCount(mergedSetsCount);
-
-            isGameActive = false;
-            if (inputHandler != null) inputHandler.enabled = false;
-
-            SoundManager.Instance?.PlayWinSFX();
-            UnityAdsManager.Instance?.HideBanner();
-
-            NetworkChecker.Instance?.Check(() =>
-            {
-                OnStageClear();
-                winPanel?.SetLevelDataBase(levelDataBase);
-                winPanel?.Show();
-            });
-        }
+            OnGameWin();
         else
         {
             isGameActive = true;

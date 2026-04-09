@@ -76,8 +76,9 @@ public class StoreManager : MonoBehaviour
 
     private void RefreshStarterPackage()
     {
-        bool isPurchased = IAPManager.Instance?.IsProductPurchased(IAPManager.StarterPackage) ?? false;
+        if (IAPManager.Instance == null || !IAPManager.Instance.IsInitialized()) return;
 
+        bool isPurchased = IAPManager.Instance.IsProductPurchased(IAPManager.StarterPackage);
         starter1?.SetActive(!isPurchased);
         starter2?.SetActive(!isPurchased);
         starter3?.SetActive(!isPurchased);
@@ -86,7 +87,6 @@ public class StoreManager : MonoBehaviour
         if (starterPackageBtn != null)
             starterPackageBtn.interactable = !isPurchased;
     }
-
     public void Close()
     {
         rt.DOKill();

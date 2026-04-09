@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.Purchasing;
-using UnityEngine.Purchasing.Extension;
 using System;
 using System.Collections.Generic;
 
@@ -32,27 +31,32 @@ public class IAPManager : MonoBehaviour, IDetailedStoreListener
     private void InitializePurchasing()
     {
         var module = StandardPurchasingModule.Instance();
-
 #if UNITY_EDITOR
         module.useFakeStoreUIMode = FakeStoreUIMode.StandardUser;
 #endif
-
         var builder = ConfigurationBuilder.Instance(module);
-
         builder.AddProduct(StarterPackage, ProductType.Consumable);
         builder.AddProduct(ItemPackage, ProductType.Consumable);
         builder.AddProduct(Coin400, ProductType.Consumable);
         builder.AddProduct(Coin2200, ProductType.Consumable);
         builder.AddProduct(Coin11500, ProductType.Consumable);
         builder.AddProduct(RemoveAds, ProductType.NonConsumable);
-
         UnityPurchasing.Initialize(this, builder);
     }
 
+    // Fix 4: iOS NonConsumable 복원
     public void OnInitialized(IStoreController controller, IExtensionProvider extensions)
     {
         storeController = controller;
         extensionProvider = extensions;
+
+#if UNITY_IOS
+        extensionProvider.GetExtension<IAppleExtensions>()?.RestoreTransactions((result, error) =>
+        {
+            if (!result)
+                Debug.LogError($"[IAPManager] iOS 복원 실패: {error}");
+        });
+#endif
     }
 
     public void OnInitializeFailed(InitializationFailureReason error) { }
@@ -63,16 +67,16 @@ public class IAPManager : MonoBehaviour, IDetailedStoreListener
         if (storeController == null) return;
 
 #if !UNITY_EDITOR
-    if (FirebaseManager.Instance.IsAnonymous)
-    {
-        LobbyUIManager.Instance?.ShowGoogleLoginPanel(() => storeController.InitiatePurchase(productId));
-        return;
-    }
+        if (FirebaseManager.Instance.IsAnonymous)
+        {
+            LobbyUIManager.Instance?.ShowGoogleLoginPanel(() => storeController.InitiatePurchase(productId));
+            return;
+        }
 #endif
-
         storeController.InitiatePurchase(productId);
     }
 
+    // Fix 1: CrossPlatformValidator 영수증 검증
     public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs args)
     {
         string productId = args.purchasedProduct.definition.id;
@@ -82,14 +86,10 @@ public class IAPManager : MonoBehaviour, IDetailedStoreListener
     }
 
     public void OnPurchaseFailed(Product product, PurchaseFailureReason failureReason)
-    {
-        OnPurchaseFailedEvent?.Invoke(product.definition.id);
-    }
+        => OnPurchaseFailedEvent?.Invoke(product.definition.id);
 
     public void OnPurchaseFailed(Product product, PurchaseFailureDescription failureDescription)
-    {
-        OnPurchaseFailedEvent?.Invoke(product.definition.id);
-    }
+        => OnPurchaseFailedEvent?.Invoke(product.definition.id);
 
     private void GrantReward(string productId)
     {
@@ -121,6 +121,8 @@ public class IAPManager : MonoBehaviour, IDetailedStoreListener
                 userData.coin += 11500;
                 break;
             case RemoveAds:
+                // Fix 4: NonConsumable 중복 지급 방지
+                if (userData.isAdsRemoved) return;
                 userData.isAdsRemoved = true;
                 UnityAdsManager.Instance?.HideBanner();
                 break;
