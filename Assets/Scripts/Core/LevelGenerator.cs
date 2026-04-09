@@ -302,6 +302,11 @@ public class LevelGenerator
 
         foreach (var plateTypes in cachedGuaranteedSushis)
         {
+            // adPlate이면 건너뜀
+            while (currentPlateIndex < effectivePlateCount && adPlateIndices.Contains(currentPlateIndex))
+                currentPlateIndex++;
+            if (currentPlateIndex >= effectivePlateCount) break;
+
             plates[currentPlateIndex].ActiveTypes = new List<int>(plateTypes);
             for (int s = 0; s < plateTypes.Count; s++) guaranteedSlots.Add((currentPlateIndex, s));
             foreach (var typeId in plateTypes)
