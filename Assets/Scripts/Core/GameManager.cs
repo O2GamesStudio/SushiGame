@@ -125,6 +125,7 @@ public class GameManager : MonoBehaviour
         var plateDataList = levelGenerator.GeneratePlates();
         var railData = levelGenerator.GetRailData();
 
+
         plateManager.Initialize(plateDataList, currentLevel.sequentialActivation, railData);
         GameStateChecker.Instance.Initialize(plateManager);
 
@@ -148,6 +149,8 @@ public class GameManager : MonoBehaviour
             gameUI.UpdateStage(userData.currentStage);
             TutorialManager.Instance?.TryShowTutorial(userData.currentStage);
         }
+        if (userData.currentStage == 1 && saveData == null)
+            InGameTutorialController.Instance?.StartTutorial();
 
         doorTransition?.PlayOpenAnimation();
         UnityAdsManager.Instance?.ShowBanner();
@@ -236,6 +239,7 @@ public class GameManager : MonoBehaviour
         int stageIndex = GameDataTransfer.Instance?.CurrentUserData?.currentStage ?? 0;
         var saveData = plateManager.GetSaveData(stageIndex, timeRemaining, mergedSetsCount);
         GameSaveService.Instance?.OnMerged(saveData);
+        InGameTutorialController.Instance?.OnSushiMerged(mergedTypeId);
 
         if (MergeEventSystem.Instance == null) return;
 

@@ -4,6 +4,10 @@ using System;
 [CreateAssetMenu(fileName = "LevelData", menuName = "SushiMerge/LevelData")]
 public class LevelData : ScriptableObject
 {
+    [Header("튜토리얼")]
+    [Tooltip("튜토리얼 스테이지 여부 (true시 typeA가 2+1로 강제 배치)")]
+    public bool isTutorialStage = false;
+
     [Header("기본 설정")]
     [Tooltip("접시 개수")] public int plateCount = 9;
     [Tooltip("초밥 종류 수")] public int sushiTypeCount = 4;
@@ -52,6 +56,7 @@ public class LevelData : ScriptableObject
 
     [Header("머지 이벤트")]
     public MergeEventData[] mergeEvents;
+
 }
 
 [Serializable]

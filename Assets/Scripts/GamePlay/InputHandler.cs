@@ -27,6 +27,7 @@ public class InputHandler : MonoBehaviour
 
     private void OnMouseDown()
     {
+        InGameTutorialController.Instance?.OnScreenTouched();
         if (GameManager.Instance != null && !GameManager.Instance.IsTimerStarted)
             GameManager.Instance.StartTimer();
 

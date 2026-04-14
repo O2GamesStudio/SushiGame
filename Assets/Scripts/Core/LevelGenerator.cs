@@ -910,7 +910,13 @@ public class LevelGenerator
 
             foreach (var idx in typeIndices.OrderByDescending(i => i)) allSushiTypes.RemoveAt(idx);
 
-            var distribution = possibleDistributions[Random.Range(0, possibleDistributions.Count)];
+            // 튜토리얼 스테이지는 무조건 {2, 1} 배치
+            List<int> distribution;
+            if (levelData.isTutorialStage && set == 0)
+                distribution = new List<int> { 2, 1 };
+            else
+                distribution = possibleDistributions[Random.Range(0, possibleDistributions.Count)];
+
             foreach (var count in distribution)
             {
                 var plateTypes = new List<int>(count);
@@ -918,7 +924,11 @@ public class LevelGenerator
                 result.Add(plateTypes);
             }
         }
-        Shuffle(result);
+
+        // 튜토리얼 스테이지는 셔플 없이 순서 유지 (2개 plate가 앞에 오도록)
+        if (!levelData.isTutorialStage)
+            Shuffle(result);
+
         return result;
     }
 
