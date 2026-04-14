@@ -16,16 +16,12 @@ public static class SceneLoader
 
     private static void LoadWithCondition(string sceneName, Func<bool> condition = null)
     {
-        UnityAdsManager.Instance?.ClearAllListeners();
+        // UnityAdsManager.Instance?.ClearAllListeners(); 제거
 
         if (NetworkChecker.Instance != null)
-        {
             NetworkChecker.Instance.Check(() => SpawnRunner(sceneName, condition));
-        }
         else
-        {
             SpawnRunner(sceneName, condition);
-        }
     }
 
     private static void SpawnRunner(string sceneName, Func<bool> condition)

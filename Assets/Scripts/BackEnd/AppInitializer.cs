@@ -8,6 +8,8 @@ public class AppInitializer : MonoBehaviour
     [SerializeField] private UserDataService userDataService;
     [SerializeField] private AppVersionChecker appVersionChecker;
 
+    private bool isLobbyInitialized = false;
+
     private void Awake()
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
@@ -32,11 +34,10 @@ public class AppInitializer : MonoBehaviour
     private void InitializeLobby()
     {
         if (LobbyManager.Instance == null) return;
+        if (isLobbyInitialized) return;
+        isLobbyInitialized = true;
 
         GooglePlayGamesManager.Instance.Initialize();
-
-        // 이미 BootScene에서 Show했지만 혹시 모를 경우 대비
-        //LoadingUI.Instance?.Show();
 
         var cachedUserData = GameDataTransfer.Instance?.CurrentUserData;
         if (cachedUserData != null)

@@ -62,7 +62,7 @@ public class IAPManager : MonoBehaviour, IDetailedStoreListener
     public void OnInitializeFailed(InitializationFailureReason error) { }
     public void OnInitializeFailed(InitializationFailureReason error, string message) { }
 
-    public void BuyProduct(string productId)
+    /*public void BuyProduct(string productId)
     {
         if (storeController == null) return;
 
@@ -73,6 +73,11 @@ public class IAPManager : MonoBehaviour, IDetailedStoreListener
             return;
         }
 #endif
+        storeController.InitiatePurchase(productId);
+    }*/
+    public void BuyProduct(string productId)
+    {
+        if (storeController == null) return;
         storeController.InitiatePurchase(productId);
     }
 

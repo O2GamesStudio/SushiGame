@@ -87,7 +87,11 @@ public class UnityAdsManager : MonoBehaviour
 
     private IEnumerator InitializeLevelPlay()
     {
-        Log("LevelPlay 초기화 시작...");
+        // Fix 8: 중복 등록 방지
+        LevelPlay.OnInitSuccess -= OnInitSuccess;
+        LevelPlay.OnInitFailed -= OnInitFailed;
+        LevelPlay.OnInitSuccess += OnInitSuccess;
+        LevelPlay.OnInitFailed += OnInitFailed;
 
         var initTask = UnityServices.InitializeAsync();
         while (!initTask.IsCompleted)
@@ -99,8 +103,6 @@ public class UnityAdsManager : MonoBehaviour
             yield break;
         }
 
-        LevelPlay.OnInitSuccess += OnInitSuccess;
-        LevelPlay.OnInitFailed += OnInitFailed;
         LevelPlay.Init(adsConfig.appKey);
     }
 
@@ -113,20 +115,13 @@ public class UnityAdsManager : MonoBehaviour
         SetupBannerAd();
         LoadBannerAd();
         StartBannerRetry();
+        // pendingShowBanner는 OnBannerAdLoaded에서 처리
     }
 
     private void OnInitFailed(LevelPlayInitError error)
     {
         LogError($"LevelPlay 초기화 실패 - {error.ErrorMessage}");
         isInitialized = false;
-    }
-
-    public void ClearAllListeners()
-    {
-        OnRewardEarned = null;
-        OnAdClosed = null;
-        OnAdFailedToLoad = null;
-        OnAdFailedToShow = null;
     }
 
     private void StartBannerRetry()
@@ -145,6 +140,7 @@ public class UnityAdsManager : MonoBehaviour
             if (!isBannerDisplayed && isInitialized)
             {
                 isBannerLoaded = false;
+                pendingShowBanner = true;
                 LoadBannerAd();
             }
         }
@@ -244,7 +240,8 @@ public class UnityAdsManager : MonoBehaviour
             return;
         }
 
-        if (rewardedAd != null && isAdLoaded && rewardedAd.IsAdReady())
+        // Fix 3: isAdLoaded 대신 IsAdReady()만 체크
+        if (rewardedAd != null && rewardedAd.IsAdReady())
         {
             try
             {
@@ -261,6 +258,7 @@ public class UnityAdsManager : MonoBehaviour
         }
         else
         {
+            isAdLoaded = false;
             OnAdFailedToShow?.Invoke();
             if (!isLoadingAd)
                 LoadRewardedAd();
@@ -337,7 +335,7 @@ public class UnityAdsManager : MonoBehaviour
         LogError($"배너 로드 실패 - {error.ErrorCode}: {error.ErrorMessage}");
         isBannerLoaded = false;
         isBannerDisplayed = false;
-        pendingShowBanner = false;
+        // Fix 6: pendingShowBanner 유지 — 재시도 시 자동 표시 보장
     }
 
     private void OnBannerAdDisplayed(LevelPlayAdInfo adInfo)
@@ -354,8 +352,14 @@ public class UnityAdsManager : MonoBehaviour
 
     public void ShowBanner()
     {
-        if (!isInitialized) return;
         if (string.IsNullOrEmpty(bannerAdUnitId)) return;
+
+        // Fix 2: 초기화 전 호출 시 pending 처리
+        if (!isInitialized)
+        {
+            pendingShowBanner = true;
+            return;
+        }
 
         try
         {
@@ -411,7 +415,6 @@ public class UnityAdsManager : MonoBehaviour
         isBannerLoaded = false;
         isBannerDisplayed = false;
     }
-
     public bool IsBannerLoaded() => isBannerLoaded;
     public bool IsBannerDisplayed() => isBannerDisplayed;
     public bool IsAdLoaded() => isAdLoaded && rewardedAd != null && rewardedAd.IsAdReady();
