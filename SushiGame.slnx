@@ -57,6 +57,7 @@
   <Project Path="Unity.Burst.Editor.csproj" />
   <Project Path="Unity.2D.Common.Path.Editor.csproj" />
   <Project Path="Unity.2D.Common.Editor.csproj" />
+  <Project Path="Google.Play.Common.csproj" />
   <Project Path="ScriptablePacker.csproj" />
   <Project Path="Unity.Mobile.AndroidLogcat.Editor.csproj" />
   <Project Path="Unity.Rider.Editor.csproj" />
@@ -96,6 +97,8 @@
   <Project Path="Unity.CollabProxy.Editor.csproj" />
   <Project Path="Unity.ShaderGraph.Utilities.csproj" />
   <Project Path="Unity.VisualScripting.Shared.Editor.csproj" />
+  <Project Path="Google.Play.Core.csproj" />
+  <Project Path="Google.Play.Review.csproj" />
   <Project Path="Unity.2D.Aseprite.Common.csproj" />
   <Project Path="Unity.Services.Core.Device.csproj" />
   <Project Path="Unity.Services.Core.Analytics.csproj" />

@@ -2,6 +2,8 @@
   <packages>
     <package>com.google.android.gms:play-services-ads-identifier:18.1.0</package>
     <package>com.google.android.gms:play-services-base:18.10.0</package>
+    <package>com.google.android.play:core-common:2.0.4</package>
+    <package>com.google.android.play:review:2.0.2</package>
     <package>com.google.firebase:firebase-analytics:23.0.0</package>
     <package>com.google.firebase:firebase-app-unity:13.7.0</package>
     <package>com.google.firebase:firebase-auth:24.0.1</package>

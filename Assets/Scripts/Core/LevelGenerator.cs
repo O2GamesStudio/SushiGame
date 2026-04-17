@@ -407,7 +407,6 @@ public class LevelGenerator
     {
         if (pool.Count == 0) return;
 
-        // 1. 타입별 그룹화
         var typeGroups = new Dictionary<int, List<int>>();
         foreach (var t in pool)
         {
@@ -415,13 +414,11 @@ public class LevelGenerator
             typeGroups[t].Add(t);
         }
 
-        // 2. Concentrated 타입 우선 정렬
         var concTypes = typeGroups.Keys.Where(t => concentratedTypes.Contains(t)).ToList();
         var normTypes = typeGroups.Keys.Where(t => !concentratedTypes.Contains(t)).ToList();
         Shuffle(concTypes); Shuffle(normTypes);
         var orderedTypes = concTypes.Concat(normTypes).ToList();
 
-        // 3. 타입 세트별 depth 버킷 할당
         int maxLayerDepth = Mathf.Max(0, levelData.maxLayersPerPlate - 1);
         var depthBuckets = new SortedDictionary<int, List<int>>();
         var typeLastDepth = new Dictionary<int, int>();
@@ -443,7 +440,6 @@ public class LevelGenerator
             }
         }
 
-        // 4. Depth 순 정렬된 pool 구성 (버킷 내부는 셔플)
         var orderedPool = new List<int>(pool.Count);
         foreach (var kv in depthBuckets)
         {
@@ -452,7 +448,6 @@ public class LevelGenerator
             orderedPool.AddRange(group);
         }
 
-        // 5. BuildLayer로 분배 — GetWeightedLayerSize 비율 완전 보장
         int poolIndex = 0;
         var shuffledPlates = new List<int>(validPlateIndices);
 
@@ -463,7 +458,7 @@ public class LevelGenerator
             {
                 if (poolIndex >= orderedPool.Count) break;
                 bool isSingle = singleSlotPlateIndices.Contains(pi);
-                var layer = BuildLayer(orderedPool, ref poolIndex, plates[pi], isSingle);
+                var layer = BuildLayer(orderedPool, ref poolIndex, plates[pi], isSingle, pi);
                 if (layer != null && layer.Count > 0)
                     plates[pi].Layers.Add(new Layer(layer));
             }
@@ -479,7 +474,7 @@ public class LevelGenerator
                 if (poolIndex >= orderedPool.Count) break;
                 if (plates[pi].Layers.Count >= levelData.maxLayersPerPlate) continue;
                 bool isSingle = singleSlotPlateIndices.Contains(pi);
-                var layer = BuildLayer(orderedPool, ref poolIndex, plates[pi], isSingle);
+                var layer = BuildLayer(orderedPool, ref poolIndex, plates[pi], isSingle, pi);
                 if (layer == null || layer.Count == 0) continue;
                 plates[pi].Layers.Add(new Layer(layer));
                 anyAdded = true;
@@ -797,8 +792,52 @@ public class LevelGenerator
 
         AssignLockedSushis(plates);
         ResolveLockedPlateDeadlocks(plates);
+        ResolveInterLockedDeadlocks(plates); // 교차 데드락 해소
     }
+    private void ResolveInterLockedDeadlocks(List<PlateData> plates)
+    {
+        foreach (var plateIndexA in sushiMergePlateIndices)
+        {
+            int requiredType = plates[plateIndexA].RequiredSushiTypeId;
+            if (requiredType < 0) continue;
 
+            foreach (var plateIndexB in sushiMergePlateIndices)
+            {
+                if (plateIndexA == plateIndexB) continue;
+
+                var plateB = plates[plateIndexB];
+
+                // active에서 제거
+                for (int i = plateB.ActiveTypes.Count - 1; i >= 0; i--)
+                {
+                    if (plateB.ActiveTypes[i] != requiredType) continue;
+                    bool moved = TryMoveToOtherPlate(plates, plateIndexB,
+                        new Layer(new List<int> { requiredType }), out _);
+                    if (moved) plateB.ActiveTypes.RemoveAt(i);
+                }
+
+                // reserve에서 제거
+                for (int layerIdx = plateB.Layers.Count - 1; layerIdx >= 0; layerIdx--)
+                {
+                    var layer = plateB.Layers[layerIdx];
+                    var indicesToMove = new List<int>();
+                    for (int si = 0; si < layer.SushiTypes.Count; si++)
+                        if (layer.SushiTypes[si] == requiredType) indicesToMove.Add(si);
+                    if (indicesToMove.Count == 0) continue;
+
+                    bool moved = TryMoveToOtherPlate(plates, plateIndexB,
+                        new Layer(new List<int>(indicesToMove.Select(_ => requiredType))), out _);
+                    if (moved)
+                    {
+                        foreach (var idx in indicesToMove.OrderByDescending(x => x))
+                            layer.SushiTypes.RemoveAt(idx);
+                        if (layer.SushiTypes.Count == 0)
+                            plateB.Layers.RemoveAt(layerIdx);
+                    }
+                }
+            }
+        }
+    }
     private void ResolveLockedPlateDeadlocks(List<PlateData> plates)
     {
         foreach (var plateIndex in sushiMergePlateIndices)
@@ -836,12 +875,12 @@ public class LevelGenerator
 
     private bool TryMoveToOtherPlate(List<PlateData> plates, int fromIndex, Layer layerToAdd, out int targetIdx)
     {
-        // Try within maxLayersPerPlate first
         for (int pass = 0; pass < 2; pass++)
         {
             for (int otherIdx = 0; otherIdx < plates.Count; otherIdx++)
             {
                 if (otherIdx == fromIndex || adPlateIndices.Contains(otherIdx)) continue;
+                if (sushiMergePlateIndices.Contains(otherIdx)) continue;
                 if (pass == 0 && plates[otherIdx].Layers.Count >= levelData.maxLayersPerPlate) continue;
                 plates[otherIdx].Layers.Add(layerToAdd);
                 targetIdx = otherIdx;
@@ -1006,9 +1045,24 @@ public class LevelGenerator
         return count;
     }
 
-    private bool TrySwapCandidate(List<int> pool, int poolIndex, PlateData plate, List<int> currentLayer)
+    private bool TrySwapCandidate(List<int> pool, int poolIndex, PlateData plate, List<int> currentLayer, int plateIndex = -1)
     {
         int candidate = pool[poolIndex];
+
+        // LockedSushi 플레이트면 requiredType 진입 차단
+        if (plateIndex >= 0 && sushiMergePlateIndices.Contains(plateIndex) && candidate == plate.RequiredSushiTypeId)
+        {
+            for (int s = poolIndex + 1; s < pool.Count; s++)
+            {
+                if (pool[s] != plate.RequiredSushiTypeId)
+                {
+                    (pool[poolIndex], pool[s]) = (pool[s], pool[poolIndex]);
+                    return true;
+                }
+            }
+            return false;
+        }
+
         if (CountTypeInReserve(plate, candidate, currentLayer) < 2) return true;
 
         for (int s = poolIndex + 1; s < pool.Count; s++)
@@ -1023,17 +1077,20 @@ public class LevelGenerator
         return false;
     }
 
-    private List<int> BuildLayer(List<int> pool, ref int poolIndex, PlateData plate, bool isSingleSlot)
+    private List<int> BuildLayer(List<int> pool, ref int poolIndex, PlateData plate, bool isSingleSlot, int plateIndex = -1)
     {
         if (poolIndex >= pool.Count) return null;
 
         int layerSize = isSingleSlot ? 1 : GetWeightedLayerSize();
         var layerTypes = new List<int>(layerSize);
+
+        // 첫 번째 초밥 배치 시 LockedSushi 플레이트 requiredType 차단
+        if (!TrySwapCandidate(pool, poolIndex, plate, layerTypes, plateIndex)) return null;
         layerTypes.Add(pool[poolIndex++]);
 
         for (int k = 1; k < layerSize && poolIndex < pool.Count; k++)
         {
-            if (!TrySwapCandidate(pool, poolIndex, plate, layerTypes)) break;
+            if (!TrySwapCandidate(pool, poolIndex, plate, layerTypes, plateIndex)) break;
             layerTypes.Add(pool[poolIndex++]);
         }
 

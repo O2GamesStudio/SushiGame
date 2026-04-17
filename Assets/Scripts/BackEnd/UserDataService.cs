@@ -206,4 +206,6 @@ public class UserData
     [FirestoreProperty] public bool isAdsRemoved { get; set; } = false;
     [FirestoreProperty] public int dailyRewardDay { get; set; } = 1;
     [FirestoreProperty] public long dailyRewardLastClaimTime { get; set; } = 0;
+
+    public bool hasReviewed = false;
 }
