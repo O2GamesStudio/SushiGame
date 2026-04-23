@@ -38,12 +38,17 @@ public class UnityAdsManager : MonoBehaviour
     private bool pendingShowBanner = false;
 
     private Coroutine bannerRetryCoroutine;
+    private Coroutine bannerInitWaitCoroutine;
+    private Coroutine rewardedRetryCoroutine;
 
     public event Action OnRewardEarned;
     public event Action OnAdClosed;
     public event Action OnAdFailedToLoad;
     public event Action OnAdFailedToShow;
+
     private static bool isQuitting = false;
+
+    private bool UseAdMob => adsConfig != null && adsConfig.useAdMob;
 
     private void Awake()
     {
@@ -59,10 +64,10 @@ public class UnityAdsManager : MonoBehaviour
             bannerAdUnitId = adsConfig.androidBannerAdUnitId;
 #elif UNITY_IOS
             rewardedAdUnitId = adsConfig.iOSRewardedAdUnitId;
-            bannerAdUnitId = adsConfig.iOSBannerAdUnitId;
+            bannerAdUnitId   = adsConfig.iOSBannerAdUnitId;
 #else
             rewardedAdUnitId = adsConfig.androidRewardedAdUnitId;
-            bannerAdUnitId = adsConfig.androidBannerAdUnitId;
+            bannerAdUnitId   = adsConfig.androidBannerAdUnitId;
 #endif
         }
         else if (instance != this)
@@ -73,7 +78,15 @@ public class UnityAdsManager : MonoBehaviour
 
     private void Start()
     {
-        if (adsConfig == null || string.IsNullOrEmpty(adsConfig.appKey))
+        if (adsConfig == null) return;
+
+        if (UseAdMob)
+        {
+            InitializeAdMob();
+            return;
+        }
+
+        if (string.IsNullOrEmpty(adsConfig.appKey))
         {
             LogError("AdsConfig가 없거나 AppKey가 비어있습니다.");
             return;
@@ -82,12 +95,40 @@ public class UnityAdsManager : MonoBehaviour
         StartCoroutine(InitializeLevelPlay());
     }
 
+    #region AdMob Delegation
+
+    private void InitializeAdMob()
+    {
+#if UNITY_ANDROID
+        string admobBannerId = adsConfig.androidAdMobBannerUnitId;
+        string admobRewardedId = adsConfig.androidAdMobRewardedUnitId;
+#elif UNITY_IOS
+        string admobBannerId   = adsConfig.iOSAdMobBannerUnitId;
+        string admobRewardedId = adsConfig.iOSAdMobRewardedUnitId;
+#else
+        string admobBannerId   = adsConfig.androidAdMobBannerUnitId;
+        string admobRewardedId = adsConfig.androidAdMobRewardedUnitId;
+#endif
+        var go = new GameObject("AdMobManager");
+        DontDestroyOnLoad(go);
+        var mgr = go.AddComponent<AdMobManager>();
+        mgr.Initialize(admobBannerId, admobRewardedId);
+
+        mgr.OnRewardEarned += () => OnRewardEarned?.Invoke();
+        mgr.OnAdClosed += () => OnAdClosed?.Invoke();
+        mgr.OnAdFailedToLoad += () => OnAdFailedToLoad?.Invoke();
+        mgr.OnAdFailedToShow += () => OnAdFailedToShow?.Invoke();
+    }
+
+    #endregion
+
     private void Log(string message) => Debug.Log($"[UnityAdsManager] {message}");
     private void LogError(string message) => Debug.LogError($"[UnityAdsManager] {message}");
 
+    #region LevelPlay Init
+
     private IEnumerator InitializeLevelPlay()
     {
-        // Fix 8: 중복 등록 방지
         LevelPlay.OnInitSuccess -= OnInitSuccess;
         LevelPlay.OnInitFailed -= OnInitFailed;
         LevelPlay.OnInitSuccess += OnInitSuccess;
@@ -115,7 +156,6 @@ public class UnityAdsManager : MonoBehaviour
         SetupBannerAd();
         LoadBannerAd();
         StartBannerRetry();
-        // pendingShowBanner는 OnBannerAdLoaded에서 처리
     }
 
     private void OnInitFailed(LevelPlayInitError error)
@@ -126,8 +166,7 @@ public class UnityAdsManager : MonoBehaviour
 
     private void StartBannerRetry()
     {
-        if (bannerRetryCoroutine != null)
-            StopCoroutine(bannerRetryCoroutine);
+        if (bannerRetryCoroutine != null) StopCoroutine(bannerRetryCoroutine);
         bannerRetryCoroutine = StartCoroutine(BannerRetryRoutine());
     }
 
@@ -136,7 +175,6 @@ public class UnityAdsManager : MonoBehaviour
         while (true)
         {
             yield return new WaitForSeconds(30f);
-
             if (!isBannerDisplayed && isInitialized)
             {
                 isBannerLoaded = false;
@@ -146,7 +184,9 @@ public class UnityAdsManager : MonoBehaviour
         }
     }
 
-    #region 보상형 광고
+    #endregion
+
+    #region Rewarded Ad (LevelPlay)
 
     private void SetupRewardedAd()
     {
@@ -162,33 +202,33 @@ public class UnityAdsManager : MonoBehaviour
 
     public void LoadRewardedAd()
     {
+        if (UseAdMob) { AdMobManager.Instance?.LoadRewardedAd(); return; }
         if (isLoadingAd) return;
-
-        if (!isInitialized)
-        {
-            StartCoroutine(LoadAdWithDelay(3f));
-            return;
-        }
+        if (!isInitialized) { StartCoroutine(LoadAdWithDelay(3f)); return; }
 
         isLoadingAd = true;
         isAdLoaded = false;
 
-        try
-        {
-            rewardedAd?.LoadAd();
-        }
+        try { rewardedAd?.LoadAd(); }
         catch (Exception e)
         {
             isLoadingAd = false;
             LogError($"광고 로드 예외 - {e.Message}");
             OnAdFailedToLoad?.Invoke();
-            StartCoroutine(LoadAdWithDelay(10f));
+            ScheduleRewardedRetry(10f);
         }
+    }
+
+    private void ScheduleRewardedRetry(float delay)
+    {
+        if (rewardedRetryCoroutine != null) StopCoroutine(rewardedRetryCoroutine);
+        rewardedRetryCoroutine = StartCoroutine(LoadAdWithDelay(delay));
     }
 
     private IEnumerator LoadAdWithDelay(float delay)
     {
         yield return new WaitForSeconds(delay);
+        rewardedRetryCoroutine = null;
         LoadRewardedAd();
     }
 
@@ -196,7 +236,6 @@ public class UnityAdsManager : MonoBehaviour
     {
         isLoadingAd = false;
         isAdLoaded = true;
-        Log("보상형 광고 로드 완료");
     }
 
     private void OnRewardedAdLoadFailed(LevelPlayAdError error)
@@ -205,69 +244,58 @@ public class UnityAdsManager : MonoBehaviour
         isAdLoaded = false;
         LogError($"광고 로드 실패 - {error.ErrorCode}: {error.ErrorMessage}");
         OnAdFailedToLoad?.Invoke();
-        StartCoroutine(LoadAdWithDelay(10f));
+        ScheduleRewardedRetry(10f);
     }
 
-    private void OnRewardedAdDisplayed(LevelPlayAdInfo adInfo) => Log("보상형 광고 표시됨");
+    private void OnRewardedAdDisplayed(LevelPlayAdInfo adInfo) { }
 
     private void OnRewardedAdDisplayFailed(LevelPlayAdInfo adInfo, LevelPlayAdError error)
     {
         LogError($"광고 표시 실패 - {error.ErrorMessage}");
         isAdLoaded = false;
         OnAdFailedToShow?.Invoke();
-        StartCoroutine(LoadAdWithDelay(0.5f));
+        ScheduleRewardedRetry(0.5f);
     }
 
     private void OnRewardedAdClosedInternal(LevelPlayAdInfo adInfo)
     {
-        Log("광고 닫힘");
         OnAdClosed?.Invoke();
-        StartCoroutine(LoadAdWithDelay(0.5f));
+        ScheduleRewardedRetry(0.5f);
     }
 
     private void OnRewardedAdRewardedInternal(LevelPlayAdInfo adInfo, LevelPlayReward reward)
     {
-        Log("광고 시청 완료 - 보상 지급");
         OnRewardEarned?.Invoke();
     }
 
     public void ShowRewardedAd()
     {
-        if (!isInitialized)
-        {
-            LogError("LevelPlay 초기화되지 않음");
-            OnAdFailedToShow?.Invoke();
-            return;
-        }
+        if (UseAdMob) { AdMobManager.Instance?.ShowRewardedAd(); return; }
 
-        // Fix 3: isAdLoaded 대신 IsAdReady()만 체크
+        if (!isInitialized) { LogError("LevelPlay 초기화되지 않음"); OnAdFailedToShow?.Invoke(); return; }
+
         if (rewardedAd != null && rewardedAd.IsAdReady())
         {
-            try
-            {
-                rewardedAd.ShowAd();
-                isAdLoaded = false;
-            }
+            try { rewardedAd.ShowAd(); isAdLoaded = false; }
             catch (Exception e)
             {
                 LogError($"광고 표시 예외 - {e.Message}");
                 isAdLoaded = false;
                 OnAdFailedToShow?.Invoke();
-                StartCoroutine(LoadAdWithDelay(0.5f));
+                ScheduleRewardedRetry(0.5f);
             }
         }
         else
         {
             isAdLoaded = false;
             OnAdFailedToShow?.Invoke();
-            if (!isLoadingAd)
-                LoadRewardedAd();
+            if (!isLoadingAd) LoadRewardedAd();
         }
     }
 
     #endregion
 
-    #region 배너 광고
+    #region Banner Ad (LevelPlay)
 
     private void SetupBannerAd()
     {
@@ -284,17 +312,17 @@ public class UnityAdsManager : MonoBehaviour
             bannerAd.OnAdDisplayed += OnBannerAdDisplayed;
             bannerAd.OnAdDisplayFailed += OnBannerAdDisplayFailed;
         }
-        catch (Exception e)
-        {
-            LogError($"배너 설정 실패 - {e.Message}");
-        }
+        catch (Exception e) { LogError($"배너 설정 실패 - {e.Message}"); }
     }
 
     public void LoadBannerAd()
     {
+        if (UseAdMob) return;
+
         if (!isInitialized)
         {
-            StartCoroutine(LoadBannerAfterInit());
+            if (bannerInitWaitCoroutine == null)
+                bannerInitWaitCoroutine = StartCoroutine(LoadBannerAfterInit());
             return;
         }
 
@@ -310,18 +338,14 @@ public class UnityAdsManager : MonoBehaviour
             yield return new WaitForSeconds(0.5f);
             waitTime += 0.5f;
         }
-
-        if (isInitialized)
-            LoadBannerAd();
-        else
-            LogError("LevelPlay 초기화 타임아웃 - 배너 로드 실패");
+        bannerInitWaitCoroutine = null;
+        if (isInitialized) LoadBannerAd();
+        else LogError("LevelPlay 초기화 타임아웃 - 배너 로드 실패");
     }
 
     private void OnBannerAdLoaded(LevelPlayAdInfo adInfo)
     {
-        Log("배너 광고 로드 완료");
         isBannerLoaded = true;
-
         if (pendingShowBanner)
         {
             pendingShowBanner = false;
@@ -335,15 +359,9 @@ public class UnityAdsManager : MonoBehaviour
         LogError($"배너 로드 실패 - {error.ErrorCode}: {error.ErrorMessage}");
         isBannerLoaded = false;
         isBannerDisplayed = false;
-        // Fix 6: pendingShowBanner 유지 — 재시도 시 자동 표시 보장
     }
 
-    private void OnBannerAdDisplayed(LevelPlayAdInfo adInfo)
-    {
-        Log("배너 광고 표시됨");
-        isBannerDisplayed = true;
-    }
-
+    private void OnBannerAdDisplayed(LevelPlayAdInfo adInfo) => isBannerDisplayed = true;
     private void OnBannerAdDisplayFailed(LevelPlayAdInfo adInfo, LevelPlayAdError error)
     {
         LogError($"배너 표시 실패 - {error.ErrorMessage}");
@@ -352,14 +370,13 @@ public class UnityAdsManager : MonoBehaviour
 
     public void ShowBanner()
     {
-        if (string.IsNullOrEmpty(bannerAdUnitId)) return;
+        if (UseAdMob) { AdMobManager.Instance?.ShowBanner(); return; }
 
-        // Fix 2: 초기화 전 호출 시 pending 처리
-        if (!isInitialized)
-        {
-            pendingShowBanner = true;
-            return;
-        }
+#if UNITY_EDITOR
+        return;
+#endif
+        if (string.IsNullOrEmpty(bannerAdUnitId)) return;
+        if (!isInitialized) { pendingShowBanner = true; return; }
 
         try
         {
@@ -372,66 +389,61 @@ public class UnityAdsManager : MonoBehaviour
                 return;
             }
 
-            if (isBannerLoaded)
-                bannerAd?.ShowAd();
-            else
-            {
-                pendingShowBanner = true;
-                bannerAd?.LoadAd();
-            }
+            if (isBannerLoaded) bannerAd?.ShowAd();
+            else { pendingShowBanner = true; bannerAd?.LoadAd(); }
         }
-        catch (Exception e)
-        {
-            LogError($"배너 표시 예외 - {e.Message}");
-        }
+        catch (Exception e) { LogError($"배너 표시 예외 - {e.Message}"); }
     }
 
     public void HideBanner()
     {
+        if (UseAdMob) { AdMobManager.Instance?.HideBanner(); return; }
+
         pendingShowBanner = false;
-        try
-        {
-            bannerAd?.HideAd();
-            isBannerDisplayed = false;
-        }
-        catch (Exception e)
-        {
-            LogError($"배너 숨김 예외 - {e.Message}");
-        }
+        try { bannerAd?.HideAd(); isBannerDisplayed = false; }
+        catch (Exception e) { LogError($"배너 숨김 예외 - {e.Message}"); }
     }
 
     public void DestroyBanner()
     {
+        if (UseAdMob) { AdMobManager.Instance?.DestroyBanner(); return; }
+
         pendingShowBanner = false;
-        try
-        {
-            bannerAd?.DestroyAd();
-        }
-        catch (Exception e)
-        {
-            LogError($"배너 파괴 예외 - {e.Message}");
-        }
+        try { bannerAd?.DestroyAd(); }
+        catch (Exception e) { LogError($"배너 파괴 예외 - {e.Message}"); }
         bannerAd = null;
         isBannerLoaded = false;
         isBannerDisplayed = false;
     }
-    public bool IsBannerLoaded() => isBannerLoaded;
-    public bool IsBannerDisplayed() => isBannerDisplayed;
-    public bool IsAdLoaded() => isAdLoaded && rewardedAd != null && rewardedAd.IsAdReady();
-    public bool IsLoadingAd() => isLoadingAd;
-    public bool IsInitialized() => isInitialized;
 
     #endregion
 
-    private void OnApplicationQuit()
+    #region Public Status
+
+    public bool IsBannerLoaded() => UseAdMob ? (AdMobManager.Instance?.IsBannerLoaded() ?? false) : isBannerLoaded;
+    public bool IsBannerDisplayed() => UseAdMob ? (AdMobManager.Instance?.IsBannerDisplayed() ?? false) : isBannerDisplayed;
+    public bool IsAdLoaded() => UseAdMob ? (AdMobManager.Instance?.IsAdLoaded() ?? false) : (isAdLoaded && rewardedAd != null && rewardedAd.IsAdReady());
+    public bool IsLoadingAd() => isLoadingAd;
+    public bool IsInitialized() => UseAdMob ? AdMobManager.Instance != null : isInitialized;
+
+    public void ClearAllListeners()
     {
-        isQuitting = true;
+        OnRewardEarned = null;
+        OnAdClosed = null;
+        OnAdFailedToLoad = null;
+        OnAdFailedToShow = null;
+        AdMobManager.Instance?.ClearAllListeners();
     }
+
+    #endregion
+
+    private void OnApplicationQuit() => isQuitting = true;
 
     private void OnDestroy()
     {
-        if (bannerRetryCoroutine != null)
-            StopCoroutine(bannerRetryCoroutine);
+        if (bannerRetryCoroutine != null) StopCoroutine(bannerRetryCoroutine);
+        if (bannerInitWaitCoroutine != null) StopCoroutine(bannerInitWaitCoroutine);
+        if (rewardedRetryCoroutine != null) StopCoroutine(rewardedRetryCoroutine);
 
         LevelPlay.OnInitSuccess -= OnInitSuccess;
         LevelPlay.OnInitFailed -= OnInitFailed;

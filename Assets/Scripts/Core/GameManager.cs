@@ -74,12 +74,14 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-        if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
-            SceneLoader.ReloadGame();
 
 #if UNITY_EDITOR
+        if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
+            SceneLoader.ReloadGame();
         if (Keyboard.current != null && Keyboard.current.digit1Key.wasPressedThisFrame)
             OnGameWin();
+        if (Keyboard.current.digit2Key.wasPressedThisFrame)
+            OnApplicationPause(true);
 #endif
 
         if (!isGameActive || !isTimerStarted || isTimerFrozen) return;
@@ -192,8 +194,13 @@ public class GameManager : MonoBehaviour
 
         int stageIndex = GameDataTransfer.Instance?.CurrentUserData?.currentStage ?? 0;
         var saveData = plateManager.GetSaveData(stageIndex, timeRemaining, mergedSetsCount);
+
+        // 로컬 저장은 동기 유지 (빠름)
         GameSaveService.Instance?.SaveLocal(saveData);
-        GameSaveService.Instance?.SaveToFirestore(saveData);
+
+        // Firestore는 백그라운드로
+        System.Threading.Tasks.Task.Run(() =>
+            GameSaveService.Instance?.SaveToFirestore(saveData));
     }
 
     #endregion
