@@ -1236,7 +1236,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BootLoader
   minimumBootTime: 1.5
-  appVersionChecker: {fileID: 0}
+  appVersionChecker: {fileID: 994687464}
 --- !u!1 &2020824853
 GameObject:
   m_ObjectHideFlags: 0
