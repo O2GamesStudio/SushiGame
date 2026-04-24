@@ -28,9 +28,6 @@ public class DailyRewardPanel : MonoBehaviour
         var userData = GameDataTransfer.Instance?.CurrentUserData;
         if (userData == null) return;
 
-        if (userData.dailyRewardDay <= 0)
-            userData.dailyRewardDay = 1;
-
         UpdateDayProgress(userData);
 
         bool claimedToday = IsAlreadyClaimedToday(userData);

@@ -174,7 +174,7 @@ public class UnityAdsManager : MonoBehaviour
     {
         while (true)
         {
-            yield return new WaitForSeconds(30f);
+            yield return new WaitForSeconds(5f);
             if (!isBannerDisplayed && isInitialized)
             {
                 isBannerLoaded = false;
@@ -378,6 +378,10 @@ public class UnityAdsManager : MonoBehaviour
         if (string.IsNullOrEmpty(bannerAdUnitId)) return;
         if (!isInitialized) { pendingShowBanner = true; return; }
 
+        // retry 재시작
+        if (bannerRetryCoroutine == null)
+            StartBannerRetry();
+
         try
         {
             if (bannerAd == null)
@@ -400,6 +404,11 @@ public class UnityAdsManager : MonoBehaviour
         if (UseAdMob) { AdMobManager.Instance?.HideBanner(); return; }
 
         pendingShowBanner = false;
+        if (bannerRetryCoroutine != null)
+        {
+            StopCoroutine(bannerRetryCoroutine);
+            bannerRetryCoroutine = null;
+        }
         try { bannerAd?.HideAd(); isBannerDisplayed = false; }
         catch (Exception e) { LogError($"배너 숨김 예외 - {e.Message}"); }
     }

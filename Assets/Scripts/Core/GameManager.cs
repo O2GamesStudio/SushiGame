@@ -104,6 +104,7 @@ public class GameManager : MonoBehaviour
     }
     public void ResumeTimer()
     {
+        if (this == null) return;
         if (freezeCoroutine != null)
         {
             StopCoroutine(freezeCoroutine);
@@ -481,6 +482,8 @@ public class GameManager : MonoBehaviour
 
     private void OnDestroy()
     {
+        Instance = null;
+
         if (UnityAdsManager.Instance == null) return;
         UnityAdsManager.Instance.OnRewardEarned -= OnAddTimeAdRewardEarned;
         UnityAdsManager.Instance.OnAdFailedToShow -= OnAddTimeAdFailed;

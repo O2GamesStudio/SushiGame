@@ -48,7 +48,8 @@ public class SettingPanel : MonoBehaviour
         bgmHandle?.DOKill();
         vibrationHandle?.DOKill();
 
-        GameManager.Instance?.ResumeTimer();
+        if (GameManager.Instance != null)
+            GameManager.Instance.ResumeTimer();
     }
 
     private void InitHandle(RectTransform handle, bool isOn)

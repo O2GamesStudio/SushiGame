@@ -13,6 +13,7 @@ public class InAppReviewManager : MonoBehaviour
         if (Instance != null) { Destroy(gameObject); return; }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        reviewManager = new ReviewManager();
     }
 
     public void TryRequestReview(UserData userData)
