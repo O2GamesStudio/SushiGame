@@ -64,8 +64,8 @@ public class UnityAdsManager : MonoBehaviour
         rewardedAdUnitId = adsConfig.iOSRewardedAdUnitId;
         bannerAdUnitId = adsConfig.iOSBannerAdUnitId;
 #else
-        rewardedAdUnitId = adsConfig.androidRewardedAdUnitId;
-        bannerAdUnitId = adsConfig.androidBannerAdUnitId;
+            rewardedAdUnitId = adsConfig.androidRewardedAdUnitId;
+            bannerAdUnitId = adsConfig.androidBannerAdUnitId;
 #endif
         }
         else if (instance != this)

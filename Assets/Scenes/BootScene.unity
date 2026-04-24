@@ -736,11 +736,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5022706659514312728, guid: 428d7663f24f0ce4b97a324a8349bc39, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -1.43263
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5022706659514312728, guid: 428d7663f24f0ce4b97a324a8349bc39, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.91821
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5022706659514312728, guid: 428d7663f24f0ce4b97a324a8349bc39, type: 3}
       propertyPath: m_LocalPosition.z
@@ -774,6 +774,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8602062767194479237, guid: 428d7663f24f0ce4b97a324a8349bc39, type: 3}
+      propertyPath: adsConfig
+      value: 
+      objectReference: {fileID: 11400000, guid: 61e7af33894518a488828d48e9f596ee, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1232,8 +1236,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BootLoader
   minimumBootTime: 1.5
-  firebaseManager: {fileID: 1288836742}
-  appVersionChecker: {fileID: 994687464}
+  appVersionChecker: {fileID: 0}
 --- !u!1 &2020824853
 GameObject:
   m_ObjectHideFlags: 0
