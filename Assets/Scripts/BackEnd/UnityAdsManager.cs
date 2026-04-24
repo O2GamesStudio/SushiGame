@@ -21,9 +21,7 @@ public class UnityAdsManager : MonoBehaviour
             return instance;
         }
     }
-
     [SerializeField] private AdsConfig adsConfig;
-
     private string rewardedAdUnitId;
     private string bannerAdUnitId;
 
@@ -48,7 +46,7 @@ public class UnityAdsManager : MonoBehaviour
 
     private static bool isQuitting = false;
 
-    private bool UseAdMob => adsConfig != null && adsConfig.useAdMob;
+    private bool UseAdMob => AdConfig.UseAdMob;
 
     private void Awake()
     {
@@ -63,11 +61,11 @@ public class UnityAdsManager : MonoBehaviour
             rewardedAdUnitId = adsConfig.androidRewardedAdUnitId;
             bannerAdUnitId = adsConfig.androidBannerAdUnitId;
 #elif UNITY_IOS
-            rewardedAdUnitId = adsConfig.iOSRewardedAdUnitId;
-            bannerAdUnitId   = adsConfig.iOSBannerAdUnitId;
+        rewardedAdUnitId = adsConfig.iOSRewardedAdUnitId;
+        bannerAdUnitId = adsConfig.iOSBannerAdUnitId;
 #else
-            rewardedAdUnitId = adsConfig.androidRewardedAdUnitId;
-            bannerAdUnitId   = adsConfig.androidBannerAdUnitId;
+        rewardedAdUnitId = adsConfig.androidRewardedAdUnitId;
+        bannerAdUnitId = adsConfig.androidBannerAdUnitId;
 #endif
         }
         else if (instance != this)
@@ -88,7 +86,7 @@ public class UnityAdsManager : MonoBehaviour
 
         if (string.IsNullOrEmpty(adsConfig.appKey))
         {
-            LogError("AdsConfig가 없거나 AppKey가 비어있습니다.");
+            LogError("AppKey가 비어있습니다.");
             return;
         }
 
@@ -99,20 +97,10 @@ public class UnityAdsManager : MonoBehaviour
 
     private void InitializeAdMob()
     {
-#if UNITY_ANDROID
-        string admobBannerId = adsConfig.androidAdMobBannerUnitId;
-        string admobRewardedId = adsConfig.androidAdMobRewardedUnitId;
-#elif UNITY_IOS
-        string admobBannerId   = adsConfig.iOSAdMobBannerUnitId;
-        string admobRewardedId = adsConfig.iOSAdMobRewardedUnitId;
-#else
-        string admobBannerId   = adsConfig.androidAdMobBannerUnitId;
-        string admobRewardedId = adsConfig.androidAdMobRewardedUnitId;
-#endif
         var go = new GameObject("AdMobManager");
         DontDestroyOnLoad(go);
         var mgr = go.AddComponent<AdMobManager>();
-        mgr.Initialize(admobBannerId, admobRewardedId);
+        mgr.Initialize(adsConfig.AdMobBannerUnitId, adsConfig.AdMobRewardedUnitId);
 
         mgr.OnRewardEarned += () => OnRewardEarned?.Invoke();
         mgr.OnAdClosed += () => OnAdClosed?.Invoke();
@@ -144,7 +132,7 @@ public class UnityAdsManager : MonoBehaviour
             yield break;
         }
 
-        LevelPlay.Init(adsConfig.appKey);
+        LevelPlay.Init(AdConfig.AppKey);
     }
 
     private void OnInitSuccess(LevelPlayConfiguration config)
@@ -345,6 +333,7 @@ public class UnityAdsManager : MonoBehaviour
 
     private void OnBannerAdLoaded(LevelPlayAdInfo adInfo)
     {
+        Log("배너 로드 완료");
         isBannerLoaded = true;
         if (pendingShowBanner)
         {
@@ -361,7 +350,12 @@ public class UnityAdsManager : MonoBehaviour
         isBannerDisplayed = false;
     }
 
-    private void OnBannerAdDisplayed(LevelPlayAdInfo adInfo) => isBannerDisplayed = true;
+    private void OnBannerAdDisplayed(LevelPlayAdInfo adInfo)
+    {
+        Log("배너 표시됨");
+        isBannerDisplayed = true;
+    }
+
     private void OnBannerAdDisplayFailed(LevelPlayAdInfo adInfo, LevelPlayAdError error)
     {
         LogError($"배너 표시 실패 - {error.ErrorMessage}");
@@ -372,13 +366,11 @@ public class UnityAdsManager : MonoBehaviour
     {
         if (UseAdMob) { AdMobManager.Instance?.ShowBanner(); return; }
 
-#if UNITY_EDITOR
-        return;
-#endif
+        Log($"ShowBanner 호출 - isInitialized:{isInitialized} isBannerLoaded:{isBannerLoaded} isBannerDisplayed:{isBannerDisplayed}");
+
         if (string.IsNullOrEmpty(bannerAdUnitId)) return;
         if (!isInitialized) { pendingShowBanner = true; return; }
 
-        // retry 재시작
         if (bannerRetryCoroutine == null)
             StartBannerRetry();
 
@@ -403,6 +395,7 @@ public class UnityAdsManager : MonoBehaviour
     {
         if (UseAdMob) { AdMobManager.Instance?.HideBanner(); return; }
 
+        Log("HideBanner 호출");
         pendingShowBanner = false;
         if (bannerRetryCoroutine != null)
         {

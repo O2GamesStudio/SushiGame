@@ -5,46 +5,74 @@ public static class AdConfig
     public static string InterstitalAdUnitId => GetInterstitialAdUnitId();
     public static string RewardedVideoAdUnitId => GetRewardedVideoAdUnitId();
 
+    public static string AdMobBannerUnitId => GetAdMobBannerUnitId();
+    public static string AdMobRewardedUnitId => GetAdMobRewardedUnitId();
+
+    public static bool UseAdMob => true;
+
     static string GetAppKey()
     {
-        #if UNITY_ANDROID
-            return "85460dcd";
-        #elif UNITY_IPHONE
-            return "8545d445";
-        #else
-            return "unexpected_platform";
-        #endif
+#if UNITY_ANDROID
+        return "YOUR_ANDROID_APP_KEY";
+#elif UNITY_IPHONE
+        return "YOUR_IOS_APP_KEY";
+#else
+        return "unexpected_platform";
+#endif
     }
 
     static string GetBannerAdUnitId()
     {
-        #if UNITY_ANDROID
-            return "thnfvcsog13bhn08";
-        #elif UNITY_IPHONE
-            return "iep3rxsyp9na3rw8";
-        #else
-            return "unexpected_platform";
-        #endif
+#if UNITY_ANDROID
+        return "YOUR_ANDROID_BANNER_ID";
+#elif UNITY_IPHONE
+        return "YOUR_IOS_BANNER_ID";
+#else
+        return "unexpected_platform";
+#endif
     }
+
     static string GetInterstitialAdUnitId()
     {
-        #if UNITY_ANDROID
-            return "aeyqi3vqlv6o8sh9";
-        #elif UNITY_IPHONE
-            return "wmgt0712uuux8ju4";
-        #else
-            return "unexpected_platform";
-        #endif
+#if UNITY_ANDROID
+        return "YOUR_ANDROID_INTERSTITIAL_ID";
+#elif UNITY_IPHONE
+        return "YOUR_IOS_INTERSTITIAL_ID";
+#else
+        return "unexpected_platform";
+#endif
     }
 
     static string GetRewardedVideoAdUnitId()
     {
-        #if UNITY_ANDROID
-            return "76yy3nay3ceui2a3";
-        #elif UNITY_IPHONE
-            return "qwouvdrkuwivay5q";
-        #else
-            return "unexpected_platform";
-        #endif
+#if UNITY_ANDROID
+        return "YOUR_ANDROID_REWARDED_ID";
+#elif UNITY_IPHONE
+        return "YOUR_IOS_REWARDED_ID";
+#else
+        return "unexpected_platform";
+#endif
+    }
+
+    static string GetAdMobBannerUnitId()
+    {
+#if UNITY_EDITOR
+        return "YOUR_ADMOB_TEST_BANNER_ID";
+#elif UNITY_IPHONE
+        return "YOUR_IOS_ADMOB_BANNER_ID";
+#else
+        return "YOUR_ANDROID_ADMOB_BANNER_ID";
+#endif
+    }
+
+    static string GetAdMobRewardedUnitId()
+    {
+#if UNITY_EDITOR
+        return "YOUR_ADMOB_TEST_REWARDED_ID";
+#elif UNITY_IPHONE
+        return "YOUR_IOS_ADMOB_REWARDED_ID";
+#else
+        return "YOUR_ANDROID_ADMOB_REWARDED_ID";
+#endif
     }
 }

@@ -151,9 +151,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d9b6b066d35fc4344b9d2377959f82e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AppInitializer
-  firebaseManager: {fileID: 0}
   userDataService: {fileID: 803570}
-  appVersionChecker: {fileID: 0}
 --- !u!114 &803568
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20910,7 +20908,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &2039859009
 RectTransform:
   m_ObjectHideFlags: 0

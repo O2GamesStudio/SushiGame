@@ -19,7 +19,6 @@ public class AdMobManager : MonoBehaviour
     private bool isInitialized = false;
     private bool pendingShowBannerOnInit = false;
 
-
     public event Action OnRewardEarned;
     public event Action OnAdClosed;
     public event Action OnAdFailedToLoad;
@@ -34,9 +33,18 @@ public class AdMobManager : MonoBehaviour
         bannerUnitId = bannerId;
         rewardedUnitId = rewardedId;
 
-        MobileAds.Initialize(_ =>
+        Debug.Log($"[AdMobManager] Initialize - bannerId:{bannerId} rewardedId:{rewardedId}");
+
+        MobileAds.RaiseAdEventsOnUnityMainThread = true;
+
+        MobileAds.Initialize(status =>
         {
             isInitialized = true;
+            Debug.Log($"[AdMobManager] MobileAds 초기화 완료");
+
+            foreach (var adapter in status.getAdapterStatusMap())
+                Debug.Log($"[AdMobManager] Adapter: {adapter.Key} / {adapter.Value.InitializationState}");
+
             LoadRewardedAd();
             LoadBannerAd();
 
@@ -52,6 +60,7 @@ public class AdMobManager : MonoBehaviour
 
     private void LoadBannerAd()
     {
+        Debug.Log($"[AdMobManager] LoadBannerAd - bannerUnitId:{bannerUnitId}");
         bannerView?.Destroy();
         bannerView = new BannerView(bannerUnitId, AdSize.Banner, AdPosition.Bottom);
 
@@ -64,10 +73,12 @@ public class AdMobManager : MonoBehaviour
 
     private void OnBannerLoaded()
     {
+        Debug.Log("[AdMobManager] 배너 로드 완료");
         isBannerLoaded = true;
         if (pendingShowBanner)
         {
             pendingShowBanner = false;
+            Debug.Log("[AdMobManager] pendingShowBanner - 배너 표시");
             bannerView.Show();
         }
     }
@@ -81,14 +92,13 @@ public class AdMobManager : MonoBehaviour
 
     private void OnBannerDisplayed()
     {
+        Debug.Log("[AdMobManager] 배너 표시됨");
         isBannerDisplayed = true;
     }
 
     public void ShowBanner()
     {
-#if UNITY_EDITOR
-        return;
-#endif
+        Debug.Log($"[AdMobManager] ShowBanner 호출 - isInitialized:{isInitialized} isBannerLoaded:{isBannerLoaded} isBannerDisplayed:{isBannerDisplayed} bannerView:{bannerView != null}");
         if (!isInitialized) { pendingShowBannerOnInit = true; return; }
         if (bannerView == null) { LoadBannerAd(); pendingShowBanner = true; return; }
         if (isBannerLoaded) bannerView.Show();
@@ -97,6 +107,7 @@ public class AdMobManager : MonoBehaviour
 
     public void HideBanner()
     {
+        Debug.Log("[AdMobManager] HideBanner 호출");
         pendingShowBanner = false;
         bannerView?.Hide();
         isBannerDisplayed = false;
@@ -104,6 +115,7 @@ public class AdMobManager : MonoBehaviour
 
     public void DestroyBanner()
     {
+        Debug.Log("[AdMobManager] DestroyBanner 호출");
         pendingShowBanner = false;
         bannerView?.Destroy();
         bannerView = null;
@@ -120,6 +132,7 @@ public class AdMobManager : MonoBehaviour
 
     public void LoadRewardedAd()
     {
+        Debug.Log($"[AdMobManager] LoadRewardedAd - rewardedUnitId:{rewardedUnitId}");
         RewardedAd.Load(rewardedUnitId, new AdRequest(), (ad, error) =>
         {
             if (error != null)
@@ -132,6 +145,7 @@ public class AdMobManager : MonoBehaviour
 
             rewardedAd = ad;
             isRewardedLoaded = true;
+            Debug.Log("[AdMobManager] 리워드 광고 로드 완료");
 
             rewardedAd.OnAdFullScreenContentClosed += OnRewardedClosed;
             rewardedAd.OnAdFullScreenContentFailed += OnRewardedShowFailed;
@@ -140,6 +154,7 @@ public class AdMobManager : MonoBehaviour
 
     private void OnRewardedClosed()
     {
+        Debug.Log("[AdMobManager] 리워드 광고 닫힘");
         isRewardedLoaded = false;
         OnAdClosed?.Invoke();
         LoadRewardedAd();
@@ -155,18 +170,20 @@ public class AdMobManager : MonoBehaviour
 
     public void ShowRewardedAd()
     {
-#if UNITY_EDITOR
-        OnAdFailedToShow?.Invoke();
-        return;
-#endif
+        Debug.Log($"[AdMobManager] ShowRewardedAd 호출 - isRewardedLoaded:{isRewardedLoaded} rewardedAd:{rewardedAd != null}");
         if (rewardedAd == null || !isRewardedLoaded)
         {
+            Debug.LogError("[AdMobManager] 리워드 광고 준비 안됨");
             OnAdFailedToShow?.Invoke();
             if (!isRewardedLoaded) LoadRewardedAd();
             return;
         }
 
-        rewardedAd.Show(_ => OnRewardEarned?.Invoke());
+        rewardedAd.Show(_ =>
+        {
+            Debug.Log("[AdMobManager] 리워드 지급");
+            OnRewardEarned?.Invoke();
+        });
         isRewardedLoaded = false;
     }
 
