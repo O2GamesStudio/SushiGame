@@ -9,6 +9,7 @@ namespace Unity.Services.LevelPlay.Editor
         void WriteAllBytes(string path, byte[] bytes);
         void Copy(string sourceFileName, string destFileName, bool overwrite);
         string ReadAllText(string path);
+        bool FileContainsText(string path, string text);
         #nullable enable
         void WriteAllText(string path, string? contents);
         #nullable disable

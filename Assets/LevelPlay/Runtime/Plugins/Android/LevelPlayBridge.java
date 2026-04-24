@@ -13,10 +13,13 @@ import com.unity3d.mediation.impression.LevelPlayImpressionData;
 import com.unity3d.mediation.impression.LevelPlayImpressionDataListener;
 import com.unity3d.player.UnityPlayer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.json.JSONObject;
 import java.util.Iterator;
 import com.unity3d.mediation.segment.LevelPlaySegment;
+import com.unity3d.mediation.LevelPlayPrivacySettings;
 
 public class LevelPlayBridge implements LevelPlayInitListener, LevelPlayImpressionDataListener {
     private IUnityLevelPlayInitListener mUnityLevelPlayInitListener;
@@ -155,5 +158,18 @@ public class LevelPlayBridge implements LevelPlayInitListener, LevelPlayImpressi
                 }
             }
         });
+    }
+
+    public void setGDPRConsents(String networkConsentsJson) {
+        Map<String, Boolean> networkConsents = AndroidBridgeUtilities.jsonToBooleanMap(networkConsentsJson);
+        LevelPlayPrivacySettings.setGDPRConsents(networkConsents);
+    }
+
+    public void setCCPA(boolean value) {
+        LevelPlayPrivacySettings.setCCPA(value);
+    }
+
+    public void setCOPPA(boolean value) {
+        LevelPlayPrivacySettings.setCOPPA(value);
     }
 }

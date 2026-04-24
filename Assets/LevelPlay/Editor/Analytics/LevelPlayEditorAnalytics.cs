@@ -5,36 +5,7 @@ namespace Unity.Services.LevelPlay.Editor
 {
     class EditorAnalyticsService : IEditorAnalyticsService
     {
-        const string k_EventName = "editorgameserviceeditor";
-        const int k_EventVersion = 1;
-        const string k_ServicesCorePackageName = "com.unity.services.core";
-
         private readonly IEditorAnalyticsSender m_EditorAnalyticsSender;
-        private readonly string m_PackageVersion = Constants.k_AnnotatedPackageVersion;
-        private readonly Queue<QueuedEvent> m_EventsQueue = new Queue<QueuedEvent>();
-        private bool m_ServicesCoreIsReady;
-
-        public void Initialize()
-        {
-            LevelPlayPackmanQuerier.instance.CheckIfPackageIsInstalledWithUpm(k_ServicesCorePackageName,
-                coreIsInstalled =>
-                {
-                    SetServicesCoreIsReady(coreIsInstalled);
-                });
-        }
-
-        internal void SetServicesCoreIsReady(bool isReady)
-        {
-            m_ServicesCoreIsReady = isReady;
-            if (m_ServicesCoreIsReady)
-            {
-                while (m_EventsQueue.Count > 0)
-                {
-                    var eventEntry = m_EventsQueue.Dequeue();
-                    SendEventWithBody(eventEntry.Name, eventEntry.Body);
-                }
-            }
-        }
 
         internal EditorAnalyticsService(IEditorAnalyticsSender editorAnalyticsSender)
         {
@@ -43,405 +14,208 @@ namespace Unity.Services.LevelPlay.Editor
 
         public void SendEventEditorClick(string component, string action)
         {
-            SendEvent(k_EventName,
-                new EventBody()
-                {
-                    component = component,
-                    action = action,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion
-                });
+            SendEvent(component, action);
         }
 
         public void SendInstallAdapterEvent(string adapterName,
             string newVersion, string currentVersion)
         {
-            SendEvent(k_EventName,
-                new EventBody()
-                {
-                    component = LevelPlayComponent.LevelPlayNetworkManager,
-                    action = LevelPlayAction.Install + "_" + adapterName.Replace("_", "-") + "_" + newVersion,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion,
-                });
+            SendEvent(LevelPlayComponent.LevelPlayNetworkManager,
+                LevelPlayAction.Install + "_" + adapterName.Replace("_", "-") + "_" + newVersion);
         }
 
         public void SendUpdateAdapterEvent(string adapterName,
             string newVersion, string currentVersion)
         {
-            SendEvent(k_EventName,
-                new EventBody()
-                {
-                    component = LevelPlayComponent.LevelPlayNetworkManager,
-                    action = LevelPlayAction.Update + "_" + adapterName.Replace("_", "-") + "_" + newVersion,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion,
-                });
+            SendEvent(LevelPlayComponent.LevelPlayNetworkManager,
+                LevelPlayAction.Update + "_" + adapterName.Replace("_", "-") + "_" + newVersion);
         }
 
         public void SendUninstallAdapterEvent(string adapterName, string currentVersion)
         {
-            SendEvent(k_EventName,
-                new EventBody()
-                {
-                    component = LevelPlayComponent.LevelPlayNetworkManager,
-                    action = LevelPlayAction.Uninstall + "_" + adapterName.Replace("_", "-") + "_" + currentVersion,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion,
-                });
+            SendEvent(LevelPlayComponent.LevelPlayNetworkManager,
+                LevelPlayAction.Uninstall + "_" + adapterName.Replace("_", "-") + "_" + currentVersion);
         }
 
         public void SendUpdateAllAdaptersEvent()
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    component = LevelPlayComponent.LevelPlayNetworkManager,
-                    action = LevelPlayAction.UpdateAllAdapters,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion,
-                });
+            SendEvent(LevelPlayComponent.LevelPlayNetworkManager,
+                LevelPlayAction.UpdateAllAdapters);
         }
 
         public void SendNewSession(string packageType)
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    component = packageType,
-                    action = LevelPlayAction.NewSession,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion
-                });
+            SendEvent(packageType,
+                LevelPlayAction.NewSession);
         }
 
         public void SendInstallPackage(string component)
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    action = LevelPlayAction.Install,
-                    component = component,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion
-                });
+            SendEvent(component,
+                LevelPlayAction.Install
+            );
         }
 
         public void SendInstallLPSDKEvent(string newVersion)
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    component = LevelPlayComponent.LevelPlayNetworkManager,
-                    action = LevelPlayAction.Install + "_Ironsource_" + newVersion,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion,
-                });
+            SendEvent(LevelPlayComponent.LevelPlayNetworkManager,
+                LevelPlayAction.Install + "_Ironsource_" + newVersion);
         }
 
         public void SendUpdateLPSDKEvent(string newVersion, string currentVersion)
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    component = LevelPlayComponent.LevelPlayNetworkManager,
-                    action = LevelPlayAction.Update + "_Ironsource_" + newVersion,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion,
-                });
+            SendEvent(LevelPlayComponent.LevelPlayNetworkManager, LevelPlayAction.Update + "_Ironsource_" + newVersion);
         }
 
         public void SendMdrEvent(string action)
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    action = action,
-                    component = LevelPlayComponent.MDR,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion
-                });
+            SendEvent(LevelPlayComponent.MDR,
+                action
+            );
         }
 
         public void SendCreateApps()
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    action = LevelPlayAction.CreateApps,
-                    component = LevelPlayComponent.ProjectSettings,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion
-                });
+            SendEvent(LevelPlayComponent.ProjectSettings,
+                LevelPlayAction.CreateApps
+            );
         }
 
         public void SendUpdateAll()
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    action = LevelPlayAction.UpdateAll,
-                    component = LevelPlayComponent.ProjectSettings,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion
-                });
+            SendEvent(LevelPlayComponent.ProjectSettings,
+                LevelPlayAction.UpdateAll);
         }
 
         public void SendCopyAppKey()
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    action = LevelPlayAction.CopyAppKey,
-                    component = LevelPlayComponent.ProjectSettings,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion
-                });
+            SendEvent(LevelPlayComponent.ProjectSettings, LevelPlayAction.CopyAppKey);
         }
 
         public void SendCopyAdUnit()
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    action = LevelPlayAction.CopyAdUnitId,
-                    component = LevelPlayComponent.ProjectSettings,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion
-                });
+            SendEvent(LevelPlayComponent.ProjectSettings,
+                LevelPlayAction.CopyAdUnitId);
         }
 
         public void SendNavigateApps()
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    action = LevelPlayAction.NavigateAppKeys,
-                    component = LevelPlayComponent.ProjectSettings,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion
-                });
+            SendEvent(LevelPlayComponent.ProjectSettings, LevelPlayAction.NavigateAppKeys);
         }
 
         public void SendCloseSettings()
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    action = LevelPlayAction.CloseSettings,
-                    component = LevelPlayComponent.ProjectSettings,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion
-                });
+            SendEvent(LevelPlayComponent.ProjectSettings,
+                LevelPlayAction.CloseSettings);
         }
 
         public void SendProjectBound()
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    action = LevelPlayAction.ProjectBound,
-                    component = LevelPlayComponent.SystemProjectSettings,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion
-                });
+            SendEvent(LevelPlayComponent.SystemProjectSettings, LevelPlayAction.ProjectBound);
         }
 
         public void SendProjectNotBound()
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    action = LevelPlayAction.ProjectNotBound,
-                    component = LevelPlayComponent.SystemProjectSettings,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion
-                });
+            SendEvent(LevelPlayComponent.SystemProjectSettings, LevelPlayAction.ProjectNotBound);
         }
 
         public void SendProjectNotMapped()
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    action = LevelPlayAction.ProjectNotMapped,
-                    component = LevelPlayComponent.SystemProjectSettings,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion
-                });
+            SendEvent(LevelPlayComponent.SystemProjectSettings, LevelPlayAction.ProjectNotMapped);
         }
 
         public void SendUserUnauthorizedToCreate()
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    action = LevelPlayAction.UserDenyCreate,
-                    component = LevelPlayComponent.SystemProjectSettings,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion
-                });
+            SendEvent(LevelPlayComponent.SystemProjectSettings,
+                LevelPlayAction.UserDenyCreate);
         }
 
         public void SendUserUnauthorizedToRead()
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    action = LevelPlayAction.UserDenyView,
-                    component = LevelPlayComponent.SystemProjectSettings,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion
-                });
+            SendEvent(LevelPlayComponent.SystemProjectSettings,
+                LevelPlayAction.UserDenyView);
         }
 
         public void SendUpdateAvailable()
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    action = LevelPlayAction.DisplayUpdateAll,
-                    component = LevelPlayComponent.SystemProjectSettings,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion
-                });
+            SendEvent(LevelPlayComponent.SystemProjectSettings,
+                LevelPlayAction.DisplayUpdateAll);
         }
 
         public void SendCreateAppsButtonDisplayed()
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    action = LevelPlayAction.DisplayCreateApps,
-                    component = LevelPlayComponent.SystemProjectSettings,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion
-                });
+            SendEvent(LevelPlayComponent.SystemProjectSettings, LevelPlayAction.DisplayCreateApps);
         }
 
         public void SendFailedToCreateApps()
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    action = LevelPlayAction.FailCreateApp,
-                    component = LevelPlayComponent.SystemProjectSettings,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion
-                });
+            SendEvent(LevelPlayComponent.SystemProjectSettings,
+                LevelPlayAction.FailCreateApp);
         }
 
         public void SendFailedToCreateAdUnits()
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    action = LevelPlayAction.FailCreateAdUnit,
-                    component = LevelPlayComponent.SystemProjectSettings,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion
-                });
+            SendEvent(LevelPlayComponent.SystemProjectSettings,
+                LevelPlayAction.FailCreateAdUnit);
         }
 
         public void SendAdUnitsAvailable()
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    action = LevelPlayAction.AdUnitsAvailable,
-                    component = LevelPlayComponent.SystemProjectSettings,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion
-                });
+            SendEvent(LevelPlayComponent.SystemProjectSettings, LevelPlayAction.AdUnitsAvailable);
         }
 
         public void SendAdUnitsNotAvailable()
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    action = LevelPlayAction.AdUnitsNotAvailable,
-                    component = LevelPlayComponent.SystemProjectSettings,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion
-                });
+            SendEvent(LevelPlayComponent.SystemProjectSettings, LevelPlayAction.AdUnitsNotAvailable);
         }
 
         public void SendAppsNotAvailable()
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    action = LevelPlayAction.AppsNotAvailable,
-                    component = LevelPlayComponent.SystemProjectSettings,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion
-                });
+            SendEvent(LevelPlayComponent.SystemProjectSettings,
+                LevelPlayAction.AppsNotAvailable);
         }
 
         public void SendOpenDashboard(string action)
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    action = action,
-                    component = LevelPlayComponent.SystemProjectSettings,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion
-                });
+            SendEvent(LevelPlayComponent.SystemProjectSettings,
+                action);
         }
 
         public void SendInteractWithSkanIdCheckBox(bool action)
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    component = LevelPlayComponent.LevelPlayNetworkManager,
-                    action = action ? LevelPlayAction.EnableSkAdNetworkId : LevelPlayAction.DisableSkAdNetworkId,
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion
-                });
+            SendEvent(LevelPlayComponent.LevelPlayNetworkManager, action ? LevelPlayAction.EnableSkAdNetworkId : LevelPlayAction.DisableSkAdNetworkId);
+        }
+
+        public void SendInitUsageDetected()
+        {
+            SendEvent(LevelPlayComponent.ApiUsageDetection, LevelPlayAction.InitUsageDetected);
+        }
+
+        public void SendInitUsageNotDetected()
+        {
+            SendEvent(LevelPlayComponent.ApiUsageDetection, LevelPlayAction.InitUsageNotDetected);
+        }
+
+        public void SendInitUsageDetectionTimeout()
+        {
+            SendEvent(LevelPlayComponent.ApiUsageDetection, LevelPlayAction.InitUsageDetectionTimeout);
         }
 
         public void SendFailedToAddSkAdNetworkId(string adapterName)
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    component = LevelPlayComponent.PostBuild,
-                    action = $"{LevelPlayAction.FailedToAddSkanId}_{adapterName}",
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion
-                });
+            SendEvent(LevelPlayComponent.PostBuild,
+                $"{LevelPlayAction.FailedToAddSkanId}_{adapterName}");
         }
 
         public void SendInstantiateGameObject(string adFormat)
         {
-            SendEvent(k_EventName,
-                new EventBody
-                {
-                    component = LevelPlayComponent.GameObject,
-                    action = $"{LevelPlayAction.Instantiate}_{adFormat}",
-                    package = Constants.k_PackageAnalyticsIdentifier,
-                    package_ver = m_PackageVersion
-                });
+            SendEvent(LevelPlayComponent.GameObject,
+                $"{LevelPlayAction.Instantiate}_{adFormat}");
         }
 
-        private void SendEvent(string eventName, EventBody body)
+        private void SendEvent(string component, string action)
         {
-            if (!m_ServicesCoreIsReady)
-            {
-                m_EventsQueue.Enqueue(new QueuedEvent {Name = eventName, Body = body, });
-            }
-            else
-            {
-                SendEventWithBody(eventName, body);
-            }
-        }
-
-        public void SendEventWithBody(string eventName, object body)
-        {
-            m_EditorAnalyticsSender.SendEventWithLimit(eventName, body, k_EventVersion);
+            m_EditorAnalyticsSender.Send(component, action);
         }
 
         internal static class LevelPlayComponent
@@ -463,6 +237,8 @@ namespace Unity.Services.LevelPlay.Editor
 
             public const string ProjectSettings = "Project_Settings";
             public const string SystemProjectSettings = "System_Project_Settings";
+
+            public const string ApiUsageDetection = "Api_Usage_Detection";
         }
 
         internal static class LevelPlayAction
@@ -488,7 +264,6 @@ namespace Unity.Services.LevelPlay.Editor
 
             public const string FailedToAddSkanId = "FailedToAddSkanId";
 
-            public const string DragAndDrop = "DragAndDrop";
             public const string Instantiate = "Instantiate";
 
             public const string MDRWindowDisplayed = "Display_Import_Window";
@@ -521,65 +296,9 @@ namespace Unity.Services.LevelPlay.Editor
             public const string OpenDashboardWithNoApps = "Open_Dashboard_With_No_Apps";
             public const string OpenDashboardWithNoAdUnits = "Open_Dashboard_With_No_AdUnits";
 
-        }
-    }
-
-    internal class QueuedEvent
-    {
-        internal string Name;
-        internal object Body;
-    }
-
-    [Serializable]
-    internal class EventBody
-    {
-        public string action;
-        public string component;
-        public string package;
-        public string package_ver;
-    }
-
-    internal class EventBodyComparer : IEqualityComparer<EventBody>
-    {
-        public bool Equals(EventBody one, EventBody two)
-        {
-            if (object.ReferenceEquals(one, two))
-            {
-                return true;
-            }
-
-            if (one == null || two == null)
-            {
-                return false;
-            }
-
-            if (!one.action.Equals(two.action))
-            {
-                return false;
-            }
-
-            if (!one.component.Equals(two.component))
-            {
-                return false;
-            }
-
-            if (!one.package.Equals(two.package))
-            {
-                return false;
-            }
-
-            if (!one.package_ver.Equals(two.package_ver))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        public int GetHashCode(EventBody eventBody)
-        {
-            return eventBody.action.GetHashCode() ^ eventBody.component.GetHashCode() ^
-                eventBody.package.GetHashCode() ^ eventBody.package_ver.GetHashCode();
+            public const string InitUsageDetected = "Init_Usage_Detected";
+            public const string InitUsageNotDetected = "Init_Usage_Not_Detected";
+            public const string InitUsageDetectionTimeout = "Init_Usage_Detection_Timeout";
         }
     }
 }

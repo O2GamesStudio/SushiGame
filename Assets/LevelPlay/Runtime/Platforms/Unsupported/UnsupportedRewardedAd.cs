@@ -38,6 +38,11 @@ namespace Unity.Services.LevelPlay
             return false;
         }
 
+        public LevelPlayReward GetReward(string placement)
+        {
+            return LevelPlayReward.Default;
+        }
+
         internal class Config : IPlatformRewardedAd.IConfig
         {
             internal class Builder : IPlatformRewardedAd.IConfigBuilder

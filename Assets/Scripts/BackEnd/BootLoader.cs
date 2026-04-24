@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 public class BootLoader : MonoBehaviour
 {
     [SerializeField] private float minimumBootTime = 1.5f;
+    [SerializeField] private AppVersionChecker appVersionChecker;
 
     private void Start()
     {
@@ -25,7 +26,6 @@ public class BootLoader : MonoBehaviour
             yield return null;
         }
 
-        // 최소 부팅 시간 보장
         while (elapsed < minimumBootTime)
         {
             elapsed += Time.deltaTime;
@@ -36,6 +36,29 @@ public class BootLoader : MonoBehaviour
         LoadingUI.Instance?.UpdateProgress(1f);
         yield return new WaitForSeconds(0.2f);
 
-        operation.allowSceneActivation = true;
+        bool versionCheckDone = false;
+        bool versionPassed = false;
+
+        FirebaseManager.Instance.Initialize(() =>
+        {
+            appVersionChecker.CheckVersion(() =>
+            {
+                versionPassed = true;
+                versionCheckDone = true;
+            }, () =>
+            {
+                versionCheckDone = true;
+            });
+        }, error =>
+        {
+            versionPassed = true;
+            versionCheckDone = true;
+            LoadingUI.Instance?.ShowError("네트워크 연결을 확인해주세요.");
+        });
+
+        yield return new WaitUntil(() => versionCheckDone);
+
+        if (versionPassed)
+            operation.allowSceneActivation = true;
     }
 }

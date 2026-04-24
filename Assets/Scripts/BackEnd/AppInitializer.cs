@@ -1,12 +1,9 @@
-using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class AppInitializer : MonoBehaviour
 {
-    [SerializeField] private FirebaseManager firebaseManager;
     [SerializeField] private UserDataService userDataService;
-    [SerializeField] private AppVersionChecker appVersionChecker;
 
     private bool isLobbyInitialized = false;
 
@@ -48,27 +45,35 @@ public class AppInitializer : MonoBehaviour
             return;
         }
 
-        firebaseManager.Initialize(() =>
+        void Proceed()
         {
             userDataService.Initialize();
-            appVersionChecker.CheckVersion(() =>
+            FirebaseManager.Instance.SignInAnonymous(() =>
             {
-                firebaseManager.SignInAnonymous(() =>
+                string userId = FirebaseManager.Instance.CurrentUser.UserId;
+                userDataService.LoadUserData(userId, userData =>
                 {
-                    string userId = firebaseManager.CurrentUser.UserId;
-                    userDataService.LoadUserData(userId, userData =>
-                    {
-                        GameDataTransfer.Instance.SetUserData(userData);
-                        LoadingUI.Instance?.Hide();
-                        SoundManager.Instance?.PlayLobbyBGM();
-                        LobbyManager.Instance.Initialize(userData.currentStage);
-                    });
-                },
-                error =>
-                {
-                    LoadingUI.Instance?.ShowError("네트워크 연결을 확인해주세요.");
+                    GameDataTransfer.Instance.SetUserData(userData);
+                    LoadingUI.Instance?.Hide();
+                    SoundManager.Instance?.PlayLobbyBGM();
+                    LobbyManager.Instance.Initialize(userData.currentStage);
                 });
+            },
+            error =>
+            {
+                LoadingUI.Instance?.ShowError("네트워크 연결을 확인해주세요.");
             });
-        });
+        }
+
+        if (FirebaseManager.Instance == null || !FirebaseManager.Instance.IsInitialized)
+        {
+            var go = new GameObject("FirebaseManager");
+            var fm = go.AddComponent<FirebaseManager>();
+            fm.Initialize(Proceed, error => LoadingUI.Instance?.ShowError("네트워크 연결을 확인해주세요."));
+        }
+        else
+        {
+            Proceed();
+        }
     }
 }

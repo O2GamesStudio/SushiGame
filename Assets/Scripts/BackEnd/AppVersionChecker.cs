@@ -12,37 +12,50 @@ public class AppVersionChecker : MonoBehaviour
 
     private void Awake() => Instance = this;
 
-    public void CheckVersion(Action onPassed = null)
+    public void CheckVersion(Action onPassed = null, Action onFailed = null)
     {
         var remoteConfig = FirebaseRemoteConfig.DefaultInstance;
 
         var defaults = new Dictionary<string, object>
-    {
-        { "min_version", "1.0.0" },
-        { "store_url", "" }
-    };
+        {
+            { "min_version", "1.0.0" },
+            { "store_url", "" }
+        };
 
         remoteConfig.SetDefaultsAsync(defaults).ContinueWithOnMainThread(task =>
         {
             var settings = new ConfigSettings
             {
+#if UNITY_EDITOR
                 MinimumFetchIntervalInMilliseconds = 0
+#else
+                MinimumFetchIntervalInMilliseconds = 43200000
+#endif
             };
 
             remoteConfig.SetConfigSettingsAsync(settings).ContinueWithOnMainThread(settingsTask =>
             {
                 remoteConfig.FetchAndActivateAsync().ContinueWithOnMainThread(fetchTask =>
                 {
+                    if (fetchTask.IsFaulted || fetchTask.IsCanceled)
+                    {
+                        onPassed?.Invoke();
+                        return;
+                    }
+
                     string minVersion = remoteConfig.GetValue("min_version").StringValue;
                     string storeUrl = remoteConfig.GetValue("store_url").StringValue;
                     string currentVersion = Application.version;
 
-                    Debug.Log($"[AppVersionChecker] 현재버전: {currentVersion}, 최소버전: {minVersion}, 업데이트필요: {IsUpdateRequired(currentVersion, minVersion)}");
-
                     if (IsUpdateRequired(currentVersion, minVersion))
+                    {
                         storeUpdatePanel?.Show(storeUrl, $"최신 버전으로 업데이트가 필요합니다.\n현재: {currentVersion} / 최소: {minVersion}");
+                        onFailed?.Invoke();
+                    }
                     else
+                    {
                         onPassed?.Invoke();
+                    }
                 });
             });
         });

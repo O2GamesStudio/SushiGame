@@ -39,7 +39,7 @@ namespace Unity.Services.LevelPlay.Editor
                 }
             }
         }
-        
+
         IAssetDatabaseService m_AssetDatabaseService;
         public IAssetDatabaseService AssetDatabaseService
         {
@@ -84,7 +84,7 @@ namespace Unity.Services.LevelPlay.Editor
                 }
             }
         }
-        
+
         INetworkingService m_NetworkingService;
         public INetworkingService NetworkingService
         {
@@ -183,12 +183,14 @@ namespace Unity.Services.LevelPlay.Editor
         {
             get
             {
-                var editorAnalyticsService = this.EditorAnalyticsService;
-                var ironSourceSdkInstaller = this.LevelPlaySdkInstaller;
+                var migrationService = MigrationService;
+                var ironSourceSdkInstaller = LevelPlaySdkInstaller;
+                var apiUsageDetectionService = ApiUsageDetectionService;
+                var editorAnalyticsService = EditorAnalyticsService;
                 lock (m_PropertyLock) {
                     if (m_OnLoadService == null)
                     {
-                        m_OnLoadService = new OnLoadService(editorAnalyticsService, ironSourceSdkInstaller);
+                        m_OnLoadService = new OnLoadService(ironSourceSdkInstaller, migrationService, apiUsageDetectionService, editorAnalyticsService);
                     }
                     return m_OnLoadService;
                 }
@@ -235,6 +237,33 @@ namespace Unity.Services.LevelPlay.Editor
                         m_PackageTypeService = new PackageTypeService(directoryService);
                     }
                     return m_PackageTypeService;
+                }
+            }
+        }
+
+        IApiUsageDetectionService m_ApiUsageDetectionService;
+        public IApiUsageDetectionService ApiUsageDetectionService
+        {
+            get
+            {
+                var fileService = this.FileService;
+                lock (m_PropertyLock)
+                {
+                    return m_ApiUsageDetectionService
+                        ?? (m_ApiUsageDetectionService = new ApiUsageDetectionService(
+                        new StopwatchService(), fileService, new AssemblyService()));
+                }
+            }
+        }
+
+        IMigrationService m_MigrationService;
+        public IMigrationService MigrationService
+        {
+            get
+            {
+                lock (m_PropertyLock)
+                {
+                    return m_MigrationService ?? (m_MigrationService = new MigrationService(FileService));
                 }
             }
         }

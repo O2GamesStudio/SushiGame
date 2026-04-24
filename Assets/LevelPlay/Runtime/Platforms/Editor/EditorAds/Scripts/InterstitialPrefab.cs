@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 namespace Unity.Services.LevelPlay
@@ -81,7 +81,6 @@ namespace Unity.Services.LevelPlay
             }
         }
 
-
         internal void LoadAd()
         {
 #if ENABLE_UNITY_SERVICES_LEVELPLAY_VERBOSE_LOGGING
@@ -124,6 +123,7 @@ namespace Unity.Services.LevelPlay
 #endif
             return m_IsAdReady;
         }
+
 #endif
     }
 }

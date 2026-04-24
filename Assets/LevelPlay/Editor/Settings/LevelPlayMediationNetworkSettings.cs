@@ -2,6 +2,7 @@ using System.IO;
 using Unity.Services.LevelPlay;
 using UnityEngine;
 
+[HelpURL("https://docs.unity.com/grow/levelplay/sdk/unity/developer-tools/")]
 public class LevelPlayMediationNetworkSettings : ScriptableObject
 {
     public static readonly string MEDIATION_SETTINGS_ASSET_PATH = Path.Combine(Constants.k_LevelPlayResourcesPath, Constants.k_LevelPlayNetworkSettingName + ".asset");

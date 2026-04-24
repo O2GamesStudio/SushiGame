@@ -1,7 +1,7 @@
 // This file is generated. Do not modify by hand.
 // XML documentation file not found. To check if public methods have XML comments,
 // make sure the XML doc file is present and located next to the scraped dll
-public class LevelPlayMediationNetworkSettings : UnityEngine.ScriptableObject
+[UnityEngine.HelpURL(@"https://docs.unity.com/grow/levelplay/sdk/unity/developer-tools/")] public class LevelPlayMediationNetworkSettings : UnityEngine.ScriptableObject
 {
     [UnityEngine.SerializeField] [UnityEngine.Tooltip(@"This Will be added to your AndroidManifest.xml")] public string AdmobAndroidAppId;
     [UnityEngine.SerializeField] [UnityEngine.Tooltip(@"This will be added to your info.plist")] public string AdmobIOSAppId;

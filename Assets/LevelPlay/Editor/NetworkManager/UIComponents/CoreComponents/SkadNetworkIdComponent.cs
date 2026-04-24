@@ -7,7 +7,7 @@ namespace Unity.Services.LevelPlay.Editor.IntegrationManager.UIComponents
     {
         internal static bool m_AddSkAdNetworkIds;
 
-        const string k_SKAdNetworkDocsLink = "https://developers.is.com/ironsource-mobile/unity/managing-skadnetwork-ids/";
+        const string k_SKAdNetworkDocsLink = "https://docs.unity.com/grow/levelplay/sdk/unity/skadnetwork-id-manager/";
         const string k_SKAdNetworkToggleText = "Automatically add installed networks' SKAdNetwork IDs to info.plist file. If unchecked, you must do this manually.";
         const string k_LearnMoreText = "<a>Learn more</a>";
         const string k_SkadNetworkLabelText = "SKAdNetwork IDs";

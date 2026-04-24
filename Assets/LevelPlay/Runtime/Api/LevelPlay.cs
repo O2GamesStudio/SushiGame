@@ -14,7 +14,7 @@ namespace Unity.Services.LevelPlay
 
         static LevelPlay()
         {
-            Sdk = LevelPlaySdkProvider.Create();
+            Sdk = LevelPlaySdkProvider.Get();
             if (Sdk == null)
             {
                 return;
@@ -199,6 +199,7 @@ namespace Unity.Services.LevelPlay
         /// Set user's GDPR consent.
         /// </summary>
         /// <param name="consent">Whether the user has granted consent</param>
+        [Obsolete("Use LevelPlayPrivacySettings.SetGDPRConsents() for GDPR consent management.", false)]
         public static void SetConsent(bool consent) => Sdk?.SetConsent(consent);
 
         /// <summary>
@@ -206,5 +207,18 @@ namespace Unity.Services.LevelPlay
         /// </summary>
         /// <param name="segment">Segment information for the current user</param>
         public static void SetSegment(LevelPlaySegment segment) => Sdk?.SetSegment(segment);
+
+#if UNITY_EDITOR
+
+        [RuntimeInitializeOnLoadMethod]
+        private static void ResetStaticsOnLoad()
+        {
+            PluginVersion = Constants.k_AnnotatedPackageVersion;
+            OnInitSuccessReceived = null;
+            OnInitFailedReceived = null;
+            OnImpressionDataReadyReceived = null;
+        }
+
+#endif
     }
 }

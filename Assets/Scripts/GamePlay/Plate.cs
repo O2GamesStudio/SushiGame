@@ -117,6 +117,18 @@ public class Plate : MonoBehaviour
 
         return closestSlot;
     }
+    public Vector3 GetFirstEmptySlotPosition()
+    {
+        for (int i = 0; i < slotCount; i++)
+        {
+            if (activeSushis[i] == null)
+            {
+                int slotIdx = GetSlotTransformIndex(i);
+                return sushiSlots[slotIdx].position;
+            }
+        }
+        return transform.position;
+    }
 
     public void SetState(PlateState newState, int sushiTypeId = -1)
     {

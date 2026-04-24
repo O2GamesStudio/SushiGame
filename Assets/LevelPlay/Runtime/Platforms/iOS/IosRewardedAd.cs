@@ -51,6 +51,18 @@ namespace Unity.Services.LevelPlay
             return RewardedAdIsPlacementCapped(placementName);
         }
 
+        public LevelPlayReward GetReward(string placement)
+        {
+            if (CheckDisposedAndLogError("Cannot Get Reward, instance is disposed")) return LevelPlayReward.Default;
+
+            var rewardPtr = RewardedAdGetReward(NativePtr, placement);
+            if (rewardPtr == IntPtr.Zero) return LevelPlayReward.Default;
+
+            var rewardName = RewardedAdRewardGetName(rewardPtr) ?? string.Empty;
+            var rewardAmount = RewardedAdRewardGetAmount(rewardPtr);
+            return new LevelPlayReward(rewardName, rewardAmount);
+        }
+
         public override void Dispose()
         {
             m_RewardedAdListener?.Dispose();
@@ -129,6 +141,15 @@ namespace Unity.Services.LevelPlay
 
         [DllImport("__Internal", EntryPoint = "LPMRewardedAdAdId")]
         static extern string RewardedAdId(IntPtr rewardedAd);
+
+        [DllImport("__Internal", EntryPoint = "LPMRewardedAdGetReward")]
+        static extern IntPtr RewardedAdGetReward(IntPtr rewardedAd, string placement);
+
+        [DllImport("__Internal", EntryPoint = "LPMRewardedAdRewardGetName")]
+        static extern string RewardedAdRewardGetName(IntPtr reward);
+
+        [DllImport("__Internal", EntryPoint = "LPMRewardedAdRewardGetAmount")]
+        static extern int RewardedAdRewardGetAmount(IntPtr reward);
 
         internal class Config : IPlatformRewardedAd.IConfig
         {

@@ -81,10 +81,15 @@ namespace Unity.Services.LevelPlay.Editor
         public async Task UpdateAllAsync()
         {
             EditorServices.Instance.EditorAnalyticsService.SendUpdateAll();
-            await UpdateUnityPackageAsync();
+            if (PackageStatus != Status.UpToDate)
+                await UpdateUnityPackageAsync();
+
             await m_SdkInstaller.PreInstallAsync();
-            await m_SdkInstaller.InstallLatestIronSourceSdkAsync();
-            await m_SdkInstaller.InstallUnityAdsAdapterAsync(true);
+            if (SdkStatus != Status.UpToDate)
+                await m_SdkInstaller.InstallLatestIronSourceSdkAsync();
+
+            if (UnityAdsStatus != Status.UpToDate)
+                await m_SdkInstaller.InstallUnityAdsAdapterAsync(true);
 
             CheckInstallStatus(m_NetworkManager);
         }

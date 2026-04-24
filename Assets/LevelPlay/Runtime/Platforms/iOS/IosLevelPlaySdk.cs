@@ -1,71 +1,113 @@
 #if UNITY_IOS
 using System;
-using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 namespace Unity.Services.LevelPlay
 {
     sealed class IosLevelPlaySdk : ILevelPlaySdk
     {
         internal static readonly IosLevelPlaySdk Instance = new();
+        readonly IIosNativeBridge m_NativeBridge;
+
         public event Action<LevelPlayConfiguration> OnInitSuccess;
         public event Action<LevelPlayInitError> OnInitFailed;
         public event Action<LevelPlayImpressionData> OnImpressionDataReady;
 
-        IosLevelPlaySdk() { }
+        IosLevelPlaySdk()
+        {
+            m_NativeBridge = new IosNativeBridge();
+        }
+
+        internal IosLevelPlaySdk(IIosNativeBridge bridge)
+        {
+            m_NativeBridge = bridge;
+        }
 
         public void Initialize(string appKey, string userId)
         {
-            setPluginData("Unity", LevelPlay.PluginVersion, LevelPlay.UnityVersion);
-            LPMInitialize(appKey, userId, OnInitializationSuccess, OnInitializationFailed, OnImpressionSuccess);
+            m_NativeBridge.SetPluginData("Unity", LevelPlay.PluginVersion, LevelPlay.UnityVersion);
+            m_NativeBridge.LPMInitialize(appKey, userId, OnInitializationSuccess, OnInitializationFailed, OnImpressionSuccess);
         }
 
         public void SetPauseGame(bool pause)
         {
-            LPMSetPauseGame(pause);
+            m_NativeBridge.LPMSetPauseGame(pause);
         }
 
         public bool SetDynamicUserId(string dynamicUserId)
         {
-            return LPMSetDynamicUserId(dynamicUserId);
+            return m_NativeBridge.LPMSetDynamicUserId(dynamicUserId);
         }
 
         public void ValidateIntegration()
         {
-            LPMValidateIntegration();
+            m_NativeBridge.LPMValidateIntegration();
         }
+
         public void LaunchTestSuite()
         {
-            LPMLaunchTestSuite();
+            m_NativeBridge.LPMLaunchTestSuite();
         }
 
-        public void SetAdaptersDebug(bool enabled) {
-            LPMSetAdaptersDebug(enabled);
+        public void SetAdaptersDebug(bool enabled)
+        {
+            m_NativeBridge.LPMSetAdaptersDebug(enabled);
         }
 
-        public void SetNetworkData(string networkKey, string networkData) {
-            LPMSetNetworkData(networkKey, networkData);
+        public void SetNetworkData(string networkKey, string networkData)
+        {
+            m_NativeBridge.LPMSetNetworkData(networkKey, networkData);
         }
 
         public void SetMetaData(string key, string value)
         {
-            LPMSetMetaData(key, value);
+            m_NativeBridge.LPMSetMetaData(key, value);
         }
 
         public void SetMetaData(string key, params string[] values)
         {
-            LPMSetMetaDataWithValues(key, values);
+            m_NativeBridge.LPMSetMetaDataWithValues(key, values);
         }
 
         public void SetConsent(bool consent)
         {
-            LPMSetConsent(consent);
+            m_NativeBridge.LPMSetConsent(consent);
         }
 
         public void SetSegment(LevelPlaySegment segment)
         {
             var dict = segment.GetSegmentAsDictionary();
             var json = LevelPlayJson.Serialize(dict);
-            LPMSetSegment(json);
+            m_NativeBridge.LPMSetSegment(json);
+        }
+
+        public void SetGDPRConsents(Dictionary<string, bool> networkConsents)
+        {
+            if (networkConsents == null)
+            {
+                LevelPlayLogger.LogWarning("SetGDPRConsents called with null networkConsents");
+                return;
+            }
+
+            try
+            {
+                var json = LevelPlayJson.Serialize(networkConsents);
+                m_NativeBridge.LPMSetGDPRConsents(json);
+            }
+            catch (Exception e)
+            {
+                LevelPlayLogger.LogError($"Failed to set GDPR consents. Exception: {e.Message}");
+            }
+        }
+
+        public void SetCCPA(bool value)
+        {
+            m_NativeBridge.LPMSetCCPA(value);
+        }
+
+        public void SetCOPPA(bool value)
+        {
+            m_NativeBridge.LPMSetCOPPA(value);
         }
 
         delegate void InitSuccessCallback(string configuration);
@@ -89,46 +131,6 @@ namespace Unity.Services.LevelPlay
         {
             Instance?.OnImpressionDataReady?.Invoke(new LevelPlayImpressionData(impressionData));
         }
-
-        [DllImport("__Internal")]
-        private static extern void LPMInitialize(string appKey,
-            string userId,
-            InitSuccessCallback initSuccessCallback,
-            InitFailureCallback initFailureCallback,
-            ImpressionSuccessCallback impressionSuccessCallback);
-
-        [DllImport("__Internal")]
-        private static extern void setPluginData(string pluginType, string pluginVersion, string pluginFrameworkVersion);
-
-        [DllImport("__Internal")]
-        private static extern void LPMSetPauseGame(bool pause);
-
-        [DllImport("__Internal")]
-        private static extern bool LPMSetDynamicUserId(string dynamicUserId);
-
-        [DllImport("__Internal")]
-        private static extern void LPMValidateIntegration();
-
-        [DllImport("__Internal")]
-        private static extern void LPMLaunchTestSuite();
-
-        [DllImport("__Internal")]
-        private static extern void LPMSetAdaptersDebug(bool enabled);
-
-        [DllImport("__Internal")]
-        private static extern void LPMSetNetworkData(string networkKey, string networkData);
-
-        [DllImport("__Internal")]
-        private static extern void LPMSetMetaData(string key, string value);
-
-        [DllImport("__Internal")]
-        private static extern void LPMSetMetaDataWithValues(string key, params string[] values);
-
-        [DllImport("__Internal")]
-        private static extern void LPMSetConsent(bool consent);
-
-        [DllImport("__Internal")]
-        private static extern void LPMSetSegment(string json);
     }
 }
 #endif

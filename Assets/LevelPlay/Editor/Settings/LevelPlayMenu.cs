@@ -172,7 +172,7 @@ class LevelPlayMenu : Editor
 
     private static void OpenDocumentation()
     {
-        Application.OpenURL("https://developers.is.com/ironsource-mobile/unity/unity-plugin/");
+        Application.OpenURL("https://docs.unity.com/grow/levelplay/sdk/unity/package-integration/");
     }
 
     [MenuItem(k_AdsMediationRoot + k_Support + k_Changelog, false, 14)]
@@ -197,7 +197,7 @@ class LevelPlayMenu : Editor
 
     private static void OpenChangelog()
     {
-        Application.OpenURL("https://developers.is.com/ironsource-mobile/unity/sdk-change-log/");
+        Application.OpenURL("https://docs.unity.com/grow/levelplay/sdk/unity/changelog/");
     }
 
     [MenuItem(k_AdsMediationRoot + k_Support + k_Troubleshooting, false, 15)]
@@ -222,7 +222,7 @@ class LevelPlayMenu : Editor
 
     private static void OpenTroubleShootingGuide()
     {
-        Application.OpenURL("https://docs.unity.com/en-us/grow/dashboard/levelplay/troubleshoot");
+        Application.OpenURL("https://docs.unity.com/grow/dashboard/levelplay/troubleshoot/");
     }
 }
 #endif

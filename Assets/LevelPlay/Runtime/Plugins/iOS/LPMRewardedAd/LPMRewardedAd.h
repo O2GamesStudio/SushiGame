@@ -20,6 +20,10 @@ bool LPMRewardedAdIsPlacementCapped(const char *placementName);
 
 const char *LPMRewardedAdAdId(void *rewardedAdRef);
 
+void *LPMRewardedAdGetReward(void *rewardedAdRef, const char *placement);
+const char *LPMRewardedAdRewardGetName(void *rewardRef);
+int LPMRewardedAdRewardGetAmount(void *rewardRef);
+
 // Config
 void *LPMRewardedAdCreateConfigBuilder();
 void LPMRewardedAdConfigBuilderSetBidFloor(void *builderRef, double bidFloor);

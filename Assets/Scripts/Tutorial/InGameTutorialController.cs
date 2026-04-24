@@ -41,11 +41,11 @@ public class InGameTutorialController : MonoBehaviour
     {
         if (isTutorialCompleted) return;
 
-        // plate[0] = 2개짜리, plate[1] = 1개짜리 (ExtractGuaranteedSushis에서 {2,1} 순서 보장)
         var plates = plateManager.GetAllPlates();
         Plate twoPlate = null;
         Plate onePlate = null;
         int foundType = -1;
+        Sushi targetSushi = null;
 
         foreach (var plate in plates)
         {
@@ -64,18 +64,20 @@ public class InGameTutorialController : MonoBehaviour
         {
             if (!plate.gameObject.activeSelf || plate.IsLocked || plate == twoPlate) continue;
             var activeSushis = plate.GetActiveSushis();
-            if (activeSushis.Count > 0 && activeSushis.Any(s => s.TypeId == foundType))
+            var found = activeSushis.FirstOrDefault(s => s.TypeId == foundType);
+            if (found != null)
             {
                 onePlate = plate;
+                targetSushi = found;
                 break;
             }
         }
 
-        if (onePlate == null) return;
+        if (onePlate == null || targetSushi == null) return;
 
         tutorialTypeId = foundType;
-        fromPos = onePlate.transform.position + Vector3.up * 0.5f + fingerOffset;
-        toPos = twoPlate.transform.position + Vector3.up * 0.5f + fingerOffset;
+        fromPos = targetSushi.transform.position + fingerOffset;
+        toPos = twoPlate.GetFirstEmptySlotPosition() + fingerOffset;
 
         fingerIcon = Instantiate(fingerIconPrefab);
         isTutorialActive = true;

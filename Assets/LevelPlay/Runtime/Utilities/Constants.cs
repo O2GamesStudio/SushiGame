@@ -3,7 +3,7 @@ namespace Unity.Services.LevelPlay
     static class Constants
     {
         internal const string k_PackageName = "com.unity.services.levelplay";
-        internal const string k_PackageVersion = "9.2.0";
+        internal const string k_PackageVersion = "9.4.0";
         const string k_PackageVersionAnnotation = "-r";
         internal const string k_AnnotatedPackageVersion = k_PackageVersion + k_PackageVersionAnnotation;
         internal const string k_PackageAnalyticsIdentifier = "UnityLevelPlay";
@@ -31,5 +31,8 @@ namespace Unity.Services.LevelPlay
         internal const string k_LevelPlaySettingName = "LevelPlayMediationSettings";
         internal const string k_LevelPlayNetworkSettingName = "LevelPlayMediatedNetworkSettings";
         internal const string k_LevelPlayResourcesPath = "Assets/LevelPlay/Resources";
+
+        internal const string k_LevelPlayRuntimeAssemblyName = "Unity.LevelPlay";
+        internal const string k_LevelPlayEditorAssemblyName = "Unity.LevelPlay.Editor";
     }
 }

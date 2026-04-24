@@ -1,5 +1,6 @@
 #if UNITY_ANDROID
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Unity.Services.LevelPlay
@@ -8,7 +9,7 @@ namespace Unity.Services.LevelPlay
     {
         internal static readonly AndroidLevelPlaySdk Instance = new();
 
-        AndroidJavaObject m_LevelPlayBridge;
+        IAndroidNativeBridge m_LevelPlayBridge;
         const string k_LevelPlayBridge = "com.ironsource.unity.androidbridge.LevelPlayBridge";
         readonly IUnityLevelPlayInitListener m_InitListener;
         readonly IUnityLevelPlayImpressionDataListener m_ImpressionListener;
@@ -21,6 +22,16 @@ namespace Unity.Services.LevelPlay
         {
             m_InitListener = new UnityLevelPlayInitListener(this);
             m_ImpressionListener = new UnityLevelPlayImpressionDataListener(this);
+        }
+
+        internal AndroidLevelPlaySdk(
+            IUnityLevelPlayInitListener initListener,
+            IUnityLevelPlayImpressionDataListener impressionListener,
+            IAndroidNativeBridge bridge = null)
+        {
+            m_InitListener = initListener;
+            m_ImpressionListener = impressionListener;
+            m_LevelPlayBridge = bridge;
         }
 
         public void onInitSuccess(string configuration)
@@ -38,12 +49,13 @@ namespace Unity.Services.LevelPlay
             OnImpressionDataReady?.Invoke(new LevelPlayImpressionData(impressionData));
         }
 
-        AndroidJavaObject GetBridge()
+        IAndroidNativeBridge GetBridge()
         {
             if (m_LevelPlayBridge == null)
             {
                 using var pluginClass = new AndroidJavaClass(k_LevelPlayBridge);
-                m_LevelPlayBridge = pluginClass.CallStatic<AndroidJavaObject>("getInstance");
+                var javaObject = pluginClass.CallStatic<AndroidJavaObject>("getInstance");
+                m_LevelPlayBridge = new AndroidNativeBridge(javaObject);
             }
             return m_LevelPlayBridge;
         }
@@ -106,6 +118,35 @@ namespace Unity.Services.LevelPlay
         public void SetPauseGame(bool pause)
         {
             LevelPlayLogger.LogWarning("Unexpected call to SetPauseGame on Android. This method is not implemented for Android.");
+        }
+
+        public void SetGDPRConsents(Dictionary<string, bool> networkConsents)
+        {
+            if (networkConsents == null)
+            {
+                LevelPlayLogger.LogWarning("SetGDPRConsents called with null networkConsents");
+                return;
+            }
+
+            try
+            {
+                var json = LevelPlayJson.Serialize(networkConsents);
+                GetBridge().Call("setGDPRConsents", json);
+            }
+            catch (Exception e)
+            {
+                LevelPlayLogger.LogError($"Failed to set GDPR consents. Exception: {e.Message}");
+            }
+        }
+
+        public void SetCCPA(bool value)
+        {
+            GetBridge().Call("setCCPA", value);
+        }
+
+        public void SetCOPPA(bool value)
+        {
+            GetBridge().Call("setCOPPA", value);
         }
     }
 }

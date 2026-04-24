@@ -5,7 +5,7 @@ using UnityEngine;
 /// <summary>
 /// Holds the editor settings for LevelPlay.
 /// </summary>
-[HelpURL("https://developers.is.com/ironsource-mobile/unity/unity-developer-tools/")]
+[HelpURL("https://docs.unity.com/grow/levelplay/sdk/unity/developer-tools/")]
 public class LevelPlayMediationSettings : ScriptableObject
 {
     public static readonly string s_LevelPlaySettingsAssetPath = Path.Combine(Constants.k_LevelPlayResourcesPath, Constants.k_LevelPlaySettingName + ".asset");

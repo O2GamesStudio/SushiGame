@@ -102,6 +102,10 @@ public class RewardedAd {
       return this.mRewardedAd.getAdId();
    }
 
+   public LevelPlayReward getReward(String placement) {
+      return this.mRewardedAd.getReward(placement);
+   }
+
     public static class ConfigBuilder {
         private final Config.Builder builder = new Config.Builder();
 

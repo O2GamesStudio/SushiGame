@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Unity.Services.LevelPlay
 {
@@ -18,5 +19,8 @@ namespace Unity.Services.LevelPlay
         void SetMetaData(string key, params string[] values);
         void SetConsent(bool consent);
         void SetSegment(LevelPlaySegment segment);
+        void SetGDPRConsents(Dictionary<string, bool> networkConsents);
+        void SetCCPA(bool value);
+        void SetCOPPA(bool value);
     }
 }

@@ -61,6 +61,11 @@ namespace Unity.Services.LevelPlay.Editor
             return File.ReadAllText(path);
         }
 
+        public bool FileContainsText(string path, string text)
+        {
+            return File.ReadAllText(path).Contains(text);
+        }
+
         #nullable enable
         public void WriteAllText(string path, string? contents)
         {

@@ -9,6 +9,7 @@
 #import <IronSource/LPMRewardedAd.h>
 #import <IronSource/LPMRewardedAdConfig.h>
 #import <IronSource/LPMRewardedAdConfigBuilder.h>
+#import <IronSource/LPMReward.h>
 #import <UIKit/UIKit.h>
 
 #ifdef __cplusplus
@@ -52,6 +53,39 @@ extern "C" {
     const char *LPMRewardedAdAdId(void *rewardedAdRef) {
         LPMRewardedAd *rewardedAd = (__bridge LPMRewardedAd *)rewardedAdRef;
         return strdup([[rewardedAd adId] UTF8String]);
+    }
+
+    void *LPMRewardedAdGetReward(void *rewardedAdRef, const char *placement) {
+        if (rewardedAdRef == NULL) {
+            return NULL;
+        }
+        LPMRewardedAd *rewardedAd = (__bridge LPMRewardedAd *)rewardedAdRef;
+        NSString *placementString = placement ? [LPMUtilities getStringFromCString:placement] : nil;
+        LPMReward *reward = [rewardedAd getRewardWithPlacementName:placementString];
+        if (reward == nil) {
+            return NULL;
+        }
+        return (__bridge void *)reward;
+    }
+
+    const char *LPMRewardedAdRewardGetName(void *rewardRef) {
+        if (rewardRef == NULL) {
+            return NULL;
+        }
+        LPMReward *reward = (__bridge LPMReward *)rewardRef;
+        NSString *name = [reward name];
+        if (name == nil) {
+            return NULL;
+        }
+        return strdup([name UTF8String]);
+    }
+
+    int LPMRewardedAdRewardGetAmount(void *rewardRef) {
+        if (rewardRef == NULL) {
+            return 0;
+        }
+        LPMReward *reward = (__bridge LPMReward *)rewardRef;
+        return (int)[reward amount];
     }
 
     // config

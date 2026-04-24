@@ -5,6 +5,8 @@ namespace Unity.Services.LevelPlay
     /// </summary>
     public sealed class LevelPlayReward
     {
+        internal static readonly LevelPlayReward Default = new(string.Empty, 0);
+
         /// <summary>
         /// The name of the reward.
         /// </summary>

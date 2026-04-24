@@ -1,5 +1,6 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
+using System.Collections.Generic;
 
 namespace Unity.Services.LevelPlay
 {
@@ -14,7 +15,7 @@ namespace Unity.Services.LevelPlay
         public event Action<LevelPlayImpressionData> OnImpressionDataReady;
 #pragma warning restore 0067
 
-        EditorLevelPlaySdk() { }
+        EditorLevelPlaySdk() {}
 
         // Public implementation of interface methods
         public void Initialize(string appKey, string userId)
@@ -62,6 +63,18 @@ namespace Unity.Services.LevelPlay
         }
 
         public void SetSegment(LevelPlaySegment segment)
+        {
+        }
+
+        public void SetGDPRConsents(Dictionary<string, bool> networkConsents)
+        {
+        }
+
+        public void SetCCPA(bool value)
+        {
+        }
+
+        public void SetCOPPA(bool value)
         {
         }
 

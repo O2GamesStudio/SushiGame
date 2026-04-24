@@ -19,22 +19,22 @@ namespace Unity.Services.LevelPlay
 
 #pragma warning restore 0067
 
-        static float m_BannerTextWidth = 534f;
-        static float m_BannerTextHeight = 96f;
+        const float k_BannerTextWidth = 534f;
+        const float k_BannerTextHeight = 96f;
 
         internal LevelPlayBannerPosition m_BannerPosition = LevelPlayBannerPosition.BottomCenter;
         internal LevelPlayAdSize m_BannerAdSize = LevelPlayAdSize.BANNER;
 
-        [Tooltip("Mock Ad coordinates in pixels (only for preview purpose)")] [SerializeField]
+        [Tooltip("Mock Ad coordinates in pixels (only for preview purpose)")][SerializeField]
         Vector2 m_BannerCoordinates = new Vector2(0, 0);
 
-        [Tooltip("Position of Mock Banner Ad")] [SerializeField]
+        [Tooltip("Position of Mock Banner Ad")][SerializeField]
         Preset Position = Preset.BottomCenter;
 
-        [Tooltip("Size of Mock Banner Ad")] [SerializeField]
+        [Tooltip("Size of Mock Banner Ad")][SerializeField]
         AdSize m_AdSize = AdSize.BANNER;
 
-        [Tooltip("Mock Ad size in pixels (only for preview purpose)")] [SerializeField]
+        [Tooltip("Mock Ad size in pixels (only for preview purpose)")][SerializeField]
         Vector2 m_BannerSize;
 
         void Start()
@@ -54,10 +54,10 @@ namespace Unity.Services.LevelPlay
             {
                 var bannerRect = GetBannerRect(m_BannerPosition);
                 var textRect = new Rect(
-                    bannerRect.x + bannerRect.width / 2 - m_BannerTextWidth / 2,
-                    bannerRect.y + bannerRect.height / 2 - m_BannerTextHeight / 2,
-                    m_BannerTextWidth,
-                    m_BannerTextHeight);
+                    bannerRect.x + bannerRect.width / 2 - k_BannerTextWidth / 2,
+                    bannerRect.y + bannerRect.height / 2 - k_BannerTextHeight / 2,
+                    k_BannerTextWidth,
+                    k_BannerTextHeight);
                 GUI.DrawTexture(bannerRect, m_BackgroundTexture, ScaleMode.StretchToFill);
                 GUI.DrawTexture(textRect, m_LevelPlayLogo, ScaleMode.StretchToFill);
                 if (GUI.Button(bannerRect, string.Empty, GUIStyle.none))

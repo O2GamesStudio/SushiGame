@@ -9,6 +9,7 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -29,6 +30,24 @@ public class AndroidBridgeUtilities {
             }
 
         } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return map;
+    }
+
+    public static Map<String, Boolean> jsonToBooleanMap(String jsonStr) {
+        Map<String, Boolean> map = new HashMap<>();
+
+        try {
+            JSONObject json = new JSONObject(jsonStr);
+            Iterator<String> keys = json.keys();
+
+            while (keys.hasNext()) {
+                String key = keys.next();
+                map.put(key, json.getBoolean(key));
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

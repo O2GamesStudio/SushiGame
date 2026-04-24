@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -14,7 +14,7 @@ namespace Unity.Services.LevelPlay
         internal event Action<LevelPlayAdInfo> OnAdDisplayed;
         internal event Action<LevelPlayAdInfo> OnAdClosed;
         internal event Action<LevelPlayAdInfo> OnAdClicked;
-        internal event Action<LevelPlayAdInfo,LevelPlayAdError> OnAdDisplayFailed;
+        internal event Action<LevelPlayAdInfo, LevelPlayAdError> OnAdDisplayFailed;
         internal event Action<LevelPlayAdInfo> OnAdInfoChanged;
         internal event Action<LevelPlayAdInfo, LevelPlayReward> OnAdRewarded;
 #pragma warning restore 0067
@@ -26,7 +26,6 @@ namespace Unity.Services.LevelPlay
         {
             SendInstantiateEvent("Rewarded");
         }
-
 
         void OnGUI()
         {
@@ -160,6 +159,7 @@ namespace Unity.Services.LevelPlay
 #endif
             return m_IsAdReady;
         }
+
 #endif
     }
 }

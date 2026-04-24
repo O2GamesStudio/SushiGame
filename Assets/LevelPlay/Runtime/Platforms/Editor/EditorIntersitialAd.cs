@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR && (UNITY_ANDROID || UNITY_IOS)
+#if UNITY_EDITOR && (UNITY_ANDROID || UNITY_IOS)
 using System;
 using System.IO;
 using UnityEditor;
@@ -11,8 +11,8 @@ namespace Unity.Services.LevelPlay
     {
         string m_PrefabPath =>
             Directory.Exists("Packages/com.unity.services.levelplay")
-                ? "Packages/com.unity.services.levelplay/Runtime/Platforms/Editor/EditorAds/Prefabs/MockInterstitialEditorAd.prefab"
-                : "Assets/LevelPlay/Runtime/Platforms/Editor/EditorAds/Prefabs/MockInterstitialEditorAd.prefab";
+            ? "Packages/com.unity.services.levelplay/Runtime/Platforms/Editor/EditorAds/Prefabs/MockInterstitialEditorAd.prefab"
+            : "Assets/LevelPlay/Runtime/Platforms/Editor/EditorAds/Prefabs/MockInterstitialEditorAd.prefab";
 
         GameObject m_AdGameObject;
         InterstitialPrefab m_AdPrefab;

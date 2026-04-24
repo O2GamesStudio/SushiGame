@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace Unity.Services.LevelPlay
 {
     /// <summary>
@@ -153,5 +155,18 @@ namespace Unity.Services.LevelPlay
         {
             return string.Format("Description: {0}, Width: {1}, Height: {2}", Description, Width, Height);
         }
+
+#if UNITY_EDITOR
+
+        [RuntimeInitializeOnLoadMethod]
+        private static void ResetStaticsOnLoad()
+        {
+            BANNER = new LevelPlayAdSize(PlatformLevelPlayAdSizeType.Banner);
+            LARGE = new LevelPlayAdSize(PlatformLevelPlayAdSizeType.Large);
+            MEDIUM_RECTANGLE = new LevelPlayAdSize(PlatformLevelPlayAdSizeType.MediumRectangle);
+            LEADERBOARD = new LevelPlayAdSize(PlatformLevelPlayAdSizeType.LeaderBoard);
+        }
+
+#endif
     }
 }

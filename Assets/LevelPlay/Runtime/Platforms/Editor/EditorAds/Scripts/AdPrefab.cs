@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using UnityEngine;
 
 namespace Unity.Services.LevelPlay
@@ -11,16 +11,16 @@ namespace Unity.Services.LevelPlay
 
         internal bool m_IsAdReady;
 
-        [Tooltip("Preview Mock Ad In the Editor")] [SerializeField]
+        [Tooltip("Preview Mock Ad In the Editor")][SerializeField]
         internal bool m_Preview = true;
 
-        [Tooltip("Preview Mock Ad In the Editor")] [SerializeField]
+        [Tooltip("Preview Mock Ad In the Editor")][SerializeField]
         internal Texture2D m_BackgroundTexture;
 
-        [Tooltip("Font of the Mock Ad")] [SerializeField]
+        [Tooltip("Font of the Mock Ad")][SerializeField]
         internal Font m_Font;
 
-        [Tooltip("Image Texture of the Mock Ad")] [SerializeField]
+        [Tooltip("Image Texture of the Mock Ad")][SerializeField]
         internal Texture2D m_LevelPlayLogo;
 
         const string m_AdInfoJson = @"
@@ -66,6 +66,7 @@ namespace Unity.Services.LevelPlay
                 editorType.GetMethod($"SendInstantiate{adFormat}Event", BindingFlags.Static | BindingFlags.NonPublic);
             methodInfo?.Invoke(null, null);
         }
+
 #endif
     }
 }

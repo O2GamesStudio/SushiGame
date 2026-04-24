@@ -4,7 +4,6 @@ namespace Unity.Services.LevelPlay.Editor
 {
     interface IEditorAnalyticsService
     {
-        void Initialize();
         void SendEventEditorClick(string component, string action);
         void SendInstallAdapterEvent(string adapterName, string newVersion, string currentVersion);
         void SendInstallLPSDKEvent(string newVersion);
@@ -39,5 +38,9 @@ namespace Unity.Services.LevelPlay.Editor
         void SendAdUnitsNotAvailable();
         void SendAppsNotAvailable();
         void SendOpenDashboard(string userGroup);
+
+        void SendInitUsageDetected();
+        void SendInitUsageNotDetected();
+        void SendInitUsageDetectionTimeout();
     }
 }

@@ -13,5 +13,6 @@ namespace Unity.Services.LevelPlay.Editor
         IOnLoadService OnLoadService { get; }
         ILevelPlaySdkInstaller LevelPlaySdkInstaller { get; }
         IPackageTypeService PackageTypeService { get; }
+        IApiUsageDetectionService ApiUsageDetectionService { get; }
     }
 }

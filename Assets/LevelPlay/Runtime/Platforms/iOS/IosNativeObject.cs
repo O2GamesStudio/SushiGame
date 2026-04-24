@@ -54,5 +54,15 @@ namespace Unity.Services.LevelPlay
             Debug.LogErrorFormat("LevelPlay SDK: {0}: Instance of type {1} is disposed. Please create a new instance in order to call any method.", message, GetType().FullName);
             return true;
         }
+
+#if UNITY_EDITOR
+
+        [RuntimeInitializeOnLoadMethod]
+        private static void ResetStaticsOnLoad()
+        {
+            s_Objects.Clear();
+        }
+
+#endif
     }
 }

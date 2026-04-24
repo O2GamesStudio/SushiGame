@@ -11,6 +11,9 @@ namespace Unity.Services.LevelPlay
         const string k_IsAdReadyFunction = "isAdReady";
         const string k_IsPlacementCappedStaticFunction = "isPlacementCapped";
         const string k_FuncGetAdId       = "getAdId";
+        const string k_FuncGetReward     = "getReward";
+        const string k_FuncGetName       = "getName";
+        const string k_FuncGetAmount     = "getAmount";
 
         const string k_ErrorDisposed = "Instance is disposed. Please create a new instance in order to call any method.";
 
@@ -147,6 +150,26 @@ namespace Unity.Services.LevelPlay
                 LevelPlayLogger.LogException(e);
             }
             return isPlacementCapped;
+        }
+
+        public LevelPlayReward GetReward(string placement)
+        {
+            if (CheckDisposedAndLogError()) return LevelPlayReward.Default;
+
+            try
+            {
+                using var rewardJavaObject = m_RewardedAdJavaObject.Call<AndroidJavaObject>(k_FuncGetReward, placement);
+                if (rewardJavaObject == null) return LevelPlayReward.Default;
+
+                var rewardName = rewardJavaObject.Call<string>(k_FuncGetName);
+                var rewardAmount = rewardJavaObject.Call<int>(k_FuncGetAmount);
+                return new LevelPlayReward(rewardName, rewardAmount);
+            }
+            catch (Exception e)
+            {
+                LevelPlayLogger.LogException(e);
+                return LevelPlayReward.Default;
+            }
         }
 
         public void onAdLoaded(string adInfo)

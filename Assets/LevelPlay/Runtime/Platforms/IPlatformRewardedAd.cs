@@ -26,6 +26,8 @@ namespace Unity.Services.LevelPlay
 
         bool IsAdReady();
 
+        LevelPlayReward GetReward(string placement);
+
         interface IConfig {}
 
         interface IConfigBuilder

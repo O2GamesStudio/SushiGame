@@ -7,6 +7,7 @@
 
 #import "LPMInitializer.h"
 #import "LPMUtilities.h"
+#import <IronSource/LPMPrivacySettings.h>
 
 #define LPMGetStringParam( _x_ ) ( _x_ != NULL ) ? [NSString stringWithUTF8String:_x_] : [NSString stringWithUTF8String:""]
 
@@ -140,6 +141,45 @@ extern "C" {
       }
 
       [LevelPlay setSegment:segment];
+    }
+
+    void LPMSetGDPRConsents(char* jsonString) {
+        NSString *jsonStringNS = LPMGetStringParam(jsonString);
+        if (!jsonStringNS) {
+            NSLog(@"Failed to set GDPR consents: JSON string is null");
+            return;
+        }
+
+        NSData *data = [jsonStringNS dataUsingEncoding:NSUTF8StringEncoding];
+        if (!data) {
+            NSLog(@"Failed to set GDPR consents: data encoding failed");
+            return;
+        }
+
+        NSError *error;
+        NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+        if (!dict) {
+            NSLog(@"LPMSetGDPRConsents failed with error: %@", error);
+            return;
+        }
+
+        NSMutableDictionary *networkConsents = [NSMutableDictionary dictionary];
+        for (NSString *key in dict) {
+            id value = dict[key];
+            if ([value isKindOfClass:[NSNumber class]]) {
+                networkConsents[key] = value;
+            }
+        }
+
+        [LPMPrivacySettings setGDPRConsents:networkConsents];
+    }
+
+    void LPMSetCCPA(BOOL value) {
+        [LPMPrivacySettings setCCPA:value];
+    }
+
+    void LPMSetCOPPA(BOOL value) {
+        [LPMPrivacySettings setCOPPA:value];
     }
 
 #ifdef __cplusplus

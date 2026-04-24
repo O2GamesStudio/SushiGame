@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR && (UNITY_ANDROID || UNITY_IOS)
+#if UNITY_EDITOR && (UNITY_ANDROID || UNITY_IOS)
 using System;
 using System.IO;
 using UnityEditor;
@@ -11,11 +11,11 @@ namespace Unity.Services.LevelPlay
     {
         string m_PrefabPath =>
             Directory.Exists("Packages/com.unity.services.levelplay")
-                ? "Packages/com.unity.services.levelplay/Runtime/Platforms/Editor/EditorAds/Prefabs/MockRewardedEditorAd.prefab"
-                : "Assets/LevelPlay/Runtime/Platforms/Editor/EditorAds/Prefabs/MockRewardedEditorAd.prefab";
+            ? "Packages/com.unity.services.levelplay/Runtime/Platforms/Editor/EditorAds/Prefabs/MockRewardedEditorAd.prefab"
+            : "Assets/LevelPlay/Runtime/Platforms/Editor/EditorAds/Prefabs/MockRewardedEditorAd.prefab";
 
-        static GameObject m_AdGameObject;
-        static RewardedPrefab m_AdPrefab;
+        GameObject m_AdGameObject;
+        RewardedPrefab m_AdPrefab;
 
         public event Action<LevelPlayAdInfo> OnAdLoaded;
         public event Action<LevelPlayAdError> OnAdLoadFailed;
@@ -82,6 +82,12 @@ namespace Unity.Services.LevelPlay
         {
             LevelPlayLogger.Log("This API is not available on this platform.");
             return false;
+        }
+
+        public LevelPlayReward GetReward(string placement)
+        {
+            LevelPlayLogger.Log("This API is not available on this platform.");
+            return LevelPlayReward.Default;
         }
     }
 }

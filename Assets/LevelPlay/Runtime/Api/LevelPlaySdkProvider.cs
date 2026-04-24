@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 
 namespace Unity.Services.LevelPlay
 {
@@ -11,7 +12,7 @@ namespace Unity.Services.LevelPlay
             Reset();
         }
 
-        internal static ILevelPlaySdk Create()
+        internal static ILevelPlaySdk Get()
         {
             return Factory();
         }
@@ -31,5 +32,14 @@ namespace Unity.Services.LevelPlay
 #endif
             };
         }
+
+#if UNITY_EDITOR
+        [RuntimeInitializeOnLoadMethod]
+        private static void ResetStaticsOnLoad()
+        {
+            Reset();
+        }
+
+#endif
     }
 }

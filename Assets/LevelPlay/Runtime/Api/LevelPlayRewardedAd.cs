@@ -165,6 +165,19 @@ namespace Unity.Services.LevelPlay
         }
 
         /// <summary>
+        /// Retrieves the reward associated with the ad.
+        /// Use this method to obtain the reward configured for the ad unit or placement. The
+        /// placement-specific reward takes precedence over the ad unit reward when a valid placement name
+        /// is provided.
+        /// </summary>
+        /// <param name="placement">The placement name to retrieve the reward for, or null to use the ad unit's reward.</param>
+        /// <returns>A <see cref="LevelPlayReward"/> object. Returns an empty reward on failures (name: "" and amount: 0).</returns>
+        public LevelPlayReward GetReward(string placement = null)
+        {
+            return m_RewardedAd.GetReward(placement);
+        }
+
+        /// <summary>
         /// Rewarded ad configuration, use a <see cref="LevelPlayRewardedAd.Config.Builder"/> to initialize
         ///<br/>
         /// </summary>
