@@ -2,9 +2,7 @@
     "name": "GoogleMobileAds.Editor",
     "references": [
         "GoogleMobileAds",
-        "GoogleMobileAds.Core",
-        "GoogleMobileAds.Placement",
-        "GoogleMobileAds.Placement.Core"
+        "GoogleMobileAds.Core"
     ],
     "includePlatforms": [
         "Editor"

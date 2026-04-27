@@ -15,7 +15,7 @@ public class GradleProcessor : IPostGenerateGradleAndroidProject
       "apply from: 'GoogleMobileAdsPlugin.androidlib/packaging_options.gradle'";
 
     private const string GMA_VALIDATE_GRADLE_DEPENDENCIES =
-      "gradle.projectsEvaluated { apply from: 'GoogleMobileAdsPlugin.androidlib/validate_dependencies.gradle' }";
+      "apply from: 'GoogleMobileAdsPlugin.androidlib/validate_dependencies.gradle'";
 
     public void OnPostGenerateGradleAndroidProject(string path)
     {
@@ -75,7 +75,15 @@ public class GradleProcessor : IPostGenerateGradleAndroidProject
         foreach (var gradlePath in unityLibraryGradle)
         {
             var contents = File.ReadAllText(gradlePath);
-            if (contents.Contains(validateGradleDependencies))
+            if (GoogleMobileAdsSettings.LoadInstance().ValidateGradleDependencies)
+            {
+                if (!contents.Contains(validateGradleDependencies))
+                {
+                    contents += Environment.NewLine + validateGradleDependencies;
+                    File.WriteAllText(gradlePath, contents);
+                }
+            }
+            else
             {
                 contents = DeleteLineContainingSubstring(contents, validateGradleDependencies);
                 File.WriteAllText(gradlePath, contents);

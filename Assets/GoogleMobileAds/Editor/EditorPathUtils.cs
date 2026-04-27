@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -25,7 +26,7 @@ public class EditorPathUtils : ScriptableObject
     /*
      * Returns the asset path of EditorPathUtils.cs
      */
-    private string GetFilePath()
+    private String GetFilePath()
     {
         return AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(this));
     }
@@ -33,7 +34,7 @@ public class EditorPathUtils : ScriptableObject
     /*
      * Returns the asset directory path of EditorPathUtils.cs
      */
-    public string GetDirectoryAssetPath()
+    public String GetDirectoryAssetPath()
     {
         return Path.GetDirectoryName(GetFilePath());
     }
@@ -41,7 +42,7 @@ public class EditorPathUtils : ScriptableObject
     /*
      * Returns the parent asset directory path of EditorPathUtils.cs
      */
-    public string GetParentDirectoryAssetPath()
+    public String GetParentDirectoryAssetPath()
     {
         return Path.GetDirectoryName(GetDirectoryAssetPath());
     }
