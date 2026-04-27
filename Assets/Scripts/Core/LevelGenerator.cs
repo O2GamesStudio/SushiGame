@@ -793,6 +793,7 @@ public class LevelGenerator
         AssignLockedSushis(plates);
         ResolveLockedPlateDeadlocks(plates);
         ResolveInterLockedDeadlocks(plates); // 교차 데드락 해소
+        EnsureLockedPlateHasActiveSlots(plates); // 추가
     }
     private void ResolveInterLockedDeadlocks(List<PlateData> plates)
     {
@@ -838,6 +839,44 @@ public class LevelGenerator
             }
         }
     }
+    private void EnsureLockedPlateHasActiveSlots(List<PlateData> plates)
+    {
+        foreach (var plateIndex in sushiMergePlateIndices)
+        {
+            var plate = plates[plateIndex];
+            int requiredType = plate.RequiredSushiTypeId;
+            if (requiredType < 0 || plate.ActiveTypes.Count > 0) continue;
+
+            // 레이어에서 requiredType이 아닌 것을 active로 승격
+            for (int li = 0; li < plate.Layers.Count; li++)
+            {
+                var layer = plate.Layers[li];
+                for (int si = layer.SushiTypes.Count - 1; si >= 0; si--)
+                {
+                    if (layer.SushiTypes[si] == requiredType) continue;
+                    plate.ActiveTypes.Add(layer.SushiTypes[si]);
+                    layer.SushiTypes.RemoveAt(si);
+                    if (layer.SushiTypes.Count == 0) plate.Layers.RemoveAt(li);
+                    goto Done;
+                }
+            }
+
+            // 다른 플레이트 active에서 가져오기
+            for (int j = 0; j < plates.Count; j++)
+            {
+                if (j == plateIndex || adPlateIndices.Contains(j) || sushiMergePlateIndices.Contains(j)) continue;
+                var donor = plates[j];
+                for (int i = donor.ActiveTypes.Count - 1; i >= 0; i--)
+                {
+                    if (donor.ActiveTypes[i] == requiredType) continue;
+                    plate.ActiveTypes.Add(donor.ActiveTypes[i]);
+                    donor.ActiveTypes.RemoveAt(i);
+                    goto Done;
+                }
+            }
+        Done:;
+        }
+    }
     private void ResolveLockedPlateDeadlocks(List<PlateData> plates)
     {
         foreach (var plateIndex in sushiMergePlateIndices)
@@ -846,7 +885,6 @@ public class LevelGenerator
             int requiredType = plate.RequiredSushiTypeId;
             if (requiredType < 0) continue;
 
-            // Move required type out of active slots
             for (int i = plate.ActiveTypes.Count - 1; i >= 0; i--)
             {
                 if (plate.ActiveTypes[i] != requiredType) continue;
@@ -854,7 +892,24 @@ public class LevelGenerator
                 if (moved) plate.ActiveTypes.RemoveAt(i);
             }
 
-            // Move required type out of reserve layers
+            // 추가: active가 비었으면 다른 플레이트 active에서 가져와 채움
+            if (plate.ActiveTypes.Count == 0)
+            {
+                for (int j = 0; j < plates.Count; j++)
+                {
+                    if (j == plateIndex || adPlateIndices.Contains(j) || sushiMergePlateIndices.Contains(j)) continue;
+                    var donor = plates[j];
+                    for (int i = donor.ActiveTypes.Count - 1; i >= 0; i--)
+                    {
+                        if (donor.ActiveTypes[i] == requiredType) continue;
+                        plate.ActiveTypes.Add(donor.ActiveTypes[i]);
+                        donor.ActiveTypes.RemoveAt(i);
+                        break;
+                    }
+                    if (plate.ActiveTypes.Count > 0) break;
+                }
+            }
+
             for (int layerIdx = plate.Layers.Count - 1; layerIdx >= 0; layerIdx--)
             {
                 var layer = plate.Layers[layerIdx];
