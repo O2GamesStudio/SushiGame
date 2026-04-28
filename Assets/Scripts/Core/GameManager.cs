@@ -280,7 +280,7 @@ public class GameManager : MonoBehaviour
         if (inputHandler != null) inputHandler.enabled = false;
 
         SoundManager.Instance?.PlayWinSFX();
-        UnityAdsManager.Instance?.HideBanner();
+        //UnityAdsManager.Instance?.HideBanner();
 
         NetworkChecker.Instance?.Check(() =>
         {
@@ -324,7 +324,7 @@ public class GameManager : MonoBehaviour
         SoundManager.Instance?.PlayLoseSFX();
         gameUI.ShowLose();
         gameUI.SetTimerText("영업종료");
-        UnityAdsManager.Instance?.HideBanner();
+        //UnityAdsManager.Instance?.HideBanner();
 
         NetworkChecker.Instance?.Check(() =>
         {

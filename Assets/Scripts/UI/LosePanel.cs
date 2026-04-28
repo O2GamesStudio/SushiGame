@@ -27,7 +27,11 @@ public class LosePanel : MonoBehaviour
     private void OnEnable()
     {
         retryBtn?.onClick.AddListener(OnRetryButtonClicked);
-        exitLobbyBtn?.onClick.AddListener(() => SceneLoader.LoadLobby());
+        exitLobbyBtn?.onClick.AddListener(() =>
+        {
+            UnityAdsManager.Instance?.HideBanner();
+            SceneLoader.LoadLobby();
+        });
         staminaButton?.onClick.AddListener(() => addStaminaPanel?.SetActive(true));
         PlayHeadAnimation();
         PlayLoseImagesAnimation();
