@@ -20,7 +20,15 @@ public class ItemManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI timeFreezerCountText;
     [SerializeField] private TextMeshProUGUI shufflerCountText;
 
+    [SerializeField] private GameObject[] itemBlockImages; // 순서: randomRemover, targetRemover, timeFreezer, shuffler
+
+
     [SerializeField] private SpotlightEffect spotlightEffect;
+
+    private const int UnlockStageRandomRemover = 2;
+    private const int UnlockStageShuffler = 5;
+    private const int UnlockStageTimeFreezer = 8;
+    private const int UnlockStageTargetRemover = 15;
 
     private bool isWaitingForTargetSelection = false;
     private System.Action<Sushi> onSushiSelected;
@@ -31,6 +39,8 @@ public class ItemManager : MonoBehaviour
     private int timeFreezerCount;
     private int shufflerCount;
 
+    private int currentStage;
+
     public bool IsWaitingForTarget => isWaitingForTargetSelection;
 
     private void Awake()
@@ -40,6 +50,7 @@ public class ItemManager : MonoBehaviour
 
     public void InitializeItemCounts(UserData userData)
     {
+        currentStage = userData.currentStage;
         randomRemoverCount = userData.itemRandomRemover;
         targetRemoverCount = userData.itemTargetRemover;
         timeFreezerCount = userData.itemTimeFreezer;
@@ -48,18 +59,34 @@ public class ItemManager : MonoBehaviour
         UpdateAllUI();
     }
 
-    private void UpdateAllUI()
+    private bool IsUnlocked(int unlockStage) => currentStage >= unlockStage;
+
+    private void UpdateItemUI(TextMeshProUGUI text, int count, int unlockStage)
     {
-        randomRemoverCountText?.SetText(randomRemoverCount.ToString());
-        targetRemoverCountText?.SetText(targetRemoverCount.ToString());
-        timeFreezerCountText?.SetText(timeFreezerCount.ToString());
-        shufflerCountText?.SetText(shufflerCount.ToString());
+        if (text == null) return;
+        text.SetText(IsUnlocked(unlockStage) ? count.ToString() : $"Lv.{unlockStage}");
     }
 
-    private void ConsumeItem(ref int count, TextMeshProUGUI text, string firestoreKey)
+    private void UpdateAllUI()
+    {
+        UpdateItemUI(randomRemoverCountText, randomRemoverCount, UnlockStageRandomRemover);
+        UpdateItemUI(targetRemoverCountText, targetRemoverCount, UnlockStageTargetRemover);
+        UpdateItemUI(timeFreezerCountText, timeFreezerCount, UnlockStageTimeFreezer);
+        UpdateItemUI(shufflerCountText, shufflerCount, UnlockStageShuffler);
+
+        if (itemBlockImages != null && itemBlockImages.Length == 4)
+        {
+            itemBlockImages[0]?.SetActive(!IsUnlocked(UnlockStageRandomRemover));
+            itemBlockImages[1]?.SetActive(!IsUnlocked(UnlockStageTargetRemover));
+            itemBlockImages[2]?.SetActive(!IsUnlocked(UnlockStageTimeFreezer));
+            itemBlockImages[3]?.SetActive(!IsUnlocked(UnlockStageShuffler));
+        }
+    }
+
+    private void ConsumeItem(ref int count, TextMeshProUGUI text, string firestoreKey, int unlockStage)
     {
         count--;
-        text?.SetText(count.ToString());
+        UpdateItemUI(text, count, unlockStage);
 
         var userData = GameDataTransfer.Instance?.CurrentUserData;
         if (userData != null)
@@ -82,6 +109,7 @@ public class ItemManager : MonoBehaviour
     public void UseRandomSetRemover()
     {
         CancelTargetSelection();
+        if (!IsUnlocked(UnlockStageRandomRemover)) return;
         if (isProcessingItem) return;
         if (randomRemoverCount <= 0)
         {
@@ -112,7 +140,7 @@ public class ItemManager : MonoBehaviour
         if (validTypes.Count == 0) return;
 
         isProcessingItem = true;
-        ConsumeItem(ref randomRemoverCount, randomRemoverCountText, "itemRandomRemover");
+        ConsumeItem(ref randomRemoverCount, randomRemoverCountText, "itemRandomRemover", UnlockStageRandomRemover);
         int targetType = validTypes[Random.Range(0, validTypes.Count)];
         RemoveSushiSet(targetType);
     }
@@ -120,18 +148,20 @@ public class ItemManager : MonoBehaviour
     public void UseTimeFreezer()
     {
         CancelTargetSelection();
+        if (!IsUnlocked(UnlockStageTimeFreezer)) return;
         if (timeFreezerCount <= 0)
         {
             addItemPanel?.Show("시간 정지", "itemTimeFreezer", 2);
             return;
         }
-        ConsumeItem(ref timeFreezerCount, timeFreezerCountText, "itemTimeFreezer");
+        ConsumeItem(ref timeFreezerCount, timeFreezerCountText, "itemTimeFreezer", UnlockStageTimeFreezer);
         GameManager.Instance?.FreezeTimer(10f);
     }
 
     public void UseSushiShuffler()
     {
         CancelTargetSelection();
+        if (!IsUnlocked(UnlockStageShuffler)) return;
         if (isProcessingItem) return;
         if (shufflerCount <= 0)
         {
@@ -144,7 +174,7 @@ public class ItemManager : MonoBehaviour
 
         if (allActiveSushis.Count == 0 && allReserveTypes.Count == 0) return;
 
-        ConsumeItem(ref shufflerCount, shufflerCountText, "itemShuffler");
+        ConsumeItem(ref shufflerCount, shufflerCountText, "itemShuffler", UnlockStageShuffler);
 
         var combinedTypes = new List<int>();
         combinedTypes.AddRange(allActiveSushis.Select(s => s.TypeId));
@@ -220,6 +250,7 @@ public class ItemManager : MonoBehaviour
 
     public void UseTargetSetRemover()
     {
+        if (!IsUnlocked(UnlockStageTargetRemover)) return;
         if (isProcessingItem) return;
 
         if (isWaitingForTargetSelection)
@@ -244,16 +275,18 @@ public class ItemManager : MonoBehaviour
             onSushiSelected = null;
             isProcessingItem = true;
             spotlightEffect?.Hide();
-            ConsumeItem(ref targetRemoverCount, targetRemoverCountText, "itemTargetRemover");
+            ConsumeItem(ref targetRemoverCount, targetRemoverCountText, "itemTargetRemover", UnlockStageTargetRemover);
             RemoveSushiSet(selectedSushi.TypeId, selectedSushi);
         };
     }
+
     private void CancelTargetSelection()
     {
         isWaitingForTargetSelection = false;
         onSushiSelected = null;
         spotlightEffect?.Hide();
     }
+
     public void OnSushiClicked(Sushi sushi)
     {
         if (isWaitingForTargetSelection && onSushiSelected != null)
@@ -421,7 +454,6 @@ public class ItemManager : MonoBehaviour
                     layer.SushiTypes.RemoveAt(idx);
                     if (layer.SlotIndices.Count > idx)
                         layer.SlotIndices.RemoveAt(idx);
-                    // LockStages/HiddenStates도 Layer 내부 직접 제거
                     if (layer.LockStages.Count > idx)
                         layer.LockStages.RemoveAt(idx);
                     if (layer.HiddenStates.Count > idx)
@@ -438,7 +470,6 @@ public class ItemManager : MonoBehaviour
             foreach (var layerIdx in layersToRemove.OrderByDescending(x => x))
                 plate.RemoveLayer(layerIdx);
 
-            // 변경이 있으면 항상 시각 업데이트
             if (affectedPlates.Contains(plate))
                 plate.UpdateReserveDisplay();
         }
