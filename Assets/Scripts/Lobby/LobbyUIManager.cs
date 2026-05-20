@@ -109,6 +109,9 @@ public class LobbyUIManager : MonoBehaviour
             {
                 GameDataTransfer.Instance?.SetUserData(userData);
                 UpdateUI(userData);
+                RefreshPassAlert();
+                RefreshDailyRewardAlert();
+                LobbyManager.Instance?.Initialize(userData.currentStage);
                 onLoginSuccess?.Invoke();
             });
         }

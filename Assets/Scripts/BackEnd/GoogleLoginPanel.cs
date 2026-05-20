@@ -8,6 +8,7 @@ public class GoogleLoginPanel : MonoBehaviour
     [SerializeField] private Button loginBtn;
     [SerializeField] private Button closeBtn;
     [SerializeField] TextMeshProUGUI debugText;
+    [SerializeField] TextMeshProUGUI debug2Text;
 
     private Action onLoginSuccess;
 
@@ -41,7 +42,8 @@ public class GoogleLoginPanel : MonoBehaviour
                 onLoginSuccess?.Invoke();
                 onLoginSuccess = null;
             },
-            onFailed: error => debugText?.SetText($"[GoogleLogin] 실패: {error}")
+            onFailed: error => debugText?.SetText($"[GoogleLogin] 실패: {error}"),
+            onDebug: msg => debug2Text?.SetText(msg)
         );
     }
 }

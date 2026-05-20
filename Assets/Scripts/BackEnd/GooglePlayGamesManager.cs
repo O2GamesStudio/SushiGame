@@ -21,41 +21,42 @@ public class GooglePlayGamesManager : MonoBehaviour
         PlayGamesPlatform.Activate();
     }
 
-    public void LinkToFirebase(System.Action onSuccess, System.Action<string> onFailed = null)
+    public void LinkToFirebase(Action onSuccess, Action<string> onFailed = null, Action<string> onDebug = null)
     {
         StartGoogleSignIn(
             onSuccess: authCode =>
             {
+                onDebug?.Invoke("authCode 획득 성공");
                 FirebaseManager.Instance?.LinkWithGoogle(authCode,
                     onSuccess: onSuccess,
                     onFailed: onFailed
                 );
             },
-            onFailed: onFailed
+            onFailed: onFailed,
+            onDebug: onDebug
         );
     }
-    public void StartGoogleSignIn(Action<string> onSuccess, Action<string> onFailed = null)
+
+    public void StartGoogleSignIn(Action<string> onSuccess, Action<string> onFailed = null, Action<string> onDebug = null)
     {
+        onDebug?.Invoke("Authenticate 시작");
         PlayGamesPlatform.Instance.Authenticate((success) =>
         {
+            onDebug?.Invoke($"SignInStatus: {success}");
             if (success == SignInStatus.Success)
             {
                 PlayGamesPlatform.Instance.RequestServerSideAccess(true, (authCode) =>
                 {
                     if (string.IsNullOrEmpty(authCode))
                     {
-                        Debug.LogError("[GooglePlayGamesManager] authCode 획득 실패");
                         onFailed?.Invoke("authCode 획득 실패");
                         return;
                     }
-
-                    Debug.Log("[GooglePlayGamesManager] 구글 로그인 성공");
                     onSuccess?.Invoke(authCode);
                 });
             }
             else
             {
-                Debug.LogError($"[GooglePlayGamesManager] 로그인 실패: {success}");
                 onFailed?.Invoke(success.ToString());
             }
         });

@@ -24,7 +24,6 @@ public class FirebaseManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    // Fix 3: 실패 시 onFailed 호출 보장
     public void Initialize(Action onComplete = null, Action<string> onFailed = null)
     {
         FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
@@ -60,7 +59,6 @@ public class FirebaseManager : MonoBehaviour
                     return;
                 }
                 string error = task.Exception?.Message ?? "Unknown error";
-                Debug.LogError($"[FirebaseManager] 익명 로그인 실패: {error}");
                 onFailed?.Invoke(error);
                 OnLoginFailed?.Invoke(error);
                 return;
@@ -70,7 +68,6 @@ public class FirebaseManager : MonoBehaviour
         });
     }
 
-    // Fix 2: CredentialAlreadyInUse → SignInWithGoogle 폴백
     public void LinkWithGoogle(string authCode, Action onSuccess = null, Action<string> onFailed = null)
     {
         var credential = PlayGamesAuthProvider.GetCredential(authCode);
@@ -85,13 +82,19 @@ public class FirebaseManager : MonoBehaviour
         {
             if (task.IsCanceled || task.IsFaulted)
             {
-                var firebaseEx = task.Exception?.GetBaseException() as FirebaseException;
-                if (firebaseEx != null && firebaseEx.ErrorCode == (int)AuthError.CredentialAlreadyInUse)
+                var baseEx = task.Exception?.GetBaseException();
+                var firebaseEx = baseEx as FirebaseException;
+
+                bool isCredentialInUse = firebaseEx?.ErrorCode == (int)AuthError.CredentialAlreadyInUse
+                    || (baseEx?.Message?.Contains("already associated") ?? false);
+
+                if (isCredentialInUse)
                 {
                     SignInWithGoogle(authCode, onSuccess, onFailed);
                     return;
                 }
-                string error = task.Exception?.Message ?? "Unknown error";
+
+                string error = baseEx?.Message ?? "Unknown error";
                 onFailed?.Invoke(error);
                 return;
             }
@@ -108,8 +111,7 @@ public class FirebaseManager : MonoBehaviour
         {
             if (task.IsCanceled || task.IsFaulted)
             {
-                string error = task.Exception?.Message ?? "Unknown error";
-                Debug.LogError($"[FirebaseManager] 구글 로그인 실패: {error}");
+                string error = task.Exception?.GetBaseException()?.Message ?? "Unknown error";
                 onFailed?.Invoke(error);
                 OnLoginFailed?.Invoke(error);
                 return;
