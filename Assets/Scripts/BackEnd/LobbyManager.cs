@@ -20,6 +20,7 @@ public class LobbyManager : MonoBehaviour
     [SerializeField] private Button settingButton;
     [SerializeField] private LobbySettingPanel settingPanel;
     [SerializeField] private Button storeButton;
+    [SerializeField] private Button coinButton;
     [SerializeField] private RectTransform storeRect;
 
     private int currentStage = 1;
@@ -43,6 +44,8 @@ public class LobbyManager : MonoBehaviour
         staminaButton?.onClick.AddListener(() => addStaminaBG?.SetActive(true));
         storeButton?.onClick.RemoveAllListeners();
         storeButton?.onClick.AddListener(OnStoreButtonClicked);
+        coinButton?.onClick.RemoveAllListeners();
+        coinButton?.onClick.AddListener(OnStoreButtonClicked);
         LobbyUIManager.Instance?.RefreshDailyRewardAlert();
         UnityAdsManager.Instance?.DestroyBanner();
         UpdateResumeButton();

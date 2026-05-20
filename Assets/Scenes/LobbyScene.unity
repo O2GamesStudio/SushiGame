@@ -9456,6 +9456,7 @@ MonoBehaviour:
   settingButton: {fileID: 1256838003}
   settingPanel: {fileID: 469203376}
   storeButton: {fileID: 680643744}
+  coinButton: {fileID: 4497837156774102049}
   storeRect: {fileID: 742491755}
 --- !u!4 &719896154
 Transform:
@@ -22498,6 +22499,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5f98609f36eb2434e928b3265abd4d34, type: 3}
+--- !u!114 &4497837156774102049 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: -6729756910761142650, guid: 5f98609f36eb2434e928b3265abd4d34, type: 3}
+  m_PrefabInstance: {fileID: 4497837156774102048}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Button
 --- !u!1001 &5020547165550678069
 PrefabInstance:
   m_ObjectHideFlags: 0
