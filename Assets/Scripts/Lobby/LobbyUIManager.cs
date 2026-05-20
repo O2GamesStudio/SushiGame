@@ -100,7 +100,20 @@ public class LobbyUIManager : MonoBehaviour
     }
     public void ShowGoogleLoginPanel(Action onLoginSuccess = null)
     {
-        googleLoginPanel?.Show(onLoginSuccess);
+        void OnGoogleLoginSuccess()
+        {
+            string newUserId = FirebaseManager.Instance?.CurrentUser?.UserId;
+            if (string.IsNullOrEmpty(newUserId)) return;
+
+            UserDataService.Instance?.LoadUserData(newUserId, userData =>
+            {
+                GameDataTransfer.Instance?.SetUserData(userData);
+                UpdateUI(userData);
+                onLoginSuccess?.Invoke();
+            });
+        }
+
+        googleLoginPanel?.Show(OnGoogleLoginSuccess);
     }
 
     private void OnPassGoldBtnClicked()

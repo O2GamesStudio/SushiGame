@@ -153,7 +153,9 @@ public class WinPanel : MonoBehaviour
     private void OnCoin1xButtonClicked()
     {
         bool isAdsRemoved = GameDataTransfer.Instance?.CurrentUserData?.isAdsRemoved ?? false;
-        if (isAdsRemoved)
+        int currentStage = GameDataTransfer.Instance?.CurrentUserData?.currentStage ?? 1;
+
+        if (isAdsRemoved || currentStage < 3)
         {
             ClaimCoinAndNextStage(5);
             return;

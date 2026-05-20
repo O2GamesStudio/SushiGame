@@ -75,6 +75,12 @@ public class FirebaseManager : MonoBehaviour
     {
         var credential = PlayGamesAuthProvider.GetCredential(authCode);
 
+        if (CurrentUser == null)
+        {
+            SignInWithGoogle(authCode, onSuccess, onFailed);
+            return;
+        }
+
         CurrentUser.LinkWithCredentialAsync(credential).ContinueWithOnMainThread(task =>
         {
             if (task.IsCanceled || task.IsFaulted)
@@ -85,9 +91,7 @@ public class FirebaseManager : MonoBehaviour
                     SignInWithGoogle(authCode, onSuccess, onFailed);
                     return;
                 }
-
                 string error = task.Exception?.Message ?? "Unknown error";
-                Debug.LogError($"[FirebaseManager] 구글 연동 실패: {error}");
                 onFailed?.Invoke(error);
                 return;
             }
