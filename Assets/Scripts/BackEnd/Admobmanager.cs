@@ -75,6 +75,7 @@ public class AdMobManager : MonoBehaviour
 
     private void OnBannerLoaded()
     {
+        Debug.Log($"[AdMobManager] OnBannerLoaded - pendingShowBanner:{pendingShowBanner}");
         isBannerLoaded = true;
         if (pendingShowBanner)
         {
@@ -83,20 +84,32 @@ public class AdMobManager : MonoBehaviour
         }
     }
 
+
     private void OnBannerLoadFailed(LoadAdError error)
     {
+        Debug.LogError($"[AdMobManager] 배너 로드 실패: {error.GetMessage()}");
         isBannerLoaded = false;
         isBannerDisplayed = false;
-        Debug.LogError($"[AdMobManager] 배너 로드 실패: {error.GetMessage()}");
     }
 
     private void OnBannerDisplayed() => isBannerDisplayed = true;
     public void ShowBanner()
     {
+        Debug.Log($"[AdMobManager] ShowBanner - isInitialized:{isInitialized} bannerView:{bannerView != null} isBannerLoaded:{isBannerLoaded} isBannerDisplayed:{isBannerDisplayed}");
         if (!isInitialized) { pendingShowBannerOnInit = true; return; }
+
+        // 씬 전환 후 배너가 숨겨진 경우 재생성
+        if (isBannerDisplayed)
+        {
+            bannerView?.Destroy();
+            bannerView = null;
+            isBannerLoaded = false;
+            isBannerDisplayed = false;
+        }
+
         if (bannerView == null) { LoadBannerAd(); pendingShowBanner = true; return; }
         if (isBannerLoaded)
-            bannerView.Show(); // isBannerDisplayed 체크 제거 → 항상 Show() 호출
+            bannerView.Show();
         else
             pendingShowBanner = true;
     }

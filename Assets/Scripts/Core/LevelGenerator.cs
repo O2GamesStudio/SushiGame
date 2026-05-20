@@ -1057,9 +1057,9 @@ public class LevelGenerator
         float r2 = totalLayers > 0 ? size2 * 100f / totalLayers : 0f;
         float r3 = totalLayers > 0 ? size3 * 100f / totalLayers : 0f;
 
-        Debug.Log($"[LevelGenerator] 총 초밥: {totalSushis} | 3배수: {totalSushis % 3 == 0} | 타입 수: {typeCount.Count}/{levelData.sushiTypeCount}");
-        Debug.Log($"[LevelGenerator] 레이어 총합: {totalLayers} | size1: {size1}({r1:F1}%) | size2: {size2}({r2:F1}%) | size3: {size3}({r3:F1}%)");
-        Debug.Log($"[LevelGenerator] 설정 비율 — size1: {levelData.layerSize1Weight} | size2: {levelData.layerSize2Weight} | size3: {levelData.layerSize3Weight}");
+        //Debug.Log($"[LevelGenerator] 총 초밥: {totalSushis} | 3배수: {totalSushis % 3 == 0} | 타입 수: {typeCount.Count}/{levelData.sushiTypeCount}");
+        //Debug.Log($"[LevelGenerator] 레이어 총합: {totalLayers} | size1: {size1}({r1:F1}%) | size2: {size2}({r2:F1}%) | size3: {size3}({r3:F1}%)");
+        //Debug.Log($"[LevelGenerator] 설정 비율 — size1: {levelData.layerSize1Weight} | size2: {levelData.layerSize2Weight} | size3: {levelData.layerSize3Weight}");
 
         if (typeCount.Count != levelData.sushiTypeCount)
             Debug.LogError($"[LevelGenerator] 타입 수 불일치: 실제 {typeCount.Count} / 설정 {levelData.sushiTypeCount}");
