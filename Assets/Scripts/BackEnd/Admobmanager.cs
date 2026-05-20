@@ -91,13 +91,14 @@ public class AdMobManager : MonoBehaviour
     }
 
     private void OnBannerDisplayed() => isBannerDisplayed = true;
-
     public void ShowBanner()
     {
         if (!isInitialized) { pendingShowBannerOnInit = true; return; }
         if (bannerView == null) { LoadBannerAd(); pendingShowBanner = true; return; }
-        if (isBannerLoaded) bannerView.Show();
-        else pendingShowBanner = true;
+        if (isBannerLoaded)
+            bannerView.Show(); // isBannerDisplayed 체크 제거 → 항상 Show() 호출
+        else
+            pendingShowBanner = true;
     }
 
     public void HideBanner()
@@ -225,10 +226,7 @@ public class AdMobManager : MonoBehaviour
 
     public void ShowInterstitialAd(Action onClosed = null)
     {
-#if UNITY_EDITOR
-        onClosed?.Invoke();
-        return;
-#endif
+        // #if UNITY_EDITOR 가드 제거
         onInterstitialClosed = onClosed;
 
         if (interstitialAd != null && isInterstitialLoaded && interstitialAd.CanShowAd())
