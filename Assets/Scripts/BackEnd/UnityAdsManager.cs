@@ -46,7 +46,7 @@ public class UnityAdsManager : MonoBehaviour
         var go = new GameObject("AdMobManager");
         DontDestroyOnLoad(go);
         var mgr = go.AddComponent<AdMobManager>();
-        mgr.Initialize(adsConfig.AdMobBannerUnitId, adsConfig.AdMobRewardedUnitId);
+        mgr.Initialize(adsConfig.AdMobBannerUnitId, adsConfig.AdMobRewardedUnitId, adsConfig.AdMobInterstitialUnitId);
 
         mgr.OnRewardEarned += () => OnRewardEarned?.Invoke();
         mgr.OnAdClosed += () => OnAdClosed?.Invoke();
@@ -56,6 +56,7 @@ public class UnityAdsManager : MonoBehaviour
 
     public void LoadRewardedAd() => AdMobManager.Instance?.LoadRewardedAd();
     public void ShowRewardedAd() => AdMobManager.Instance?.ShowRewardedAd();
+    public void ShowInterstitialAd(Action onClosed = null) => AdMobManager.Instance?.ShowInterstitialAd(onClosed);
     public void ShowBanner() => AdMobManager.Instance?.ShowBanner();
     public void HideBanner() => AdMobManager.Instance?.HideBanner();
     public void DestroyBanner() => AdMobManager.Instance?.DestroyBanner();

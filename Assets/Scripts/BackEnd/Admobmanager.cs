@@ -8,13 +8,17 @@ public class AdMobManager : MonoBehaviour
 
     private string bannerUnitId;
     private string rewardedUnitId;
+    private string interstitialUnitId;
 
     private BannerView bannerView;
     private RewardedAd rewardedAd;
+    private InterstitialAd interstitialAd;
+    private Action onInterstitialClosed;
 
     private bool isBannerLoaded = false;
     private bool isBannerDisplayed = false;
     private bool isRewardedLoaded = false;
+    private bool isInterstitialLoaded = false;
     private bool pendingShowBanner = false;
     private bool isInitialized = false;
     private bool pendingShowBannerOnInit = false;
@@ -24,7 +28,7 @@ public class AdMobManager : MonoBehaviour
     public event Action OnAdFailedToLoad;
     public event Action OnAdFailedToShow;
 
-    public void Initialize(string bannerId, string rewardedId)
+    public void Initialize(string bannerId, string rewardedId, string interstitialId)
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
@@ -32,21 +36,20 @@ public class AdMobManager : MonoBehaviour
 
         bannerUnitId = bannerId;
         rewardedUnitId = rewardedId;
-
-        Debug.Log($"[AdMobManager] Initialize - bannerId:{bannerId} rewardedId:{rewardedId}");
+        interstitialUnitId = interstitialId;
 
         MobileAds.RaiseAdEventsOnUnityMainThread = true;
 
         MobileAds.Initialize(status =>
         {
             isInitialized = true;
-            Debug.Log($"[AdMobManager] MobileAds 초기화 완료");
 
             foreach (var adapter in status.getAdapterStatusMap())
                 Debug.Log($"[AdMobManager] Adapter: {adapter.Key} / {adapter.Value.InitializationState}");
 
             LoadRewardedAd();
             LoadBannerAd();
+            LoadInterstitialAd();
 
             if (pendingShowBannerOnInit)
             {
@@ -60,7 +63,6 @@ public class AdMobManager : MonoBehaviour
 
     private void LoadBannerAd()
     {
-        Debug.Log($"[AdMobManager] LoadBannerAd - bannerUnitId:{bannerUnitId}");
         bannerView?.Destroy();
         bannerView = new BannerView(bannerUnitId, AdSize.Banner, AdPosition.Bottom);
 
@@ -73,12 +75,10 @@ public class AdMobManager : MonoBehaviour
 
     private void OnBannerLoaded()
     {
-        Debug.Log("[AdMobManager] 배너 로드 완료");
         isBannerLoaded = true;
         if (pendingShowBanner)
         {
             pendingShowBanner = false;
-            Debug.Log("[AdMobManager] pendingShowBanner - 배너 표시");
             bannerView.Show();
         }
     }
@@ -90,24 +90,18 @@ public class AdMobManager : MonoBehaviour
         Debug.LogError($"[AdMobManager] 배너 로드 실패: {error.GetMessage()}");
     }
 
-    private void OnBannerDisplayed()
-    {
-        Debug.Log("[AdMobManager] 배너 표시됨");
-        isBannerDisplayed = true;
-    }
+    private void OnBannerDisplayed() => isBannerDisplayed = true;
 
     public void ShowBanner()
     {
-        Debug.Log($"[AdMobManager] ShowBanner 호출 - isInitialized:{isInitialized} isBannerLoaded:{isBannerLoaded} isBannerDisplayed:{isBannerDisplayed} bannerView:{bannerView != null}");
         if (!isInitialized) { pendingShowBannerOnInit = true; return; }
         if (bannerView == null) { LoadBannerAd(); pendingShowBanner = true; return; }
         if (isBannerLoaded) bannerView.Show();
-        else { pendingShowBanner = true; }
+        else pendingShowBanner = true;
     }
 
     public void HideBanner()
     {
-        Debug.Log("[AdMobManager] HideBanner 호출");
         pendingShowBanner = false;
         bannerView?.Hide();
         isBannerDisplayed = false;
@@ -115,7 +109,6 @@ public class AdMobManager : MonoBehaviour
 
     public void DestroyBanner()
     {
-        Debug.Log("[AdMobManager] DestroyBanner 호출");
         pendingShowBanner = false;
         bannerView?.Destroy();
         bannerView = null;
@@ -132,7 +125,6 @@ public class AdMobManager : MonoBehaviour
 
     public void LoadRewardedAd()
     {
-        Debug.Log($"[AdMobManager] LoadRewardedAd - rewardedUnitId:{rewardedUnitId}");
         RewardedAd.Load(rewardedUnitId, new AdRequest(), (ad, error) =>
         {
             if (error != null)
@@ -145,7 +137,6 @@ public class AdMobManager : MonoBehaviour
 
             rewardedAd = ad;
             isRewardedLoaded = true;
-            Debug.Log("[AdMobManager] 리워드 광고 로드 완료");
 
             rewardedAd.OnAdFullScreenContentClosed += OnRewardedClosed;
             rewardedAd.OnAdFullScreenContentFailed += OnRewardedShowFailed;
@@ -154,7 +145,6 @@ public class AdMobManager : MonoBehaviour
 
     private void OnRewardedClosed()
     {
-        Debug.Log("[AdMobManager] 리워드 광고 닫힘");
         isRewardedLoaded = false;
         OnAdClosed?.Invoke();
         LoadRewardedAd();
@@ -170,7 +160,6 @@ public class AdMobManager : MonoBehaviour
 
     public void ShowRewardedAd()
     {
-        Debug.Log($"[AdMobManager] ShowRewardedAd 호출 - isRewardedLoaded:{isRewardedLoaded} rewardedAd:{rewardedAd != null}");
         if (rewardedAd == null || !isRewardedLoaded)
         {
             Debug.LogError("[AdMobManager] 리워드 광고 준비 안됨");
@@ -189,6 +178,74 @@ public class AdMobManager : MonoBehaviour
 
     public bool IsAdLoaded() => isRewardedLoaded;
 
+    #endregion
+
+    #region Interstitial
+
+    private void LoadInterstitialAd()
+    {
+        if (string.IsNullOrEmpty(interstitialUnitId)) return;
+
+        interstitialAd?.Destroy();
+        interstitialAd = null;
+        isInterstitialLoaded = false;
+
+        InterstitialAd.Load(interstitialUnitId, new AdRequest(), (ad, error) =>
+        {
+            if (error != null)
+            {
+                Debug.LogError($"[AdMobManager] 전면 광고 로드 실패: {error.GetMessage()}");
+                return;
+            }
+
+            interstitialAd = ad;
+            isInterstitialLoaded = true;
+
+            interstitialAd.OnAdFullScreenContentClosed += OnInterstitialClosed;
+            interstitialAd.OnAdFullScreenContentFailed += OnInterstitialFailed;
+        });
+    }
+
+    private void OnInterstitialClosed()
+    {
+        isInterstitialLoaded = false;
+        onInterstitialClosed?.Invoke();
+        onInterstitialClosed = null;
+        LoadInterstitialAd();
+    }
+
+    private void OnInterstitialFailed(AdError error)
+    {
+        isInterstitialLoaded = false;
+        Debug.LogError($"[AdMobManager] 전면 광고 표시 실패: {error.GetMessage()}");
+        onInterstitialClosed?.Invoke();
+        onInterstitialClosed = null;
+        LoadInterstitialAd();
+    }
+
+    public void ShowInterstitialAd(Action onClosed = null)
+    {
+#if UNITY_EDITOR
+        onClosed?.Invoke();
+        return;
+#endif
+        onInterstitialClosed = onClosed;
+
+        if (interstitialAd != null && isInterstitialLoaded && interstitialAd.CanShowAd())
+        {
+            interstitialAd.Show();
+        }
+        else
+        {
+            Debug.LogWarning("[AdMobManager] 전면 광고 준비 안됨 - 콜백 즉시 실행");
+            onInterstitialClosed?.Invoke();
+            onInterstitialClosed = null;
+            LoadInterstitialAd();
+        }
+    }
+
+    #endregion
+
     public void ClearAllListeners()
     {
         OnRewardEarned = null;
@@ -197,11 +254,10 @@ public class AdMobManager : MonoBehaviour
         OnAdFailedToShow = null;
     }
 
-    #endregion
-
     private void OnDestroy()
     {
         bannerView?.Destroy();
         rewardedAd?.Destroy();
+        interstitialAd?.Destroy();
     }
 }

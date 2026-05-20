@@ -28,7 +28,7 @@ public class WinPanel : MonoBehaviour
 
     private void OnEnable()
     {
-        coin1xBtn.onClick.AddListener(() => ClaimCoinAndNextStage(5));
+        coin1xBtn.onClick.AddListener(OnCoin1xButtonClicked);
         coin2xBtn.onClick.AddListener(OnCoin2xButtonClicked);
         exitLobbyBtn.onClick.AddListener(OnExitLobbyButtonClicked);
         staminaButton?.onClick.AddListener(() => addStaminaPanel?.SetActive(true));
@@ -57,12 +57,15 @@ public class WinPanel : MonoBehaviour
             UnityAdsManager.Instance.OnAdFailedToShow -= OnCoin2xAdFailed;
         }
     }
-    public void SetLevelDataBase(LevelDataBase db)
-    {
-        levelDataBase = db;
-    }
+
+    public void SetLevelDataBase(LevelDataBase db) => levelDataBase = db;
+
     public void Show()
     {
+        var userData = GameDataTransfer.Instance?.CurrentUserData;
+        if (userData != null)
+            GameSaveService.Instance?.ClearSave(userData.currentStage);
+
         gameObject.SetActive(true);
 
         CacheToppingOriginPositions();
@@ -71,11 +74,10 @@ public class WinPanel : MonoBehaviour
         coin1xBtn.gameObject.SetActive(false);
         exitLobbyBtn.gameObject.SetActive(false);
 
-        bool isAdsRemoved = GameDataTransfer.Instance?.CurrentUserData?.isAdsRemoved ?? false;
+        bool isAdsRemoved = userData?.isAdsRemoved ?? false;
         coin2xAdsImage?.SetActive(!isAdsRemoved);
         coin2xBtn.transform.localScale = Vector3.one;
 
-        var userData = GameDataTransfer.Instance?.CurrentUserData;
         if (userData == null) return;
 
         if (staminaText != null) staminaText.text = userData.stamina.ToString();
@@ -115,8 +117,7 @@ public class WinPanel : MonoBehaviour
         btnObj.transform.localScale = Vector3.zero;
         btnObj.transform.DOScale(1.1f, 0.2f)
             .SetEase(Ease.OutQuad)
-            .OnComplete(() =>
-                btnObj.transform.DOScale(1f, 0.1f).SetEase(Ease.InQuad));
+            .OnComplete(() => btnObj.transform.DOScale(1f, 0.1f).SetEase(Ease.InQuad));
     }
 
     private void PlaySushiToppingAnimation()
@@ -125,14 +126,13 @@ public class WinPanel : MonoBehaviour
         {
             var topping = sushiToppings[i];
             if (topping == null) continue;
-
             var rt = topping.GetComponent<RectTransform>();
             if (rt == null) continue;
-
             rt.DOKill();
             PlayToppingLoop(rt, toppingOriginPositions[i], topping);
         }
     }
+
     private void PlayToppingLoop(RectTransform rt, Vector2 originPos, GameObject linkTarget)
     {
         rt.anchoredPosition = originPos;
@@ -150,6 +150,32 @@ public class WinPanel : MonoBehaviour
         if (staminaText != null) staminaText.text = userData.stamina.ToString();
     }
 
+    private void OnCoin1xButtonClicked()
+    {
+        bool isAdsRemoved = GameDataTransfer.Instance?.CurrentUserData?.isAdsRemoved ?? false;
+        if (isAdsRemoved)
+        {
+            ClaimCoinAndNextStage(5);
+            return;
+        }
+
+        ClaimCoinWithoutNextStage(5);
+        UnityAdsManager.Instance?.ShowInterstitialAd(() => LoadNextStage());
+    }
+
+    private void ClaimCoinWithoutNextStage(int coinAmount)
+    {
+        var userData = GameDataTransfer.Instance?.CurrentUserData;
+        if (userData == null) return;
+
+        string userId = FirebaseManager.Instance?.CurrentUser?.UserId;
+        if (string.IsNullOrEmpty(userId)) return;
+
+        userData.coin += coinAmount;
+        GameDataTransfer.Instance.SetUserData(userData);
+        UserDataService.Instance?.UpdateCurrency(userId, userData.stamina, userData.coin, null);
+    }
+
     private void ClaimCoinAndNextStage(int coinAmount)
     {
         var userData = GameDataTransfer.Instance?.CurrentUserData;
@@ -160,11 +186,7 @@ public class WinPanel : MonoBehaviour
 
         userData.coin += coinAmount;
         GameDataTransfer.Instance.SetUserData(userData);
-
-        UserDataService.Instance?.UpdateCurrency(userId, userData.stamina, userData.coin, () =>
-        {
-            LoadNextStage();
-        });
+        UserDataService.Instance?.UpdateCurrency(userId, userData.stamina, userData.coin, () => LoadNextStage());
     }
 
     private void LoadNextStage()
@@ -193,11 +215,7 @@ public class WinPanel : MonoBehaviour
 
         userData.coin += 5;
         GameDataTransfer.Instance.SetUserData(userData);
-
-        UserDataService.Instance?.UpdateCurrency(userId, userData.stamina, userData.coin, () =>
-        {
-            SceneLoader.LoadLobby();
-        });
+        UserDataService.Instance?.UpdateCurrency(userId, userData.stamina, userData.coin, () => SceneLoader.LoadLobby());
     }
 
     private void OnCoin2xButtonClicked()

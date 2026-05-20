@@ -8,6 +8,9 @@ public class LobbyUIManager : MonoBehaviour
 {
     public static LobbyUIManager Instance { get; private set; }
 
+    [Header("Debug")]
+    [SerializeField] private Button debugClearFirestoreBtn;
+
     [SerializeField] private TextMeshProUGUI staminaText;
     [SerializeField] private TextMeshProUGUI coinText;
     [SerializeField] private GameObject staminaCharging;
@@ -40,6 +43,8 @@ public class LobbyUIManager : MonoBehaviour
         removeAdsBtn?.onClick.AddListener(() => removePanel?.gameObject.SetActive(true));
         passGoldBtn?.onClick.AddListener(OnPassGoldBtnClicked);
         dailyRewardBtn?.onClick.AddListener(OnDailyRewardBtnClicked);
+
+        debugClearFirestoreBtn?.onClick.AddListener(OnDebugClearFirestore);
     }
 
     private void OnDestroy()
@@ -49,6 +54,9 @@ public class LobbyUIManager : MonoBehaviour
         removeAdsBtn?.onClick.RemoveAllListeners();
         passGoldBtn?.onClick.RemoveAllListeners();
         dailyRewardBtn?.onClick.RemoveAllListeners();
+
+        debugClearFirestoreBtn?.onClick.RemoveAllListeners();
+
     }
     private void OnDailyRewardBtnClicked()
     {
@@ -56,6 +64,22 @@ public class LobbyUIManager : MonoBehaviour
         dailyRewardAlert?.SetActive(false);
     }
 
+    private void OnDebugClearFirestore()
+    {
+        string userId = FirebaseManager.Instance?.CurrentUser?.UserId;
+        if (string.IsNullOrEmpty(userId)) return;
+
+        var resetData = new UserData();
+        UserDataService.Instance?.SaveUserData(userId, resetData, () =>
+        {
+            GameDataTransfer.Instance?.SetUserData(resetData);
+            UpdateUI(resetData);
+            Debug.Log("[Debug] 유저 데이터 초기화 완료");
+        });
+
+        GameSaveService.Instance?.ClearLocal();
+        GameSaveService.Instance?.ClearFirestore();
+    }
     public void RefreshDailyRewardAlert()
     {
         if (dailyRewardAlert == null) return;

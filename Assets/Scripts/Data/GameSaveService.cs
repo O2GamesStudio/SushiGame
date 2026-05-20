@@ -37,6 +37,12 @@ public class GameSaveService : MonoBehaviour
         }
     }
 
+    public void ClearSave(int stageIndex)
+    {
+        ClearLocal();
+        ClearFirestore();
+    }
+
     public GameSaveData LoadLocal()
     {
         if (!HasSaveData()) return null;
@@ -91,8 +97,6 @@ public class GameSaveService : MonoBehaviour
             Debug.LogError($"[GameSaveService] Firestore 저장 실패: {e.Message}");
         }
     }
-
-
 
     public void LoadFromFirestore(Action<GameSaveData> onSuccess, Action onFailed = null)
     {
