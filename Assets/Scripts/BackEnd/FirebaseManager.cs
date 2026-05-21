@@ -75,29 +75,27 @@ public class FirebaseManager : MonoBehaviour
 
         if (CurrentUser == null)
         {
-            Debug.Log("[FirebaseManager] CurrentUser null → SignInWithGoogle");
             SignInWithGoogle(authCode, onSuccess, onFailed);
             return;
         }
 
-        Debug.Log($"[FirebaseManager] LinkWithCredential 시작 / IsAnonymous: {CurrentUser.IsAnonymous}");
         CurrentUser.LinkWithCredentialAsync(credential).ContinueWithOnMainThread(task =>
         {
-            Debug.Log($"[FirebaseManager] Link 결과 - Faulted:{task.IsFaulted} Canceled:{task.IsCanceled}");
             if (task.IsCanceled || task.IsFaulted)
             {
                 var baseEx = task.Exception?.GetBaseException();
                 var firebaseEx = baseEx as FirebaseException;
-
-                Debug.LogError($"[FirebaseManager] Link 예외: {baseEx?.Message} / ErrorCode: {firebaseEx?.ErrorCode}");
 
                 bool isCredentialInUse = firebaseEx?.ErrorCode == (int)AuthError.CredentialAlreadyInUse
                     || (baseEx?.Message?.Contains("already associated") ?? false);
 
                 if (isCredentialInUse)
                 {
-                    Debug.Log("[FirebaseManager] CredentialAlreadyInUse → SignInWithGoogle fallback");
-                    SignInWithGoogle(authCode, onSuccess, onFailed);
+                    // 새 authCode 발급 후 SignIn
+                    GooglePlayGamesManager.Instance?.StartGoogleSignIn(
+                        onSuccess: newAuthCode => SignInWithGoogle(newAuthCode, onSuccess, onFailed),
+                        onFailed: onFailed
+                    );
                     return;
                 }
 
@@ -105,7 +103,6 @@ public class FirebaseManager : MonoBehaviour
                 onFailed?.Invoke(error);
                 return;
             }
-            Debug.Log("[FirebaseManager] Link 성공");
             onSuccess?.Invoke();
             OnLoginSuccess?.Invoke();
         });
