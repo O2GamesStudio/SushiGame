@@ -40,6 +40,7 @@ public class GooglePlayGamesManager : MonoBehaviour
     public void StartGoogleSignIn(Action<string> onSuccess, Action<string> onFailed = null, Action<string> onDebug = null)
     {
         onDebug?.Invoke("Authenticate 시작");
+
         PlayGamesPlatform.Instance.Authenticate((success) =>
         {
             onDebug?.Invoke($"SignInStatus: {success}");
@@ -52,6 +53,7 @@ public class GooglePlayGamesManager : MonoBehaviour
                         onFailed?.Invoke("authCode 획득 실패");
                         return;
                     }
+                    onDebug?.Invoke("authCode 획득 성공");
                     onSuccess?.Invoke(authCode);
                 });
             }

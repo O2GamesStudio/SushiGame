@@ -59,6 +59,7 @@ public class FirebaseManager : MonoBehaviour
                     return;
                 }
                 string error = task.Exception?.Message ?? "Unknown error";
+                Debug.LogError($"[FirebaseManager] 익명 로그인 실패: {error}");
                 onFailed?.Invoke(error);
                 OnLoginFailed?.Invoke(error);
                 return;
@@ -74,22 +75,28 @@ public class FirebaseManager : MonoBehaviour
 
         if (CurrentUser == null)
         {
+            Debug.Log("[FirebaseManager] CurrentUser null → SignInWithGoogle");
             SignInWithGoogle(authCode, onSuccess, onFailed);
             return;
         }
 
+        Debug.Log($"[FirebaseManager] LinkWithCredential 시작 / IsAnonymous: {CurrentUser.IsAnonymous}");
         CurrentUser.LinkWithCredentialAsync(credential).ContinueWithOnMainThread(task =>
         {
+            Debug.Log($"[FirebaseManager] Link 결과 - Faulted:{task.IsFaulted} Canceled:{task.IsCanceled}");
             if (task.IsCanceled || task.IsFaulted)
             {
                 var baseEx = task.Exception?.GetBaseException();
                 var firebaseEx = baseEx as FirebaseException;
+
+                Debug.LogError($"[FirebaseManager] Link 예외: {baseEx?.Message} / ErrorCode: {firebaseEx?.ErrorCode}");
 
                 bool isCredentialInUse = firebaseEx?.ErrorCode == (int)AuthError.CredentialAlreadyInUse
                     || (baseEx?.Message?.Contains("already associated") ?? false);
 
                 if (isCredentialInUse)
                 {
+                    Debug.Log("[FirebaseManager] CredentialAlreadyInUse → SignInWithGoogle fallback");
                     SignInWithGoogle(authCode, onSuccess, onFailed);
                     return;
                 }
@@ -98,6 +105,7 @@ public class FirebaseManager : MonoBehaviour
                 onFailed?.Invoke(error);
                 return;
             }
+            Debug.Log("[FirebaseManager] Link 성공");
             onSuccess?.Invoke();
             OnLoginSuccess?.Invoke();
         });
@@ -107,15 +115,19 @@ public class FirebaseManager : MonoBehaviour
     {
         var credential = PlayGamesAuthProvider.GetCredential(authCode);
 
+        Debug.Log("[FirebaseManager] SignInWithCredential 시작");
         Auth.SignInWithCredentialAsync(credential).ContinueWithOnMainThread(task =>
         {
+            Debug.Log($"[FirebaseManager] SignIn 결과 - Faulted:{task.IsFaulted} Canceled:{task.IsCanceled}");
             if (task.IsCanceled || task.IsFaulted)
             {
                 string error = task.Exception?.GetBaseException()?.Message ?? "Unknown error";
+                Debug.LogError($"[FirebaseManager] SignIn 예외: {error}");
                 onFailed?.Invoke(error);
                 OnLoginFailed?.Invoke(error);
                 return;
             }
+            Debug.Log("[FirebaseManager] SignIn 성공");
             onSuccess?.Invoke();
             OnLoginSuccess?.Invoke();
         });
