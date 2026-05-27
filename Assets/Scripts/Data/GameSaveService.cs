@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using System.Threading.Tasks;
 using UnityEngine;
 using Firebase.Firestore;
 using Firebase.Extensions;
@@ -9,8 +11,12 @@ public class GameSaveService : MonoBehaviour
 {
     public static GameSaveService Instance { get; private set; }
 
-    private const string LocalSaveKey = "GameSaveData";
+    private const string LegacyLocalSaveKey = "GameSaveData";
+    private const string SaveFileName = "gamesave.json";
     private const string FirestoreCollection = "gameSaves";
+
+    private string _savePath;
+    private readonly object _fileLock = new object();
     private int mergeCountSinceLastFirebaseSave = 0;
     private const int FirebaseSaveInterval = 5;
 
@@ -19,21 +25,69 @@ public class GameSaveService : MonoBehaviour
         if (Instance != null) { Destroy(gameObject); return; }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        _savePath = Path.Combine(Application.persistentDataPath, SaveFileName);
+        MigrateLegacyData();
     }
 
-    public bool HasSaveData() => PlayerPrefs.HasKey(LocalSaveKey);
+    // 기존 PlayerPrefs 데이터를 파일로 마이그레이션 (업데이트 후 최초 1회)
+    private void MigrateLegacyData()
+    {
+        if (File.Exists(_savePath)) return;
+        if (!PlayerPrefs.HasKey(LegacyLocalSaveKey)) return;
 
+        try
+        {
+            string json = PlayerPrefs.GetString(LegacyLocalSaveKey);
+            File.WriteAllText(_savePath, json);
+            PlayerPrefs.DeleteKey(LegacyLocalSaveKey);
+            PlayerPrefs.Save();
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[GameSaveService] 마이그레이션 실패: {e.Message}");
+        }
+    }
+
+    public bool HasSaveData() => File.Exists(_savePath) || PlayerPrefs.HasKey(LegacyLocalSaveKey);
+
+    // 동기 저장: OnApplicationPause 전용 (앱 kill 전 저장 보장)
     public void SaveLocal(GameSaveData data)
     {
         try
         {
             data.savedTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            PlayerPrefs.SetString(LocalSaveKey, JsonConvert.SerializeObject(data));
-            PlayerPrefs.Save();
+            string json = JsonConvert.SerializeObject(data);
+            lock (_fileLock)
+            {
+                File.WriteAllText(_savePath, json);
+            }
         }
         catch (Exception e)
         {
             Debug.LogError($"[GameSaveService] 로컬 저장 실패: {e.Message}");
+        }
+    }
+
+    // 비동기 저장: OnMerged 전용 (메인 스레드 블로킹 없음)
+    public void SaveLocalAsync(GameSaveData data)
+    {
+        try
+        {
+            data.savedTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            string json = JsonConvert.SerializeObject(data);
+            string path = _savePath;
+            Task.Run(() =>
+            {
+                lock (_fileLock)
+                {
+                    try { File.WriteAllText(path, json); }
+                    catch (Exception e) { Debug.LogError($"[GameSaveService] 비동기 저장 실패: {e.Message}"); }
+                }
+            });
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[GameSaveService] 비동기 저장 시작 실패: {e.Message}");
         }
     }
 
@@ -45,29 +99,59 @@ public class GameSaveService : MonoBehaviour
 
     public GameSaveData LoadLocal()
     {
-        if (!HasSaveData()) return null;
+        if (File.Exists(_savePath))
+        {
+            try
+            {
+                string json = File.ReadAllText(_savePath);
+                return JsonConvert.DeserializeObject<GameSaveData>(json);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[GameSaveService] 파일 로드 실패: {e.Message}");
+                ClearLocal();
+            }
+        }
 
-        try
+        // PlayerPrefs 폴백 (마이그레이션이 실패한 경우)
+        if (PlayerPrefs.HasKey(LegacyLocalSaveKey))
         {
-            return JsonConvert.DeserializeObject<GameSaveData>(PlayerPrefs.GetString(LocalSaveKey));
+            try
+            {
+                return JsonConvert.DeserializeObject<GameSaveData>(PlayerPrefs.GetString(LegacyLocalSaveKey));
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"[GameSaveService] PlayerPrefs 폴백 로드 실패: {e.Message}");
+                PlayerPrefs.DeleteKey(LegacyLocalSaveKey);
+            }
         }
-        catch (Exception e)
-        {
-            Debug.LogError($"[GameSaveService] 로컬 로드 실패: {e.Message}");
-            ClearLocal();
-            return null;
-        }
+
+        return null;
     }
 
     public void ClearLocal()
     {
-        PlayerPrefs.DeleteKey(LocalSaveKey);
-        PlayerPrefs.Save();
+        try
+        {
+            if (File.Exists(_savePath))
+                File.Delete(_savePath);
+
+            if (PlayerPrefs.HasKey(LegacyLocalSaveKey))
+            {
+                PlayerPrefs.DeleteKey(LegacyLocalSaveKey);
+                PlayerPrefs.Save();
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[GameSaveService] 로컬 삭제 실패: {e.Message}");
+        }
     }
 
     public void OnMerged(GameSaveData data)
     {
-        SaveLocal(data);
+        SaveLocalAsync(data);
         mergeCountSinceLastFirebaseSave++;
         if (mergeCountSinceLastFirebaseSave >= FirebaseSaveInterval)
         {

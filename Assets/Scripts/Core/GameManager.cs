@@ -196,12 +196,10 @@ public class GameManager : MonoBehaviour
         int stageIndex = GameDataTransfer.Instance?.CurrentUserData?.currentStage ?? 0;
         var saveData = plateManager.GetSaveData(stageIndex, timeRemaining, mergedSetsCount);
 
-        // 로컬 저장은 동기 유지 (빠름)
-        GameSaveService.Instance?.SaveLocal(saveData);
-
-        // Firestore는 백그라운드로
-        System.Threading.Tasks.Task.Run(() =>
-            GameSaveService.Instance?.SaveToFirestore(saveData));
+        // 비동기 저장: 게임 스레드 블로킹 방지 (동기 저장이 ANR 직접 원인)
+        // 트레이드오프: 앱 즉시 kill 시 재개 데이터 소실 가능하나, 계정 데이터는 Firestore에 보존됨
+        GameSaveService.Instance?.SaveLocalAsync(saveData);
+        GameSaveService.Instance?.SaveToFirestore(saveData);
     }
 
     #endregion

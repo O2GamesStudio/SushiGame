@@ -5,6 +5,7 @@
   <Project Path="Unity.2D.Aseprite.Editor.csproj" />
   <Project Path="Unity.Services.Core.Internal.csproj" />
   <Project Path="Unity.Purchasing.csproj" />
+  <Project Path="MCPForUnity.Runtime.csproj" />
   <Project Path="Unity.ShaderGraph.Editor.csproj" />
   <Project Path="Unity.RenderPipelines.Core.Runtime.csproj" />
   <Project Path="Unity.Mathematics.csproj" />
@@ -29,6 +30,7 @@
   <Project Path="Unity.VisualStudio.Editor.csproj" />
   <Project Path="Unity.InputSystem.csproj" />
   <Project Path="PPv2URPConverters.csproj" />
+  <Project Path="MCPForUnity.Editor.csproj" />
   <Project Path="Unity.2D.Animation.Editor.csproj" />
   <Project Path="LeanCommon.csproj" />
   <Project Path="Unity.Searcher.Editor.csproj" />
