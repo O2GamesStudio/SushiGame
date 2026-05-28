@@ -162,8 +162,8 @@ public class GameSaveService : MonoBehaviour
 
     public void SaveToFirestore(GameSaveData data)
     {
-        string userId = FirebaseManager.Instance?.CurrentUser?.UserId;
-        if (string.IsNullOrEmpty(userId)) return;
+        if (FirebaseManager.Instance?.IsAnonymous ?? true) return;
+        string userId = FirebaseManager.Instance.CurrentUser.UserId;
 
         try
         {
